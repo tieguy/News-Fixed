@@ -1,0 +1,63 @@
+{
+  "day_2": {
+    "theme": "Environment & Conservation",
+    "main_story": {
+      "title": "The Battery Revolution That's Changing Everything",
+      "content": "Imagine being able to bottle up sunshine and use it after dark. That's exactly what's happening right now, and it's transforming how the world gets its energy.\n\nCalifornia is leading the charge. Since 2020, the state has tripled its grid batteries to 13 gigawatts of storage capacity, with another 8.6 gigawatts coming by 2027. This spring and summer, batteries supplied over a quarter of California's electricity during evening peak hours—right when everyone comes home, turns on lights, and starts cooking dinner.\n\nBut here's the really exciting part: This isn't just a California story. Across the United States, 50% more utility-scale batteries were added last year than the year before. Energy analysts keep predicting the boom will slow down, but builders keep proving them wrong.\n\nThe revolution is going global too. In 2022, there was only a single gigawatt-scale battery facility (capable of storing at least 1 gigawatt-hour of energy) operating anywhere in the world. Today there are 42 such sites, and five times as many are set to come online in the next couple of years.\n\nWhat does a gigawatt-hour mean in real terms? One of these massive batteries can supply roughly 3 million UK households with electricity for an hour. Think of it like a giant power bank for your city.\n\nWhy does this matter so much? Solar panels are great, but the sun doesn't shine at night. Wind turbines are fantastic, but the wind doesn't always blow when you need it. Batteries solve this problem. They capture excess electricity when the sun is blazing at midday or when wind farms are spinning fast, then release that clean energy after dark or when the wind dies down.\n\nThe result? Clean solar and wind energy can now displace fossil fuel power plants even during evening hours, helping stabilize electrical grids without burning gas or coal. For young people inheriting a climate-changed world, this technology represents a genuine breakthrough—proof that renewable energy can work around the clock, not just when nature cooperates.",
+      "source_url": "https://ig.ft.com/mega-batteries/"
+    },
+    "mini_articles": [
+      {
+        "title": "Global Tiger Numbers Climb 60% Since 2010",
+        "content": "A new assessment shows tiger populations have increased by 60% since 2010, marking one of conservation's most remarkable turnarounds. Numbers are now stable or rising in most range states, driven by anti-poaching patrols, habitat restoration, and cross-border cooperation in South and Southeast Asia. Global recovery is finally within reach.",
+        "source_url": "https://newsroom.wcs.org/News-Releases/articleType/ArticleView/articleId/25319/New-IUCN-Assessment-Finds-Hope-for-Tiger-Recovery-Despite-Critical-Depletion.aspx"
+      },
+      {
+        "title": "Snow Leopards Rebound 62% in Four Years",
+        "content": "A new survey counted 83 snow leopards across India's Himachal Pradesh, a 62% rise in just four years. Camera-trap monitoring, community patrols, and curbs on illegal grazing have helped these elusive cats recover. The record count signals healthier alpine ecosystems in the western Himalayas.",
+        "source_url": "https://www.cnbctv18.com/india/snow-leopard-population-in-himachal-rises-62-in-4-years-hits-record-83-count-19701504.htm"
+      },
+      {
+        "title": "US Cities Getting Safer and More Walkable",
+        "content": "From Minneapolis to Miami, American cities are quietly reinventing themselves for walking and biking. Minneapolis now limits most streets to 20 mph and boasts 200 miles of bikeways. Miami's green-belt 'Underline' is stitching dense neighborhoods together. The result: car-optional cities spreading across the Midwest and coasts alike.",
+        "source_url": "https://tinyurl.com/2d9o6k4b"
+      },
+      {
+        "title": "Nations Agree to End Deep-Sea Trawling on Seamounts",
+        "content": "At the 2025 IUCN World Conservation Congress, governments voted overwhelmingly to phase out bottom trawling on seamounts by 2026. The resolution, backed by 95% of states and 99% of NGOs, marks global consensus to protect these deep-sea biodiversity hotspots.",
+        "source_url": "https://tinyurl.com/23n766qg"
+      }
+    ],
+    "feature_box": {
+      "title": "Tonight",
+      "content": "Pack 88 meeting tonight, 5:30pm"
+    },
+    "statistics": [
+      {
+        "number": "42",
+        "description": "gigawatt-scale battery sites worldwide"
+      },
+      {
+        "number": "60%",
+        "description": "increase in global tiger numbers"
+      },
+      {
+        "number": "62%",
+        "description": "snow leopard rise in 4 years"
+      },
+      {
+        "number": "200 mi",
+        "description": "of bikeways in Minneapolis"
+      },
+      {
+        "number": "95%",
+        "description": "of nations backed trawling ban"
+      },
+      {
+        "number": "13 GW",
+        "description": "of batteries in California"
+      }
+    ],
+    "tomorrow_teaser": "India's record-breaking solar surge powers ahead of schedule • China builds the world's largest high-altitude solar complex • The underwater data center revolution • Plus: How dark stars might explain the early universe"
+  }
+}
