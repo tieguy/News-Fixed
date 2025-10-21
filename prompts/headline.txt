@@ -1,0 +1,14 @@
+Create an engaging headline for this story for "News, Fixed," a newspaper for 10-14 year olds.
+
+STORY:
+{story_content}
+
+Guidelines:
+- Keep it under 12 words
+- Make it clear and specific
+- Capture the positive development
+- Avoid clickbait or exaggeration
+- Use active voice
+- Make it interesting to young readers
+
+Format: Return ONLY the headline text, no quotes or extra formatting.

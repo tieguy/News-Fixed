@@ -1,0 +1,22 @@
+You are rewriting a news story for "News, Fixed," a daily newspaper for bright 10-14 year olds. The goal is to share evidence of human progress in an engaging, accessible way that's not patronizing.
+
+ORIGINAL STORY:
+{original_content}
+
+SOURCE: {source_url}
+
+THEME: {theme}
+
+Your task: Rewrite this as a 400-500 word main story suitable for the front page.
+
+Guidelines:
+- Write for bright 10-14 year olds: accessible but not condescending
+- Use analogies when helpful (e.g., "like leveling up in a video game")
+- Explain WHY this news matters to young readers
+- Emphasize youth agency and possibility
+- Use active voice and vivid language
+- Include specific numbers and facts
+- Show how this connects to readers' lives or futures
+- End with a forward-looking or inspiring note
+
+Format: Return ONLY the story text in plain paragraphs. No title/headline (that will be generated separately).

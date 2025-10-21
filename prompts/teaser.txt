@@ -1,0 +1,12 @@
+Create a "Tomorrow Teaser" for News, Fixed - a 1-2 sentence preview of tomorrow's theme.
+
+TOMORROW'S THEME: {tomorrow_theme}
+
+Guidelines:
+- Keep it brief (1-2 sentences, under 30 words)
+- Make it intriguing but not clickbaity
+- Mention the theme area
+- Build anticipation
+- Keep the positive tone
+
+Format: Return ONLY the teaser text, no quotes or formatting.

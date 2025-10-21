@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News, Fixed - Day {{ day_number }} of 4</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- PAGE 1: FRONT -->
+    <div class="page page-1">
+        <!-- Header -->
+        <header class="masthead">
+            <h1 class="title">NEWS, FIXED</h1>
+            <p class="tagline">The World Is Getting Better. Here's Proof.</p>
+        </header>
+
+        <!-- Date bar -->
+        <div class="date-bar">
+            <span class="day-info">DAY {{ day_number }} OF 4</span>
+            <span class="date">{{ date }}</span>
+            <span class="theme">{{ theme }}</span>
+        </div>
+
+        <!-- Main Story -->
+        <article class="main-story">
+            <h2 class="headline">{{ main_story.title }}</h2>
+            <div class="story-layout">
+                <div class="story-content">
+                    {{ main_story.content }}
+                </div>
+                <div class="story-qr">
+                    <img src="{{ main_story.qr_code }}" alt="QR Code" class="qr-code">
+                    <p class="qr-label">Scan for {{ main_story.source_name }}</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feature Box -->
+        {% if feature_box %}
+        <aside class="feature-box">
+            <h3>{{ feature_box.title }}</h3>
+            <p>{{ feature_box.content }}</p>
+        </aside>
+        {% endif %}
+
+        <!-- Tomorrow Teaser -->
+        <div class="tomorrow-teaser">
+            <h4>Tomorrow</h4>
+            <p>{{ tomorrow_teaser }}</p>
+        </div>
+
+        <!-- Footer Page 1 -->
+        <footer class="page-footer">
+            <p class="footer-note">News, Fixed • Page 1 of 2</p>
+        </footer>
+    </div>
+
+    <!-- PAGE 2: BACK -->
+    <div class="page page-2">
+        <!-- Header (smaller) -->
+        <header class="page-header">
+            <h2 class="page-title">NEWS, FIXED</h2>
+            <p class="page-date">{{ date }} • Day {{ day_number }} of 4</p>
+        </header>
+
+        <!-- Mini Articles Grid -->
+        <section class="mini-articles">
+            {% for article in mini_articles %}
+            <article class="mini-article">
+                <h3 class="mini-headline">{{ article.title }}</h3>
+                <div class="mini-layout">
+                    <div class="mini-content">
+                        <p>{{ article.content }}</p>
+                    </div>
+                    <div class="mini-qr">
+                        <img src="{{ article.qr_code }}" alt="QR Code" class="qr-code-small">
+                        <p class="qr-label-small">{{ article.source_name }}</p>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+
+        <!-- By The Numbers -->
+        <section class="by-the-numbers">
+            <h3 class="section-title">By The Numbers</h3>
+            <div class="stats-grid">
+                {% for stat in statistics %}
+                <div class="stat-item">
+                    <p class="stat-number">{{ stat.number }}</p>
+                    <p class="stat-description">{{ stat.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Footer Page 2 -->
+        <footer class="page-footer">
+            <p class="footer-message">{{ footer_message }}</p>
+            <p class="footer-note">News, Fixed • Page 2 of 2 • Good news exists, but it travels slowly. Keep reading.</p>
+        </footer>
+    </div>
+</body>
+</html>

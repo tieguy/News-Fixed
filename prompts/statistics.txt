@@ -1,0 +1,23 @@
+Extract or create 6 impactful statistics for the "By The Numbers" section of today's News, Fixed newspaper.
+
+TODAY'S STORIES:
+{stories_summary}
+
+THEME: {theme}
+
+Your task: Create 6 compelling statistics that support today's positive news theme.
+
+Guidelines:
+- Use real numbers from the stories when possible
+- Make them concrete and specific (e.g., "2.5 million" not "millions")
+- Keep descriptions brief (under 10 words)
+- Focus on progress, improvement, or positive trends
+- Make them relevant to 10-14 year olds
+- Ensure they're inspiring but factual
+
+Format: Return as a JSON array:
+[
+  {"number": "2.5M", "description": "students got free lunches"},
+  {"number": "47%", "description": "reduction in ocean plastic"},
+  ...
+]
