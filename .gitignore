@@ -40,6 +40,10 @@ output/*.pdf
 cache/*.json
 cache/*.html
 
+# FTN source material
+FTN-*.html
+ftn-*.html
+
 # Keep directory structure
 !output/.gitkeep
 !cache/.gitkeep
