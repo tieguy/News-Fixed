@@ -91,9 +91,11 @@ Each daily edition contains:
 - **Day 3**: Technology & Energy
 - **Day 4**: Society & Youth Movements
 
-## Development
+## Documentation
 
-See [CLAUDE.md](CLAUDE.md) for detailed development guidance.
+- **Quick Start:** This README
+- **AI Assistance:** [CLAUDE.md](CLAUDE.md)
+- **Detailed Docs:** [docs/](docs/) - Design specs, fetching guides, etc.
 
 ## License
 

@@ -106,15 +106,22 @@ python main.py --input ftn_content.txt --day 1 --output ~/Desktop/
 ## Testing
 
 ```bash
-# Run with sample/test data
-python main.py --input test_data/sample_ftn.txt --day 1
+# Test PDF generation with sample data
+python main.py --test
 
-# Test PDF generation only
-python -m src.pdf_generator
+# Test parser
+python -m src.parser FTN-315.html
 
 # Test QR code generation
 python -m src.utils
 ```
+
+## Documentation
+
+- **User Guide:** README.md (root)
+- **Design & Technical:** docs/ directory
+  - docs/design-spec.md - Original project requirements
+  - docs/FETCHING.md - How to fetch FTN content
 
 ## Key Design Principles
 
