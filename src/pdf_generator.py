@@ -1,7 +1,8 @@
 """PDF generation for News, Fixed newspaper."""
 
+import subprocess
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
 from src.utils import generate_qr_code, format_date, get_theme_name, extract_source_name
@@ -22,6 +23,53 @@ class NewspaperGenerator:
 
         self.templates_dir = templates_dir
         self.env = Environment(loader=FileSystemLoader(str(templates_dir)))
+
+    def get_pdf_page_count(self, pdf_path: str) -> int:
+        """
+        Get the number of pages in a PDF file.
+
+        Args:
+            pdf_path: Path to PDF file
+
+        Returns:
+            Number of pages, or -1 if unable to determine
+        """
+        try:
+            result = subprocess.run(
+                ['pdfinfo', pdf_path],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            for line in result.stdout.split('\n'):
+                if line.startswith('Pages:'):
+                    return int(line.split(':')[1].strip())
+        except (subprocess.CalledProcessError, FileNotFoundError, ValueError):
+            pass
+        return -1
+
+    def truncate_content(self, content: str, target_percent: float = 0.85) -> str:
+        """
+        Truncate content to a percentage of its original length.
+
+        Args:
+            content: Content to truncate
+            target_percent: Target length as percentage (0.85 = 85%)
+
+        Returns:
+            Truncated content with ellipsis
+        """
+        words = content.split()
+        target_words = int(len(words) * target_percent)
+        if target_words < len(words):
+            truncated = ' '.join(words[:target_words])
+            # Try to end on a sentence if possible
+            for punct in ['. ', '! ', '? ']:
+                last_punct = truncated.rfind(punct)
+                if last_punct > len(truncated) * 0.7:  # If we find one in last 30%
+                    return truncated[:last_punct + 1]
+            return truncated + '...'
+        return content
 
     def generate_pdf(
         self,
@@ -116,19 +164,63 @@ class NewspaperGenerator:
 
         # Load template
         template = self.env.get_template("newspaper.html")
-        html_content = template.render(**context)
 
-        # Load CSS
-        css_path = self.templates_dir / "styles.css"
+        # Try generating PDF, check page count, and retry with truncation if needed
+        max_attempts = 3
+        truncation_percent = 1.0
 
-        # Generate PDF
-        html = HTML(string=html_content, base_url=str(self.templates_dir))
-        css = CSS(filename=str(css_path))
+        for attempt in range(max_attempts):
+            # Render HTML with current content
+            html_content = template.render(**context)
 
-        output_file = Path(output_path)
-        output_file.parent.mkdir(parents=True, exist_ok=True)
+            # Load CSS
+            css_path = self.templates_dir / "styles.css"
 
-        html.write_pdf(output_file, stylesheets=[css])
+            # Generate PDF
+            html = HTML(string=html_content, base_url=str(self.templates_dir))
+            css = CSS(filename=str(css_path))
+
+            output_file = Path(output_path)
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+
+            html.write_pdf(output_file, stylesheets=[css])
+
+            # Check page count
+            page_count = self.get_pdf_page_count(str(output_file))
+
+            if page_count == 2:
+                # Success!
+                return output_file
+            elif page_count > 2:
+                # Overflow - need to truncate
+                print(f"   ⚠️  PDF has {page_count} pages (expected 2)")
+
+                if attempt < max_attempts - 1:
+                    # Try again with truncated content
+                    truncation_percent *= 0.85  # Reduce by 15% each time
+                    print(f"   🔄 Retrying with {int(truncation_percent * 100)}% content length...")
+
+                    # Truncate all content
+                    context["main_story"]["content"] = self.truncate_content(
+                        main_story["content"], truncation_percent
+                    )
+                    for story in context["front_page_stories"]:
+                        story["content"] = self.truncate_content(
+                            story["content"], truncation_percent
+                        )
+                    for article in context["mini_articles"]:
+                        article["content"] = self.truncate_content(
+                            article["content"], truncation_percent
+                        )
+                else:
+                    # Final attempt failed
+                    print(f"   ❌ Could not fit content to 2 pages after {max_attempts} attempts")
+                    print(f"      Final PDF has {page_count} pages")
+                    return output_file
+            elif page_count == -1:
+                # Couldn't determine page count, assume it's okay
+                print(f"   ⚠️  Could not determine page count, assuming it's correct")
+                return output_file
 
         return output_file
 
