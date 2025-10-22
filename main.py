@@ -17,8 +17,8 @@ def calculate_week_dates(base_date=None):
     """
     Calculate Monday-Thursday dates for the upcoming week.
 
-    If run on Sunday, calculates for the next week (tomorrow's Monday).
-    Otherwise, calculates for the current week's Monday.
+    If run on Friday, Saturday, or Sunday, calculates for next week's Monday-Thursday.
+    Otherwise, calculates for the current week's Monday-Thursday.
 
     Args:
         base_date: Optional base date (defaults to today)
@@ -31,15 +31,18 @@ def calculate_week_dates(base_date=None):
     elif isinstance(base_date, str):
         base_date = datetime.fromisoformat(base_date)
 
-    # If it's Sunday (weekday 6), use next Monday
-    # Otherwise, find this week's Monday
-    current_weekday = base_date.weekday()  # Monday=0, Sunday=6
+    # Monday=0, Sunday=6
+    current_weekday = base_date.weekday()
 
-    if current_weekday == 6:  # Sunday
-        # Next Monday is tomorrow
-        monday = base_date + timedelta(days=1)
+    # If it's Friday (4), Saturday (5), or Sunday (6), use next week
+    if current_weekday >= 4:
+        # Calculate next Monday
+        days_until_monday = (7 - current_weekday) % 7
+        if days_until_monday == 0:  # If somehow we're on Monday and current_weekday >= 4
+            days_until_monday = 7
+        monday = base_date + timedelta(days=days_until_monday)
     else:
-        # Find this week's Monday
+        # Find this week's Monday (Mon-Thu)
         days_since_monday = current_weekday
         monday = base_date - timedelta(days=days_since_monday)
 
