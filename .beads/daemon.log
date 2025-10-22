@@ -1,0 +1,35 @@
+[2025-10-21 21:50:15] Daemon started (interval: 5m0s, auto-commit: false, auto-push: false)
+[2025-10-21 21:50:15] Using database: /home/louie/Projects/DailyNews/.beads/DailyNews.db
+[2025-10-21 21:50:15] Database opened: /home/louie/Projects/DailyNews/.beads/DailyNews.db
+[2025-10-21 21:50:15] Starting RPC server: /home/louie/Projects/DailyNews/.beads/bd.sock
+[2025-10-21 21:50:15] RPC server ready (socket listening)
+[2025-10-21 21:50:15] Starting sync cycle...
+[2025-10-21 21:50:15] Exported to JSONL
+[2025-10-21 21:50:16] Pulled from remote
+[2025-10-21 21:50:16] Imported from JSONL
+[2025-10-21 21:50:16] Sync cycle complete
+[2025-10-21 21:55:15] Starting sync cycle...
+[2025-10-21 21:55:15] Exported to JSONL
+[2025-10-21 21:55:17] Pulled from remote
+[2025-10-21 21:55:17] Imported from JSONL
+[2025-10-21 21:55:17] Sync cycle complete
+[2025-10-21 22:00:15] Starting sync cycle...
+[2025-10-21 22:00:15] Exported to JSONL
+[2025-10-21 22:00:17] Pulled from remote
+[2025-10-21 22:00:17] Imported from JSONL
+[2025-10-21 22:00:17] Sync cycle complete
+[2025-10-21 22:05:15] Starting sync cycle...
+[2025-10-21 22:05:15] Exported to JSONL
+[2025-10-21 22:05:17] Pulled from remote
+[2025-10-21 22:05:17] Imported from JSONL
+[2025-10-21 22:05:17] Sync cycle complete
+[2025-10-21 22:10:15] Starting sync cycle...
+[2025-10-21 22:10:15] Exported to JSONL
+[2025-10-21 22:10:17] Pulled from remote
+[2025-10-21 22:10:17] Imported from JSONL
+[2025-10-21 22:10:17] Sync cycle complete
+[2025-10-21 22:15:15] Starting sync cycle...
+[2025-10-21 22:15:15] Exported to JSONL
+[2025-10-21 22:15:17] Pulled from remote
+[2025-10-21 22:15:17] Imported from JSONL
+[2025-10-21 22:15:17] Sync cycle complete
