@@ -56,9 +56,9 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
         try:
             page = browser.new_page()
 
-            # Navigate to Fix The News
-            print("🌐 Navigating to Fix The News...")
-            page.goto("https://fixthenews.com", wait_until="networkidle", timeout=30000)
+            # Navigate to Fix The News latest post
+            print("🌐 Navigating to Fix The News latest post...")
+            page.goto("https://fixthenews.com/latest", wait_until="networkidle", timeout=30000)
 
             # On first run, wait for user to log in
             if first_run:
@@ -80,67 +80,33 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
                     json.dump(cookies, f)
                 print("✅ Cookies saved!")
 
-            # Wait a bit for page to settle
-            page.wait_for_timeout(2000)
+            # /latest redirects to the actual latest post, so we're already there
+            # Wait for content to load after redirect
+            page.wait_for_timeout(3000)
 
-            # Try to find the latest post link
-            print("🔍 Looking for latest post...")
-
-            try:
-                # Look for first article/post link
-                # Try multiple selectors
-                selectors = [
-                    'article a.post-preview-title',
-                    '.post-preview-title',
-                    'a[href*="/p/"]',
-                    'h2 a'
-                ]
-
-                first_post = None
-                for selector in selectors:
-                    try:
-                        first_post = page.locator(selector).first
-                        if first_post.count() > 0:
-                            break
-                    except:
-                        continue
-
-                if first_post and first_post.count() > 0:
-                    post_url = first_post.get_attribute('href')
-
-                    # Make sure it's a full URL
-                    if not post_url.startswith('http'):
-                        post_url = f"https://fixthenews.com{post_url}"
-
-                    print(f"📰 Found latest post: {post_url}")
-
-                    # Navigate to the post
-                    page.goto(post_url, wait_until="networkidle", timeout=30000)
-                else:
-                    print("⚠️  Could not find post link, using current page")
-
-            except Exception as e:
-                print(f"⚠️  Could not auto-detect latest post: {e}")
-                print("   Using current page content instead")
-
-            # Wait for content to load
-            page.wait_for_timeout(2000)
+            current_url = page.url
+            print(f"📰 Loaded latest post: {current_url}")
 
             # Get the full HTML
             html_content = page.content()
 
-            # Try to extract issue number from the page
-            page_title = page.title()
-            issue_match = re.search(r'#(\d+)', page_title)
-            if not issue_match:
-                # Try in content
-                issue_match = re.search(r'#(\d+)', html_content[:5000])
-
-            if issue_match:
-                issue_number = issue_match.group(1)
+            # Try to extract issue number from URL (e.g., /p/315-shell-shocked)
+            url_match = re.search(r'/p/(\d+)-', current_url)
+            if url_match:
+                issue_number = url_match.group(1)
             else:
-                # Fallback to current date
-                issue_number = datetime.now().strftime("%Y%m%d")
+                # Try from page title
+                page_title = page.title()
+                issue_match = re.search(r'#(\d+)', page_title)
+                if not issue_match:
+                    # Try in content
+                    issue_match = re.search(r'#(\d+)', html_content[:5000])
+
+                if issue_match:
+                    issue_number = issue_match.group(1)
+                else:
+                    # Fallback to current date
+                    issue_number = datetime.now().strftime("%Y%m%d")
 
             # Save HTML to file
             output_path = Path(output_dir) / f"FTN-{issue_number}.html"
