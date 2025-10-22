@@ -54,15 +54,78 @@ class FTNParser:
 
     def extract_stories(self) -> List[FTNStory]:
         """
-        Extract stories from FTN content.
+        Extract stories from FTN content (now works with reader mode HTML).
 
         Returns:
             List of FTNStory objects
         """
         stories = []
 
-        # Pattern: Stories often start with *text* or bold text
-        # and are followed by URLs
+        # Find the main content div in reader mode HTML
+        content_div = self.soup.find('div', class_='moz-reader-content')
+        if not content_div:
+            # Fallback to old text-based parsing
+            return self._extract_stories_from_text()
+
+        # Get all paragraphs
+        paragraphs = content_div.find_all('p')
+
+        current_story_text = []
+        current_urls = []
+
+        for para in paragraphs:
+            # Skip subscription/footer content
+            text = para.get_text().strip()
+            if not text or any(skip in text.lower() for skip in [
+                "you're reading the free version",
+                "if someone forwarded this",
+                "institutional subscriptions",
+                "get in touch",
+                "profit-driven organisations"
+            ]):
+                continue
+
+            # Check if this paragraph starts a story (has bold/strong tag)
+            strong_tag = para.find(['strong', 'b'])
+
+            if strong_tag:
+                # Save previous story if exists
+                if current_story_text:
+                    story = self._create_story_from_reader(current_story_text, current_urls)
+                    if story:
+                        stories.append(story)
+
+                # Start new story
+                current_story_text = [text]
+                current_urls = []
+
+                # Extract URLs from this paragraph
+                for link in para.find_all('a', href=True):
+                    href = link['href']
+                    if href.startswith('http') and 'substackcdn' not in href:
+                        current_urls.append(href)
+
+            elif current_story_text:
+                # Continue current story
+                current_story_text.append(text)
+
+                # Extract URLs
+                for link in para.find_all('a', href=True):
+                    href = link['href']
+                    if href.startswith('http') and 'substackcdn' not in href:
+                        current_urls.append(href)
+
+        # Add last story
+        if current_story_text:
+            story = self._create_story_from_reader(current_story_text, current_urls)
+            if story:
+                stories.append(story)
+
+        return stories
+
+    def _extract_stories_from_text(self) -> List[FTNStory]:
+        """Fallback text-based extraction for non-reader-mode HTML."""
+        stories = []
         lines = self.text.split('\n')
 
         current_story_lines = []
@@ -72,35 +135,25 @@ class FTNParser:
         for i, line in enumerate(lines):
             line = line.strip()
 
-            # Skip empty lines and UI cruft
-            if not line or any(skip in line.lower() for skip in [
-                'close reader', 'text and layout', 'theme', 'read aloud',
-                'reset defaults', 'font', 'default', 'voice'
-            ]):
+            if not line:
                 continue
 
-            # Check if line starts a story (contains * and meaningful content)
+            # Check if line starts a story
             if line.startswith('*') and len(line) > 50:
-                # Save previous story if exists
                 if current_story_lines and len(' '.join(current_story_lines)) > 100:
                     story = self._create_story(current_story_lines, current_urls)
                     if story:
                         stories.append(story)
 
-                # Start new story
                 current_story_lines = [line]
                 current_urls = []
                 in_story = True
 
             elif in_story:
-                # Extract URLs from this line
                 urls_in_line = re.findall(r'<(https?://[^>]+)>', line)
                 current_urls.extend(urls_in_line)
-
-                # Add to current story
                 current_story_lines.append(line)
 
-                # End story if we hit a blank line or new story marker
                 if i + 1 < len(lines) and (not lines[i + 1].strip() or lines[i + 1].strip().startswith('*')):
                     if len(' '.join(current_story_lines)) > 100:
                         story = self._create_story(current_story_lines, current_urls)
@@ -110,7 +163,6 @@ class FTNParser:
                     current_urls = []
                     in_story = False
 
-        # Add last story
         if current_story_lines and len(' '.join(current_story_lines)) > 100:
             story = self._create_story(current_story_lines, current_urls)
             if story:
@@ -118,9 +170,47 @@ class FTNParser:
 
         return stories
 
+    def _create_story_from_reader(self, text_paragraphs: List[str], urls: List[str]) -> Optional[FTNStory]:
+        """
+        Create a story from reader mode paragraphs and URLs.
+
+        Args:
+            text_paragraphs: List of paragraph texts
+            urls: URLs found in the story
+
+        Returns:
+            FTNStory object or None
+        """
+        if not text_paragraphs:
+            return None
+
+        # Join paragraphs into content
+        content = ' '.join(text_paragraphs)
+
+        # Extract title (first sentence)
+        title_match = re.match(r'^([^.!?]+[.!?])', content)
+        if title_match:
+            title = title_match.group(1).strip()
+        else:
+            # Fallback: first 100 chars
+            title = content[:100].strip()
+
+        # Get source URL (first non-FTN, non-Substack URL)
+        source_url = None
+        for url in urls:
+            if 'fixthenews.com' not in url and 'substackcdn' not in url and 'tinyurl' not in url:
+                source_url = url
+                break
+
+        # If no direct URL, take any URL
+        if not source_url and urls:
+            source_url = urls[0]
+
+        return FTNStory(title=title, content=content, source_url=source_url)
+
     def _create_story(self, lines: List[str], urls: List[str]) -> Optional[FTNStory]:
         """
-        Create a story from lines and URLs.
+        Create a story from lines and URLs (fallback for non-reader mode).
 
         Args:
             lines: Lines of text
