@@ -34,41 +34,50 @@ python login_to_ftn.py
 # (Browser opens - log in, then Ctrl+C when done)
 
 # Weekly workflow (run on Sunday night):
-python -m src.fetch_ftn_clean           # Fetch latest FTN
-python -m src.ftn_to_json FTN-XXX.html  # Convert to JSON
-python main.py --input ftn-XXX.json --all --no-rewrite  # Generate 4 PDFs
+python -m code.src.fetch_ftn_clean                # Fetch latest FTN
+python -m code.src.ftn_to_json data/ftn/FTN-XXX.html  # Convert to JSON
+./news-fixed --input data/ftn/ftn-XXX.json --all --no-rewrite  # Generate 4 PDFs
 ```
 
 ## Usage
 
 ```bash
 # Fetch latest Fix The News issue
-python -m src.fetch_ftn_clean
+python -m code.src.fetch_ftn_clean
 
 # Convert FTN HTML to 4-day JSON
-python -m src.ftn_to_json FTN-315.html
+python -m code.src.ftn_to_json data/ftn/FTN-315.html
 
 # Generate all 4 days (Mon-Thu) with correct dates
-python main.py --input ftn-315.json --all --no-rewrite
+./news-fixed --input data/ftn/ftn-315.json --all --no-rewrite
 
-# Output files: news_fixed_monday.pdf, news_fixed_tuesday.pdf, etc.
+# Output files: news_fixed_2025-10-20.pdf, news_fixed_2025-10-21.pdf, etc.
+# (Filenames include publication date for easy sorting)
 ```
 
 ## Project Structure
 
 ```
 DailyNews/
-├── src/                      # Python modules
-│   ├── fetch_ftn_clean.py   # Fetch FTN using Firefox reader mode
-│   ├── ftn_to_json.py       # Convert FTN HTML to 4-day JSON
-│   ├── parser.py            # Parse and categorize FTN stories
-│   ├── generator.py         # Claude API integration
-│   ├── pdf_generator.py     # PDF creation
-│   └── utils.py             # QR codes, date helpers
-├── templates/               # HTML/CSS newspaper templates
-├── prompts/                 # Claude API prompts
-├── output/                  # Generated PDFs
-└── login_to_ftn.py          # One-time FTN login helper
+├── code/                     # Source code
+│   ├── src/                  # Python modules
+│   │   ├── fetch_ftn_clean.py   # Fetch FTN using Firefox reader mode
+│   │   ├── ftn_to_json.py       # Convert FTN HTML to 4-day JSON
+│   │   ├── parser.py            # Parse and categorize FTN stories
+│   │   ├── generator.py         # Claude API integration
+│   │   ├── pdf_generator.py     # PDF creation
+│   │   ├── sports_schedule.py   # Duke basketball schedules
+│   │   └── utils.py             # QR codes, date helpers
+│   ├── templates/            # HTML/CSS newspaper templates
+│   └── main.py              # Main newspaper generator
+├── data/                     # Data files
+│   ├── ftn/                  # Fix The News downloads & JSON
+│   ├── sports/               # Duke basketball ICS schedules
+│   └── calendar/             # Family calendar events
+├── output/                   # Generated PDFs
+├── prompts/                  # Claude API prompts
+├── news-fixed                # Wrapper script (use this!)
+└── login_to_ftn.py           # One-time FTN login helper
 ```
 
 ## Issue Tracking
@@ -86,9 +95,10 @@ bd create "title"    # Create new issue
 Each daily edition contains:
 
 **Page 1 (Front)**
-- Main story (400-500 words)
-- Feature box or "quick wins"
-- Tomorrow teaser
+- Lead story (200-300 words)
+- 2-3 secondary stories (100-150 words each)
+- Feature box (Duke basketball games or quick wins)
+- Tomorrow teaser (Mon-Wed only)
 
 **Page 2 (Back)**
 - 4-6 mini articles (100-150 words each)

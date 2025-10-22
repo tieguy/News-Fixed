@@ -19,6 +19,7 @@ class NewspaperGenerator:
             templates_dir: Path to templates directory
         """
         if templates_dir is None:
+            # Navigate from code/src/ to code/, then to templates/
             templates_dir = Path(__file__).parent.parent / "templates"
 
         self.templates_dir = templates_dir

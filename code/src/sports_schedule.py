@@ -19,7 +19,8 @@ class DukeBasketballSchedule:
             data_dir: Path to data directory (defaults to ../data)
         """
         if data_dir is None:
-            data_dir = Path(__file__).parent.parent / "data"
+            # Navigate from code/src/ to project root, then to data/
+            data_dir = Path(__file__).parent.parent.parent / "data"
 
         self.data_dir = data_dir
         self.sports_dir = data_dir / "sports"

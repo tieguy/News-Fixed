@@ -208,7 +208,9 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
 
             # Generate PDF
             click.echo("  📄 Generating PDF...")
-            output_filename = f"news_fixed_{date_info['day_name'].lower()}.pdf"
+            # Format: news_fixed_2025-10-21.pdf (ISO date for easy sorting)
+            date_str_iso = date_info['date_obj'].strftime('%Y-%m-%d')
+            output_filename = f"news_fixed_{date_str_iso}.pdf"
             output_path = Path(output) / output_filename
 
             pdf_gen.generate_pdf(
