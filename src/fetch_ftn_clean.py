@@ -87,8 +87,17 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
             current_url = page.url
             print(f"📰 Loaded latest post: {current_url}")
 
-            # Get the full HTML
+            # Try to trigger reader mode by navigating to about:reader?url=...
+            print("📖 Activating reader mode...")
+            reader_url = f"about:reader?url={current_url}"
+            page.goto(reader_url, wait_until="networkidle", timeout=30000)
+
+            # Wait for reader mode to render
+            page.wait_for_timeout(2000)
+
+            # Get the full HTML (now in reader mode)
             html_content = page.content()
+            print("   ✓ Reader mode HTML captured")
 
             # Try to extract issue number from URL (e.g., /p/315-shell-shocked)
             url_match = re.search(r'/p/(\d+)-', current_url)
