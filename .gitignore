@@ -44,6 +44,9 @@ cache/*.html
 FTN-*.html
 ftn-*.html
 
+# Firefox profile for fetching (contains cookies)
+.firefox-profile-ftn/
+
 # Keep directory structure
 !output/.gitkeep
 !cache/.gitkeep
