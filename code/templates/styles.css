@@ -142,6 +142,8 @@ p {
 .secondary-story {
     border-top: 1px solid #000;
     padding-top: 0.06in;
+    padding-bottom: 0.08in;
+    margin-bottom: 0.04in;
 }
 
 .secondary-headline {
@@ -155,7 +157,7 @@ p {
     font-size: 9pt;
     line-height: 1.35;
     text-align: justify;
-    margin-bottom: 0.03in;
+    margin-bottom: 0.04in;
 }
 
 .secondary-source {
@@ -164,12 +166,13 @@ p {
     display: flex;
     align-items: center;
     gap: 3pt;
+    margin-bottom: 0.02in;
 }
 
 .qr-code-tiny {
     width: 0.25in;
     height: 0.25in;
-    display: inline-block;
+    flex-shrink: 0;
     border: 1px solid #000;
 }
 
