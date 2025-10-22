@@ -11,6 +11,7 @@ import click
 from src.generator import ContentGenerator
 from src.pdf_generator import NewspaperGenerator
 from src.utils import get_theme_name
+from src.sports_schedule import DukeBasketballSchedule
 
 
 def calculate_week_dates(base_date=None):
@@ -181,6 +182,29 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
                     tomorrow_teaser = content_gen.generate_teaser(
                         tomorrow_theme=get_theme_name(day_num + 1)
                     )
+
+            # Check for Duke basketball games on this date (or weekend if Thursday)
+            sports_schedule = DukeBasketballSchedule()
+            games = []
+
+            # For Thursday, check Fri-Sun for weekend games
+            if date_info['day_name'] == 'Thursday':
+                friday = date_info['date_obj'].date() + timedelta(days=1)
+                saturday = date_info['date_obj'].date() + timedelta(days=2)
+                sunday = date_info['date_obj'].date() + timedelta(days=3)
+
+                for weekend_date in [friday, saturday, sunday]:
+                    weekend_games = sports_schedule.get_games_for_date(weekend_date)
+                    if weekend_games:
+                        games.extend(weekend_games)
+            else:
+                # For Mon-Wed, check the actual day
+                games = sports_schedule.get_games_for_date(date_info['date_obj'].date())
+
+            # Sports always takes priority over other feature boxes
+            if games:
+                feature_box = sports_schedule.format_game_box(games[0])
+                click.echo(f"  🏀 Adding {games[0]['team']} game to feature box")
 
             # Generate PDF
             click.echo("  📄 Generating PDF...")

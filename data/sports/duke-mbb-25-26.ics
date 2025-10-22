@@ -1,0 +1,380 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SIDEARM Sports//NONSGML SIDEARM//EN
+X-WR-CALNAME:2025-26 Men's Basketball Schedule - goduke.com
+X-PUBLISHED-TTL:PT120M
+BEGIN:VEVENT
+UID:vcal_24426-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251021T230000Z
+DTEND:20251022T010000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:[W] Duke University Men's Basketball vs UCF- Brotherhood Run
+DESCRIPTION:[W] Duke University Men's Basketball vs UCF- Brotherhood Run\nW 96-71\nTV: ACCNX\nStreaming Video: https://www.espn.com/watch/player/_/id/c857630b-6002-47d0-97d7-f01ab6bda131\nStreaming Audio: https://thevarsitynetwork.com/audioapplink/source/oas-1693/content/duke:allaccess-Live-1393\n https://goduke.com/calendar.aspx?game_id=24426&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24426&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24446-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251026T230000Z
+DTEND:20251027T010000Z
+LOCATION:Knoxville\, Tenn., Food City Center
+SUMMARY:Duke University Men's Basketball at Tennessee
+DESCRIPTION:Duke University Men's Basketball at Tennessee\nTV: ESPN2\nStreaming Video: https://www.espn.com/watch/player/_/id/4278470e-b10b-4369-97e8-7f764c2b2615\nStreaming Audio: https://thevarsitynetwork.com/audioapplink/source/oas-1693/content/duke:allaccess-Live-1351\n https://goduke.com/calendar.aspx?game_id=24446&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24446&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24344-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251105T014500Z
+DTEND:20251105T034500Z
+LOCATION:Charlotte\, N.C., Spectrum Center
+SUMMARY:Duke University Men's Basketball vs Texas- Dick Vitale Invitational
+DESCRIPTION:Duke University Men's Basketball vs Texas- Dick Vitale Invitational\nTV: ESPN\nStreaming Video: https://www.espn.com/watch/player/_/id/4c66ad47-7209-42bd-8e14-829fda016c2b\nStreaming Audio: https://thevarsitynetwork.com/audioapplink/source/oas-1693/content/duke:allaccess-Live-1351\n https://goduke.com/calendar.aspx?game_id=24344&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24344&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24460-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251108T183000Z
+DTEND:20251108T203000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Western Carolina
+DESCRIPTION:Duke University Men's Basketball vs Western Carolina\nTV: The CW\nStreaming Audio: https://thevarsitynetwork.com/audioapplink/source/oas-1693/content/duke:allaccess-Live-1392\n https://goduke.com/calendar.aspx?game_id=24460&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24460&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24345-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART;VALUE=DATE:20251111
+DTEND;VALUE=DATE:20251112
+LOCATION:West Point\, N.Y.
+SUMMARY:Duke University Men's Basketball at Army West Point
+DESCRIPTION:Duke University Men's Basketball at Army West Point\nStreaming Audio: https://thevarsitynetwork.com/audioapplink/source/oas-1693/content/duke:allaccess-Live-1351\n https://goduke.com/calendar.aspx?game_id=24345&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24345&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24461-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251115T000000Z
+DTEND:20251115T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Indiana State
+DESCRIPTION:Duke University Men's Basketball vs Indiana State\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24461&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24461&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24346-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251119T020000Z
+DTEND:20251119T040000Z
+LOCATION:New York\, N.Y., Madison Square Garden
+SUMMARY:Duke University Men's Basketball vs Kansas- State Farm Champions Classic
+DESCRIPTION:Duke University Men's Basketball vs Kansas- State Farm Champions Classic\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24346&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24346&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24383-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251122T000000Z
+DTEND:20251122T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Niagara- Brotherhood Run
+DESCRIPTION:Duke University Men's Basketball vs Niagara- Brotherhood Run\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24383&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24383&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24384-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251123T210000Z
+DTEND:20251123T230000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Howard- Brotherhood Run
+DESCRIPTION:Duke University Men's Basketball vs Howard- Brotherhood Run\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24384&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24384&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24347-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251128T010000Z
+DTEND:20251128T030000Z
+LOCATION:Chicago\, Ill., United Center
+SUMMARY:Duke University Men's Basketball vs Arkansas- CBS Sports Thanksgiving Classic
+DESCRIPTION:Duke University Men's Basketball vs Arkansas- CBS Sports Thanksgiving Classic\nTV: CBS\n https://goduke.com/calendar.aspx?game_id=24347&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24347&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24348-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251203T003000Z
+DTEND:20251203T023000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Florida- ACC/SEC Challenge
+DESCRIPTION:Duke University Men's Basketball vs Florida- ACC/SEC Challenge\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24348&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24348&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24349-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251206T170000Z
+DTEND:20251206T190000Z
+LOCATION:East Lansing\, Mich.
+SUMMARY:Duke University Men's Basketball at Michigan State
+DESCRIPTION:Duke University Men's Basketball at Michigan State\nTV: FOX\n https://goduke.com/calendar.aspx?game_id=24349&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24349&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24462-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251216T230000Z
+DTEND:20251217T010000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Lipscomb
+DESCRIPTION:Duke University Men's Basketball vs Lipscomb\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24462&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24462&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24459-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251221T010000Z
+DTEND:20251221T030000Z
+LOCATION:New York\, N.Y., Madison Square Garden
+SUMMARY:Duke University Men's Basketball vs Texas Tech- SentinelOne Classic
+DESCRIPTION:Duke University Men's Basketball vs Texas Tech- SentinelOne Classic\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24459&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24459&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24498-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20251231T210000Z
+DTEND:20251231T230000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Georgia Tech
+DESCRIPTION:Duke University Men's Basketball vs Georgia Tech\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24498&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24498&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24499-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260103T204500Z
+DTEND:20260103T224500Z
+LOCATION:Tallahassee\, FL, Tucker Center
+SUMMARY:Duke University Men's Basketball at Florida State
+DESCRIPTION:Duke University Men's Basketball at Florida State\nTV: CBS\n https://goduke.com/calendar.aspx?game_id=24499&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24499&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24500-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260107T000000Z
+DTEND:20260107T020000Z
+LOCATION:Louisville\, KY, KFC Yum! Center
+SUMMARY:Duke University Men's Basketball at Louisville
+DESCRIPTION:Duke University Men's Basketball at Louisville\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24500&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24500&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24501-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260110T190000Z
+DTEND:20260110T210000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs SMU
+DESCRIPTION:Duke University Men's Basketball vs SMU\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24501&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24501&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24502-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260115T040000Z
+DTEND:20260115T060000Z
+LOCATION:Berkeley\, CA, Haas Pavilion
+SUMMARY:Duke University Men's Basketball at California
+DESCRIPTION:Duke University Men's Basketball at California\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24502&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24502&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24503-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260117T230000Z
+DTEND:20260118T010000Z
+LOCATION:Stanford\, CA, Maples Pavilion
+SUMMARY:Duke University Men's Basketball at Stanford
+DESCRIPTION:Duke University Men's Basketball at Stanford\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24503&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24503&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24504-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260124T224500Z
+DTEND:20260125T004500Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Wake Forest
+DESCRIPTION:Duke University Men's Basketball vs Wake Forest\nTV: The CW\n https://goduke.com/calendar.aspx?game_id=24504&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24504&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24505-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260127T000000Z
+DTEND:20260127T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Louisville
+DESCRIPTION:Duke University Men's Basketball vs Louisville\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24505&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24505&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24506-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260131T170000Z
+DTEND:20260131T190000Z
+LOCATION:Blacksburg\, VA, Cassell Coliseum
+SUMMARY:Duke University Men's Basketball at Virginia Tech
+DESCRIPTION:Duke University Men's Basketball at Virginia Tech\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24506&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24506&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24507-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260204T000000Z
+DTEND:20260204T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Boston College
+DESCRIPTION:Duke University Men's Basketball vs Boston College\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24507&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24507&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24508-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260207T233000Z
+DTEND:20260208T013000Z
+LOCATION:Chapel Hill\, NC, Smith Center
+SUMMARY:Duke University Men's Basketball at North Carolina
+DESCRIPTION:Duke University Men's Basketball at North Carolina\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24508&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24508&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24509-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260211T020000Z
+DTEND:20260211T040000Z
+LOCATION:Pittsburgh\, PA, Petersen Events Center
+SUMMARY:Duke University Men's Basketball at Pitt
+DESCRIPTION:Duke University Men's Basketball at Pitt\nTV: ESPN/ESPN2\n https://goduke.com/calendar.aspx?game_id=24509&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24509&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24510-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260214T170000Z
+DTEND:20260214T190000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Clemson
+DESCRIPTION:Duke University Men's Basketball vs Clemson\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24510&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24510&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24511-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260217T000000Z
+DTEND:20260217T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Syracuse
+DESCRIPTION:Duke University Men's Basketball vs Syracuse\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24511&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24511&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24385-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260221T233000Z
+DTEND:20260222T013000Z
+LOCATION:Washington\, D.C., Capital One Arena
+SUMMARY:Duke University Men's Basketball vs Michigan- Duel in The District
+DESCRIPTION:Duke University Men's Basketball vs Michigan- Duel in The District\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24385&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24385&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24512-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260225T000000Z
+DTEND:20260225T020000Z
+LOCATION:South Bend\, Ind., Purcell Pavilion
+SUMMARY:Duke University Men's Basketball at Notre Dame
+DESCRIPTION:Duke University Men's Basketball at Notre Dame\nTV: ESPN/ESPN2\n https://goduke.com/calendar.aspx?game_id=24512&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24512&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24513-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260228T170000Z
+DTEND:20260228T190000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs Virginia
+DESCRIPTION:Duke University Men's Basketball vs Virginia\nTV: ESPN/ESPN2\n https://goduke.com/calendar.aspx?game_id=24513&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24513&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24514-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260303T000000Z
+DTEND:20260303T020000Z
+LOCATION:Raleigh\, NC, Lenovo Center
+SUMMARY:Duke University Men's Basketball at NC State
+DESCRIPTION:Duke University Men's Basketball at NC State\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24514&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24514&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24515-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART:20260307T233000Z
+DTEND:20260308T013000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Men's Basketball vs North Carolina
+DESCRIPTION:Duke University Men's Basketball vs North Carolina\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24515&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24515&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24350-goduke.com
+DTSTAMP:20251022T142830Z
+DTSTART;VALUE=DATE:20260310
+DTEND;VALUE=DATE:20260314
+LOCATION:Charlotte\, N.C., Spectrum Center
+SUMMARY:Duke University Men's Basketball vs ACC Tournament
+DESCRIPTION:Duke University Men's Basketball vs ACC Tournament\n https://goduke.com/calendar.aspx?game_id=24350&amp;sport_id=7
+URL:https://goduke.com/calendar.aspx?game_id=24350&amp;sport_id=7
+PRIORITY:3
+END:VEVENT
+END:VCALENDAR

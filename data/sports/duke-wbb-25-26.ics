@@ -1,0 +1,336 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SIDEARM Sports//NONSGML SIDEARM//EN
+X-WR-CALNAME:2025-26 Women's Basketball Schedule - goduke.com
+X-PUBLISHED-TTL:PT120M
+BEGIN:VEVENT
+UID:vcal_24343-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251103T170000Z
+DTEND:20251103T190000Z
+LOCATION:Paris\, France, Adidas Arena
+SUMMARY:Duke University Women's Basketball vs Baylor- Oui-Play Paris 2025 - Fan Package
+DESCRIPTION:Duke University Women's Basketball vs Baylor- Oui-Play Paris 2025 - Fan Package\nTV: ESPN\nStreaming Video: https://www.espn.com/watch/player/_/id/b928278b-63dd-437c-a427-cf2a0d67aa5d\nTickets: https://billetterie.adidasarena.com/en/manifestation/2025-oui-play-ticket/idmanif/627347/codtypadh/FTT/numadh/01/codeconf/FTMS01\n https://goduke.com/calendar.aspx?game_id=24343&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24343&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24442-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251109T180000Z
+DTEND:20251109T200000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Holy Cross- Education Day
+DESCRIPTION:Duke University Women's Basketball vs Holy Cross- Education Day\nTV: ACCNX\n https://goduke.com/calendar.aspx?game_id=24442&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24442&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24443-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251113T000000Z
+DTEND:20251113T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Norfolk State
+DESCRIPTION:Duke University Women's Basketball vs Norfolk State\nTV: ACCNX\n https://goduke.com/calendar.aspx?game_id=24443&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24443&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24441-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251115T000000Z
+DTEND:20251115T020000Z
+LOCATION:White Sulphur Springs\, W. Va., Colonial Hall
+SUMMARY:Duke University Women's Basketball vs West Virginia- Greenbrier Tip-Off
+DESCRIPTION:Duke University Women's Basketball vs West Virginia- Greenbrier Tip-Off\nTV: ESPNU\nTickets: https://goduke.evenue.net/list/WBN\n https://goduke.com/calendar.aspx?game_id=24441&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24441&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24440-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251116T190000Z
+DTEND:20251116T210000Z
+LOCATION:Lynchburg\, Va., Liberty Arena
+SUMMARY:Duke University Women's Basketball at Liberty
+DESCRIPTION:Duke University Women's Basketball at Liberty\n https://goduke.com/calendar.aspx?game_id=24440&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24440&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24342-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART;VALUE=DATE:20251120
+DTEND;VALUE=DATE:20251121
+LOCATION:Tampa\, Fla., Yuengling Center
+SUMMARY:Duke University Women's Basketball at South Florida
+DESCRIPTION:Duke University Women's Basketball at South Florida\n https://goduke.com/calendar.aspx?game_id=24342&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24342&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24386-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251126T213000Z
+DTEND:20251126T233000Z
+LOCATION:Las Vegas\, Nev., Michelob ULTRA Arena
+SUMMARY:Duke University Women's Basketball vs South Carolina- 2025 Players Era Women's Championship
+DESCRIPTION:Duke University Women's Basketball vs South Carolina- 2025 Players Era Women's Championship\nTV: truTV\nTickets: https://goduke.evenue.net/list/WBB\n https://goduke.com/calendar.aspx?game_id=24386&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24386&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24387-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART;VALUE=DATE:20251127
+DTEND;VALUE=DATE:20251128
+LOCATION:Las Vegas\, Nev., Michelob ULTRA Arena
+SUMMARY:Duke University Women's Basketball vs Texas / UCLA- 2025 Players Era Women's Championship
+DESCRIPTION:Duke University Women's Basketball vs Texas / UCLA- 2025 Players Era Women's Championship\nTV: truTV\nTickets: https://goduke.evenue.net/list/WBB\n https://goduke.com/calendar.aspx?game_id=24387&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24387&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24341-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251205T020000Z
+DTEND:20251205T040000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs LSU- 2025 ACC/SEC Challenge
+DESCRIPTION:Duke University Women's Basketball vs LSU- 2025 ACC/SEC Challenge\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24341&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24341&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24469-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251207T190000Z
+DTEND:20251207T210000Z
+LOCATION:Blacksburg\, Va., Cassell Coliseum
+SUMMARY:Duke University Women's Basketball at Virginia Tech
+DESCRIPTION:Duke University Women's Basketball at Virginia Tech\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24469&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24469&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24444-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251219T000000Z
+DTEND:20251219T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs South Dakota State- Winter Wonderland
+DESCRIPTION:Duke University Women's Basketball vs South Dakota State- Winter Wonderland\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24444&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24444&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24445-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251220T200000Z
+DTEND:20251220T220000Z
+LOCATION:Nashville\, Tenn., Curb Event Center
+SUMMARY:Duke University Women's Basketball at Belmont
+DESCRIPTION:Duke University Women's Basketball at Belmont\n https://goduke.com/calendar.aspx?game_id=24445&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24445&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24470-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20251228T210000Z
+DTEND:20251228T230000Z
+LOCATION:Syracuse\, N.Y., JMA Wireless Dome
+SUMMARY:Duke University Women's Basketball at Syracuse
+DESCRIPTION:Duke University Women's Basketball at Syracuse\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24470&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24470&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24471-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260101T180000Z
+DTEND:20260101T200000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Boston College- Hero Day
+DESCRIPTION:Duke University Women's Basketball vs Boston College- Hero Day\nTV: ACCNX\n https://goduke.com/calendar.aspx?game_id=24471&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24471&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24472-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART;VALUE=DATE:20260104
+DTEND;VALUE=DATE:20260105
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Notre Dame
+DESCRIPTION:Duke University Women's Basketball vs Notre Dame\nTV: ESPN/ACCN\n https://goduke.com/calendar.aspx?game_id=24472&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24472&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24473-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260108T230000Z
+DTEND:20260109T010000Z
+LOCATION:Berkeley\, Calif., Haas Pavilion
+SUMMARY:Duke University Women's Basketball at California
+DESCRIPTION:Duke University Women's Basketball at California\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24473&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24473&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24474-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260111T220000Z
+DTEND:20260112T000000Z
+LOCATION:Stanford\, Calif., Maples Pavilion
+SUMMARY:Duke University Women's Basketball at Stanford
+DESCRIPTION:Duke University Women's Basketball at Stanford\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24474&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24474&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24475-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260116T010000Z
+DTEND:20260116T030000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Virginia
+DESCRIPTION:Duke University Women's Basketball vs Virginia\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24475&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24475&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24476-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260118T230000Z
+DTEND:20260119T010000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Georgia Tech- Special Olympics
+DESCRIPTION:Duke University Women's Basketball vs Georgia Tech- Special Olympics\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24476&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24476&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24477-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260125T190000Z
+DTEND:20260125T210000Z
+LOCATION:Pittsburgh\, Pa., Petersen Events Center
+SUMMARY:Duke University Women's Basketball at Pittsburgh
+DESCRIPTION:Duke University Women's Basketball at Pittsburgh\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24477&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24477&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24478-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260130T010000Z
+DTEND:20260130T030000Z
+LOCATION:Coral Gables\, Fla., Watsco Center
+SUMMARY:Duke University Women's Basketball at Miami
+DESCRIPTION:Duke University Women's Basketball at Miami\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24478&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24478&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24479-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260201T170000Z
+DTEND:20260201T190000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Wake Forest- National Girls & Women in Sports Day + Dance Day
+DESCRIPTION:Duke University Women's Basketball vs Wake Forest- National Girls & Women in Sports Day + Dance Day\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24479&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24479&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24480-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260206T000000Z
+DTEND:20260206T020000Z
+LOCATION:Louisville\, Ky., KFC Yum! Center
+SUMMARY:Duke University Women's Basketball at Louisville
+DESCRIPTION:Duke University Women's Basketball at Louisville\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24480&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24480&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24481-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260208T190000Z
+DTEND:20260208T210000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs SMU- Pink Game
+DESCRIPTION:Duke University Women's Basketball vs SMU- Pink Game\nTV: The CW\n https://goduke.com/calendar.aspx?game_id=24481&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24481&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24482-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260215T180000Z
+DTEND:20260215T200000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs North Carolina- Alumni Weekend + Senior Day
+DESCRIPTION:Duke University Women's Basketball vs North Carolina- Alumni Weekend + Senior Day\nTV: ABC\n https://goduke.com/calendar.aspx?game_id=24482&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24482&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24483-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260220T000000Z
+DTEND:20260220T020000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs NC State- Honoring Black Excellence
+DESCRIPTION:Duke University Women's Basketball vs NC State- Honoring Black Excellence\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24483&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24483&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24484-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260222T190000Z
+DTEND:20260222T210000Z
+LOCATION:Clemson\, S.C. , Littlejohn Coliseum
+SUMMARY:Duke University Women's Basketball at Clemson
+DESCRIPTION:Duke University Women's Basketball at Clemson\nTV: ESPN/ESPN2\n https://goduke.com/calendar.aspx?game_id=24484&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24484&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24485-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260227T010000Z
+DTEND:20260227T030000Z
+LOCATION:Durham\, N.C., Cameron Indoor Stadium
+SUMMARY:Duke University Women's Basketball vs Florida State
+DESCRIPTION:Duke University Women's Basketball vs Florida State\nTV: ACCN\n https://goduke.com/calendar.aspx?game_id=24485&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24485&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24486-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART:20260301T170000Z
+DTEND:20260301T190000Z
+LOCATION:Chapel Hill\, N.C., Carmichael Arena
+SUMMARY:Duke University Women's Basketball at North Carolina
+DESCRIPTION:Duke University Women's Basketball at North Carolina\nTV: ESPN\n https://goduke.com/calendar.aspx?game_id=24486&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24486&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+BEGIN:VEVENT
+UID:vcal_24487-goduke.com
+DTSTAMP:20251022T143053Z
+DTSTART;VALUE=DATE:20260304
+DTEND;VALUE=DATE:20260308
+LOCATION:Duluth\, Ga., Gas South Arena
+SUMMARY:Duke University Women's Basketball vs 2026 Ally ACC Women's Basketball Tournament
+DESCRIPTION:Duke University Women's Basketball vs 2026 Ally ACC Women's Basketball Tournament\n https://goduke.com/calendar.aspx?game_id=24487&amp;sport_id=16
+URL:https://goduke.com/calendar.aspx?game_id=24487&amp;sport_id=16
+PRIORITY:3
+END:VEVENT
+END:VCALENDAR

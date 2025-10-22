@@ -21,3 +21,7 @@ click>=8.1.0
 
 # Browser automation
 playwright>=1.40.0
+
+# Calendar/ICS parsing
+icalendar>=6.3.0
+pytz>=2025.2
