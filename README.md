@@ -23,42 +23,52 @@ cd DailyNews
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+playwright install firefox
 
 # Configure
 cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY from https://console.anthropic.com/
 
-# Generate a newspaper
-python main.py --input ftn_content.txt --day 1
+# One-time: Log in to Fix The News
+python login_to_ftn.py
+# (Browser opens - log in, then Ctrl+C when done)
+
+# Weekly workflow (run on Sunday night):
+python -m src.fetch_ftn_clean           # Fetch latest FTN
+python -m src.ftn_to_json FTN-XXX.html  # Convert to JSON
+python main.py --input ftn-XXX.json --all --no-rewrite  # Generate 4 PDFs
 ```
 
 ## Usage
 
 ```bash
-# Generate Day 1 from Fix The News content
-python main.py --input ftn_content.txt --day 1
+# Fetch latest Fix The News issue
+python -m src.fetch_ftn_clean
 
-# Generate all 4 days from one FTN issue
-python main.py --input ftn_content.txt --all
+# Convert FTN HTML to 4-day JSON
+python -m src.ftn_to_json FTN-315.html
 
-# Specify output directory
-python main.py --input ftn_content.txt --day 1 --output ~/Desktop/
+# Generate all 4 days (Mon-Thu) with correct dates
+python main.py --input ftn-315.json --all --no-rewrite
+
+# Output files: news_fixed_monday.pdf, news_fixed_tuesday.pdf, etc.
 ```
 
 ## Project Structure
 
 ```
 DailyNews/
-├── src/                    # Python modules
-│   ├── fetcher.py         # Fetch FTN content
-│   ├── processor.py       # Categorize articles
-│   ├── generator.py       # Claude API integration
-│   ├── pdf_generator.py   # PDF creation
-│   └── utils.py           # QR codes, helpers
-├── templates/             # HTML/CSS newspaper templates
-├── prompts/               # Claude API prompts
-├── output/                # Generated PDFs
-└── cache/                 # Cached content
+├── src/                      # Python modules
+│   ├── fetch_ftn_clean.py   # Fetch FTN using Firefox reader mode
+│   ├── ftn_to_json.py       # Convert FTN HTML to 4-day JSON
+│   ├── parser.py            # Parse and categorize FTN stories
+│   ├── generator.py         # Claude API integration
+│   ├── pdf_generator.py     # PDF creation
+│   └── utils.py             # QR codes, date helpers
+├── templates/               # HTML/CSS newspaper templates
+├── prompts/                 # Claude API prompts
+├── output/                  # Generated PDFs
+└── login_to_ftn.py          # One-time FTN login helper
 ```
 
 ## Issue Tracking
