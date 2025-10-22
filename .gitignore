@@ -43,6 +43,7 @@ cache/*.html
 # FTN source material
 FTN-*.html
 ftn-*.html
+ftn-*.json
 
 # Firefox profile for fetching (contains cookies)
 .firefox-profile-ftn/

@@ -31,6 +31,7 @@ class NewspaperGenerator:
         statistics: List[Dict],
         output_path: str,
         date_str: str = None,
+        day_of_week: str = None,
         feature_box: Dict = None,
         tomorrow_teaser: str = ""
     ) -> Path:
@@ -43,7 +44,8 @@ class NewspaperGenerator:
             mini_articles: List of mini article dicts with 'title', 'content', 'source_url'
             statistics: List of stat dicts with 'number' and 'description'
             output_path: Output PDF file path
-            date_str: Date string (ISO format) or None for today
+            date_str: Date string (formatted or ISO format) or None for today
+            day_of_week: Day of week name (e.g., "Monday") or None
             feature_box: Optional feature box dict with 'title' and 'content'
             tomorrow_teaser: Tomorrow teaser text
 
@@ -53,8 +55,17 @@ class NewspaperGenerator:
         # Get theme for this day
         theme = get_theme_name(day_number)
 
-        # Format date
-        date_formatted = format_date(date_str)
+        # Format date (if it's already formatted, use as-is; otherwise format it)
+        if date_str and (',' in date_str or len(date_str) > 10):
+            # Already formatted like "October 21, 2025"
+            date_formatted = date_str
+        else:
+            # ISO format or None, needs formatting
+            date_formatted = format_date(date_str)
+
+        # Use provided day_of_week or default to "DAY X OF 4"
+        if day_of_week is None:
+            day_of_week = f"DAY {day_number} OF 4"
 
         # Generate QR codes for main story
         main_story_with_qr = {
@@ -76,6 +87,7 @@ class NewspaperGenerator:
         # Prepare template context
         context = {
             "day_number": day_number,
+            "day_of_week": day_of_week,
             "date": date_formatted,
             "theme": theme,
             "main_story": main_story_with_qr,

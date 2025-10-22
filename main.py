@@ -6,11 +6,56 @@ News, Fixed - Main orchestrator for generating daily newspapers.
 import sys
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import click
 from src.generator import ContentGenerator
 from src.pdf_generator import NewspaperGenerator
 from src.utils import get_theme_name
+
+
+def calculate_week_dates(base_date=None):
+    """
+    Calculate Monday-Thursday dates for the upcoming week.
+
+    If run on Sunday, calculates for the next week (tomorrow's Monday).
+    Otherwise, calculates for the current week's Monday.
+
+    Args:
+        base_date: Optional base date (defaults to today)
+
+    Returns:
+        dict mapping day_number (1-4) to (date_obj, day_name, formatted_date)
+    """
+    if base_date is None:
+        base_date = datetime.now()
+    elif isinstance(base_date, str):
+        base_date = datetime.fromisoformat(base_date)
+
+    # If it's Sunday (weekday 6), use next Monday
+    # Otherwise, find this week's Monday
+    current_weekday = base_date.weekday()  # Monday=0, Sunday=6
+
+    if current_weekday == 6:  # Sunday
+        # Next Monday is tomorrow
+        monday = base_date + timedelta(days=1)
+    else:
+        # Find this week's Monday
+        days_since_monday = current_weekday
+        monday = base_date - timedelta(days=days_since_monday)
+
+    # Build dict for Mon-Thu (days 1-4)
+    week_dates = {}
+    day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
+
+    for i in range(4):
+        date_obj = monday + timedelta(days=i)
+        week_dates[i + 1] = {
+            'date_obj': date_obj,
+            'day_name': day_names[i],
+            'formatted_date': date_obj.strftime('%B %-d, %Y')  # "October 21, 2025"
+        }
+
+    return week_dates
 
 
 @click.command()
@@ -66,11 +111,15 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
             click.echo("   Or use --no-rewrite to skip AI generation")
             sys.exit(1)
 
+    # Calculate week dates (Mon-Thu)
+    week_dates = calculate_week_dates(date_str)
+
     # Determine which days to generate
     days_to_generate = range(1, 5) if generate_all else [day]
 
     for day_num in days_to_generate:
-        click.echo(f"\n📅 Generating Day {day_num} ({get_theme_name(day_num)})...")
+        date_info = week_dates[day_num]
+        click.echo(f"\n📅 Generating {date_info['day_name']}, {date_info['formatted_date']} ({get_theme_name(day_num)})...")
 
         # Get stories for this day
         day_key = f"day_{day_num}"
@@ -131,7 +180,7 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
 
             # Generate PDF
             click.echo("  📄 Generating PDF...")
-            output_filename = f"news_fixed_day_{day_num}.pdf"
+            output_filename = f"news_fixed_{date_info['day_name'].lower()}.pdf"
             output_path = Path(output) / output_filename
 
             pdf_gen.generate_pdf(
@@ -140,7 +189,8 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
                 mini_articles=mini_articles,
                 statistics=statistics,
                 output_path=str(output_path),
-                date_str=date_str,
+                date_str=date_info['formatted_date'],
+                day_of_week=date_info['day_name'],
                 feature_box=feature_box,
                 tomorrow_teaser=tomorrow_teaser
             )

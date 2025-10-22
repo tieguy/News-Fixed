@@ -17,7 +17,7 @@
 
         <!-- Date bar -->
         <div class="date-bar">
-            <span class="day-info">DAY {{ day_number }} OF 4</span>
+            <span class="day-info">{{ day_of_week }}</span>
             <span class="date">{{ date }}</span>
             <span class="theme">{{ theme }}</span>
         </div>
@@ -61,7 +61,7 @@
         <!-- Header (smaller) -->
         <header class="page-header">
             <h2 class="page-title">NEWS, FIXED</h2>
-            <p class="page-date">{{ date }} • Day {{ day_number }} of 4</p>
+            <p class="page-date">{{ day_of_week }}, {{ date }}</p>
         </header>
 
         <!-- Mini Articles Grid -->
