@@ -51,12 +51,16 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
             print(f"\n⚠️  Warning: No stories found for day {day_num} ({category_key})")
             continue
 
-        # Select main story (first/longest) and mini articles
-        # Sort by content length to get the most substantial story
+        # Select stories for front page and back page
+        # Sort by content length to get the most substantial stories
         sorted_stories = sorted(category_stories, key=lambda s: len(s.content), reverse=True)
 
+        # Front page: 1 lead story + 2-3 secondary stories
         main_story = sorted_stories[0]
-        mini_stories = sorted_stories[1:5]  # Get up to 4 mini articles
+        front_page_stories = sorted_stories[1:4]  # 2-3 secondary stories for front page
+
+        # Back page: remaining stories as mini articles
+        mini_stories = sorted_stories[4:8]  # Up to 4 mini articles for back page
 
         # Build day structure
         day_data = {
@@ -66,6 +70,14 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
                 "content": main_story.content,
                 "source_url": main_story.source_url or "https://fixthenews.com"
             },
+            "front_page_stories": [
+                {
+                    "title": story.title,
+                    "content": story.content,
+                    "source_url": story.source_url or "https://fixthenews.com"
+                }
+                for story in front_page_stories
+            ],
             "mini_articles": [
                 {
                     "title": story.title,

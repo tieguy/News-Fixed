@@ -32,6 +32,7 @@ class NewspaperGenerator:
         output_path: str,
         date_str: str = None,
         day_of_week: str = None,
+        front_page_stories: List[Dict] = None,
         feature_box: Dict = None,
         tomorrow_teaser: str = ""
     ) -> Path:
@@ -46,6 +47,7 @@ class NewspaperGenerator:
             output_path: Output PDF file path
             date_str: Date string (formatted or ISO format) or None for today
             day_of_week: Day of week name (e.g., "Monday") or None
+            front_page_stories: List of 2-3 secondary stories for front page
             feature_box: Optional feature box dict with 'title' and 'content'
             tomorrow_teaser: Tomorrow teaser text
 
@@ -74,6 +76,19 @@ class NewspaperGenerator:
             "source_name": extract_source_name(main_story["source_url"])
         }
 
+        # Generate QR codes for front page stories
+        if front_page_stories is None:
+            front_page_stories = []
+
+        front_page_stories_with_qr = [
+            {
+                **article,
+                "qr_code": generate_qr_code(article["source_url"]),
+                "source_name": extract_source_name(article["source_url"])
+            }
+            for article in front_page_stories
+        ]
+
         # Generate QR codes for mini articles
         mini_articles_with_qr = [
             {
@@ -91,6 +106,7 @@ class NewspaperGenerator:
             "date": date_formatted,
             "theme": theme,
             "main_story": main_story_with_qr,
+            "front_page_stories": front_page_stories_with_qr,
             "mini_articles": mini_articles_with_qr,
             "statistics": statistics,
             "feature_box": feature_box,

@@ -22,33 +22,51 @@
             <span class="theme">{{ theme }}</span>
         </div>
 
-        <!-- Main Story -->
-        <article class="main-story">
-            <h2 class="headline">{{ main_story.title }}</h2>
-            <div class="story-layout">
-                <div class="story-content">
+        <!-- Lead Story -->
+        <article class="lead-story">
+            <h2 class="lead-headline">{{ main_story.title }}</h2>
+            <div class="lead-layout">
+                <div class="lead-content">
                     {{ main_story.content }}
                 </div>
-                <div class="story-qr">
+                <div class="lead-qr">
                     <img src="{{ main_story.qr_code }}" alt="QR Code" class="qr-code">
                     <p class="qr-label">Scan for {{ main_story.source_name }}</p>
                 </div>
             </div>
         </article>
 
-        <!-- Feature Box -->
-        {% if feature_box %}
-        <aside class="feature-box">
-            <h3>{{ feature_box.title }}</h3>
-            <p>{{ feature_box.content }}</p>
-        </aside>
-        {% endif %}
+        <!-- Secondary Stories and Feature Box -->
+        <div class="front-lower">
+            <div class="secondary-stories">
+                {% for article in front_page_stories %}
+                <article class="secondary-story">
+                    <h3 class="secondary-headline">{{ article.title }}</h3>
+                    <p class="secondary-content">{{ article.content }}</p>
+                    <p class="secondary-source"><img src="{{ article.qr_code }}" alt="QR" class="qr-code-tiny"> {{ article.source_name }}</p>
+                </article>
+                {% endfor %}
+            </div>
+
+            <!-- Feature Box -->
+            <aside class="feature-box">
+                {% if feature_box %}
+                <h3>{{ feature_box.title }}</h3>
+                <p>{{ feature_box.content }}</p>
+                {% else %}
+                <h3>Quick Win</h3>
+                <p>Good news is happening every day. Keep reading to discover how the world is getting better!</p>
+                {% endif %}
+            </aside>
+        </div>
 
         <!-- Tomorrow Teaser -->
+        {% if tomorrow_teaser %}
         <div class="tomorrow-teaser">
             <h4>Tomorrow</h4>
             <p>{{ tomorrow_teaser }}</p>
         </div>
+        {% endif %}
 
         <!-- Footer Page 1 -->
         <footer class="page-footer">

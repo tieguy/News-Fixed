@@ -138,6 +138,7 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
                 # Use content from JSON as-is
                 click.echo("  📝 Using content from JSON...")
                 main_story = day_data['main_story']
+                front_page_stories = day_data.get('front_page_stories', [])
                 mini_articles = day_data['mini_articles']
                 statistics = day_data.get('statistics', [])
                 tomorrow_teaser = day_data.get('tomorrow_teaser', '')
@@ -189,6 +190,7 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
             pdf_gen.generate_pdf(
                 day_number=day_num,
                 main_story=main_story,
+                front_page_stories=front_page_stories,
                 mini_articles=mini_articles,
                 statistics=statistics,
                 output_path=str(output_path),

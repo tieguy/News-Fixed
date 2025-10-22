@@ -79,26 +79,26 @@ p {
     text-transform: uppercase;
 }
 
-/* Main Story */
-.main-story {
-    margin-bottom: 0.12in;
+/* Lead Story */
+.lead-story {
+    margin-bottom: 0.15in;
 }
 
-.headline {
-    font-size: 20pt;
+.lead-headline {
+    font-size: 22pt;
     font-weight: bold;
     margin-bottom: 0.08in;
     line-height: 1.1;
-    border-bottom: 2px solid #000;
+    border-bottom: 3px solid #000;
     padding-bottom: 4pt;
 }
 
-.story-layout {
+.lead-layout {
     display: flex;
     gap: 0.12in;
 }
 
-.story-content {
+.lead-content {
     flex: 1;
     column-count: 2;
     column-gap: 0.12in;
@@ -107,7 +107,7 @@ p {
     text-align: justify;
 }
 
-.story-qr {
+.lead-qr {
     width: 1in;
     text-align: center;
     flex-shrink: 0;
@@ -125,22 +125,73 @@ p {
     line-height: 1.2;
 }
 
+/* Front Page Lower Section */
+.front-lower {
+    display: flex;
+    gap: 0.15in;
+    margin-bottom: 0.12in;
+}
+
+.secondary-stories {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.12in;
+}
+
+.secondary-story {
+    border-top: 1px solid #000;
+    padding-top: 0.06in;
+}
+
+.secondary-headline {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 0.04in;
+    line-height: 1.2;
+}
+
+.secondary-content {
+    font-size: 9pt;
+    line-height: 1.35;
+    text-align: justify;
+    margin-bottom: 0.03in;
+}
+
+.secondary-source {
+    font-size: 7pt;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 3pt;
+}
+
+.qr-code-tiny {
+    width: 0.25in;
+    height: 0.25in;
+    display: inline-block;
+    border: 1px solid #000;
+}
+
 /* Feature Box */
 .feature-box {
+    flex: 1;
     border: 3px solid #000;
     padding: 12pt;
-    margin-bottom: 0.15in;
     background: #f5f5f5;
+    align-self: flex-start;
 }
 
 .feature-box h3 {
-    font-size: 14pt;
+    font-size: 12pt;
     margin-bottom: 8pt;
     text-transform: uppercase;
+    font-weight: bold;
 }
 
 .feature-box p {
-    font-size: 10pt;
+    font-size: 9pt;
+    line-height: 1.3;
 }
 
 /* Tomorrow Teaser */
