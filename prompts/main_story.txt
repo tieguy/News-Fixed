@@ -7,7 +7,7 @@ SOURCE: {source_url}
 
 THEME: {theme}
 
-Your task: Rewrite this as a 400-500 word main story suitable for the front page.
+Your task: Rewrite this as a 180-200 word main story suitable for the front page. BE VERY CONCISE - this must fit on a single 2-page newspaper with no overflow.
 
 Guidelines:
 - Write for bright 10-14 year olds: accessible but not condescending

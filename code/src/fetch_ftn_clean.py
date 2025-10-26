@@ -15,9 +15,9 @@ def get_profile_dir() -> Path:
     return profile_dir
 
 
-def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: bool = False):
+def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: bool = False, url: str = None):
     """
-    Fetch the latest Fix The News post using a dedicated Firefox profile.
+    Fetch Fix The News content using a dedicated Firefox profile.
 
     On first run (or with --force-login), opens browser for you to log in.
     Subsequent runs use saved cookies.
@@ -26,6 +26,7 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
         output_dir: Directory to save HTML file
         headless: Run in headless mode (default: True)
         force_login: Force interactive login even if cookies exist
+        url: Specific FTN article URL to fetch (default: /latest)
 
     Returns:
         Path to saved HTML file
@@ -56,9 +57,10 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
         try:
             page = browser.new_page()
 
-            # Navigate to Fix The News latest post
-            print("🌐 Navigating to Fix The News latest post...")
-            page.goto("https://fixthenews.com/latest", wait_until="networkidle", timeout=30000)
+            # Navigate to Fix The News (use provided URL or default to /latest)
+            target_url = url if url else "https://fixthenews.com/latest"
+            print(f"🌐 Navigating to: {target_url}")
+            page.goto(target_url, wait_until="networkidle", timeout=30000)
 
             # On first run, wait for user to log in
             if first_run:
@@ -80,22 +82,55 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
                     json.dump(cookies, f)
                 print("✅ Cookies saved!")
 
-            # /latest redirects to the actual latest post, so we're already there
-            # Wait for content to load after redirect
+            # Wait for content to load
             page.wait_for_timeout(3000)
 
             current_url = page.url
-            print(f"📰 Loaded latest post: {current_url}")
+            print(f"📰 Loaded: {current_url}")
 
-            # Try to trigger reader mode by navigating to about:reader?url=...
+            # Only attempt URL mangling if we used /latest (not when URL is explicitly provided)
+            if not url:
+                # IMPORTANT: /latest redirects to a public preview URL (e.g., ending in -d49)
+                # We need to strip the suffix to get the full paid version
+                # Example: /p/315-shell-shocked-a-new-era-of-global-d49
+                #       -> /p/315-shell-shocked-a-new-era-of-global
+                # NOTE: This pattern may change - see bead for tracking this assumption
+                preview_match = re.search(r'-d\d+$', current_url)
+                if preview_match:
+                    # Remove the public preview suffix
+                    paid_url = current_url[:preview_match.start()]
+                    print(f"🔓 Detected public preview URL (suffix: {preview_match.group()})")
+                    print(f"   Navigating to paid version: {paid_url}")
+                    page.goto(paid_url, wait_until="networkidle", timeout=30000)
+                    page.wait_for_timeout(2000)
+                    current_url = paid_url
+
+            # Check if we're logged in by looking at the current page
+            initial_content = page.content()
+            if "You're reading the free version" in initial_content or "For paid subscribers this week" in initial_content:
+                print("\n" + "⚠️ " * 20)
+                print("WARNING: You appear to be viewing the FREE version of Fix The News!")
+                print("The fetched content contains subscriber paywall text.")
+                print("\nTo fix this:")
+                print("1. Run: python login_to_ftn.py")
+                print("2. Log in to your PAID FTN account in the browser window")
+                print("3. After logging in, press Ctrl+C to save the session")
+                print("4. Then re-run this fetch script")
+                print("⚠️ " * 20 + "\n")
+
+                if not first_run:
+                    print("Your saved session may have expired. Please log in again.")
+                    sys.exit(1)
+            else:
+                print("✅ Authenticated - fetching full subscriber content")
+
+            # Now activate reader mode to get clean content
             print("📖 Activating reader mode...")
             reader_url = f"about:reader?url={current_url}"
             page.goto(reader_url, wait_until="networkidle", timeout=30000)
-
-            # Wait for reader mode to render
             page.wait_for_timeout(2000)
 
-            # Get the full HTML (now in reader mode)
+            # Get the reader mode HTML
             html_content = page.content()
             print("   ✓ Reader mode HTML captured")
 
@@ -119,6 +154,7 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
 
             # Save HTML to file
             output_path = Path(output_dir) / f"FTN-{issue_number}.html"
+            output_path.parent.mkdir(parents=True, exist_ok=True)
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
 
@@ -157,6 +193,10 @@ def main():
         help='Output directory for HTML file (default: current directory)'
     )
     parser.add_argument(
+        '--url',
+        help='Specific FTN article URL to fetch (default: /latest)'
+    )
+    parser.add_argument(
         '--no-headless',
         action='store_true',
         help='Show browser window (useful for debugging)'
@@ -172,7 +212,8 @@ def main():
     fetch_ftn_latest(
         output_dir=args.output,
         headless=not args.no_headless,
-        force_login=args.force_login
+        force_login=args.force_login,
+        url=args.url
     )
 
 

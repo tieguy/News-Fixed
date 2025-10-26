@@ -185,15 +185,18 @@ class FTNParser:
             return None
 
         # Join paragraphs into content
-        content = ' '.join(text_paragraphs)
+        full_content = ' '.join(text_paragraphs)
 
         # Extract title (first sentence)
-        title_match = re.match(r'^([^.!?]+[.!?])', content)
+        title_match = re.match(r'^([^.!?]+[.!?])', full_content)
         if title_match:
             title = title_match.group(1).strip()
+            # Remove the title from the content to avoid repetition
+            content = full_content[len(title_match.group(1)):].strip()
         else:
             # Fallback: first 100 chars
-            title = content[:100].strip()
+            title = full_content[:100].strip()
+            content = full_content
 
         # Get source URL (first non-FTN, non-Substack URL)
         source_url = None

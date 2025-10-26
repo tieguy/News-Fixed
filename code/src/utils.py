@@ -38,6 +38,50 @@ def generate_qr_code(url: str, size: int = 10) -> str:
     return f"data:image/png;base64,{img_base64}"
 
 
+def generate_qr_code_file(url: str, output_dir: str = None, size: int = 10) -> str:
+    """
+    Generate a QR code for a URL and save to file.
+
+    Args:
+        url: The URL to encode in the QR code
+        output_dir: Directory to save QR code (default: cache/qr_codes)
+        size: Size of the QR code (default: 10)
+
+    Returns:
+        Path to saved QR code file
+    """
+    from pathlib import Path
+    import hashlib
+
+    if output_dir is None:
+        output_dir = Path(__file__).parent.parent / "cache" / "qr_codes"
+    else:
+        output_dir = Path(output_dir)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generate filename from URL hash
+    url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+    filename = f"qr_{url_hash}.png"
+    filepath = output_dir / filename
+
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=size,
+        border=2,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+
+    # Save image
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save(str(filepath))
+
+    return str(filepath)
+
+
 def format_date(date_str: str = None) -> str:
     """
     Format date for newspaper display.

@@ -5,7 +5,7 @@ ORIGINAL STORY:
 
 SOURCE: {source_url}
 
-Your task: Create a concise 100-150 word article that captures the key positive development.
+Your task: Create a concise 50-60 word article that captures the key positive development. BE EXTREMELY BRIEF - this must fit on a single 2-page newspaper with no overflow.
 
 Guidelines:
 - Write for bright 10-14 year olds
@@ -15,4 +15,4 @@ Guidelines:
 - Avoid jargon, but don't talk down
 - Show why it matters
 
-Format: Return ONLY the article text in 2-3 short paragraphs. No title (that will be generated separately).
+Format: Return ONLY the article text in 1-2 short paragraphs. No title (that will be generated separately).

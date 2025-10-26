@@ -11,6 +11,7 @@ A daily 2-page newspaper for bright children (ages 10-14) that transforms positi
 - 📱 QR codes linking to original sources for verification
 - 🎯 Age-appropriate content for 10-14 year olds
 - 🤖 Powered by Claude AI for content adaptation
+- 📐 Professional typesetting with Typst for reliable print layouts
 
 ## Quick Start
 
@@ -30,29 +31,62 @@ cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY from https://console.anthropic.com/
 
 # One-time: Log in to Fix The News
+cd code
 python login_to_ftn.py
-# (Browser opens - log in, then Ctrl+C when done)
+# (Browser opens - log in, then press Enter when done)
 
-# Weekly workflow (run on Sunday night):
-python -m code.src.fetch_ftn_clean                # Fetch latest FTN
-python -m code.src.ftn_to_json data/ftn/FTN-XXX.html  # Convert to JSON
-./news-fixed --input data/ftn/ftn-XXX.json --all --no-rewrite  # Generate 4 PDFs
+# Weekly workflow (run Thursday night after FTN publishes):
+cd code
+python src/fetch_ftn_clean.py --url "https://fixthenews.com/p/ISSUE-URL" --output .
+python src/ftn_to_json.py FTN-XXX.html
+python main.py --input ftn-XXX.json --all  # Uses Claude AI to adapt content
+
+# Or from project root using wrapper:
+cd ..
+./news-fixed --input code/ftn-XXX.json --all
 ```
 
 ## Usage
 
+### From the `code/` directory:
+
 ```bash
-# Fetch latest Fix The News issue
-python -m code.src.fetch_ftn_clean
+cd code
 
-# Convert FTN HTML to 4-day JSON
-python -m code.src.ftn_to_json data/ftn/FTN-315.html
+# 1. Fetch latest Fix The News issue (provide the exact article URL)
+python src/fetch_ftn_clean.py --url "https://fixthenews.com/p/316-hope-painting-with-fire-global" --output .
 
-# Generate all 4 days (Mon-Thu) with correct dates
-./news-fixed --input data/ftn/ftn-315.json --all --no-rewrite
+# 2. Convert FTN HTML to 4-day JSON
+python src/ftn_to_json.py FTN-316.html
 
-# Output files: news_fixed_2025-10-20.pdf, news_fixed_2025-10-21.pdf, etc.
+# 3. Generate all 4 days with Claude AI rewriting (default)
+python main.py --input ftn-316.json --all
+
+# Output files: output/news_fixed_2025-10-28.pdf, news_fixed_2025-10-29.pdf, etc.
 # (Filenames include publication date for easy sorting)
+```
+
+### From the project root:
+
+```bash
+# Use the wrapper script
+./news-fixed --input code/ftn-316.json --all
+```
+
+### Additional Options:
+
+```bash
+# Fetch with visible browser (for debugging)
+python src/fetch_ftn_clean.py --url "URL" --no-headless --output .
+
+# Generate single day
+python main.py --input ftn-316.json --day 1 --date 2025-10-28
+
+# Skip AI rewriting (faster, uses raw FTN content)
+python main.py --input ftn-316.json --all --no-rewrite
+
+# Generate test newspaper with sample data
+python main.py --test
 ```
 
 ## Project Structure
@@ -61,23 +95,25 @@ python -m code.src.ftn_to_json data/ftn/FTN-315.html
 DailyNews/
 ├── code/                     # Source code
 │   ├── src/                  # Python modules
-│   │   ├── fetch_ftn_clean.py   # Fetch FTN using Firefox reader mode
-│   │   ├── ftn_to_json.py       # Convert FTN HTML to 4-day JSON
-│   │   ├── parser.py            # Parse and categorize FTN stories
-│   │   ├── generator.py         # Claude API integration
-│   │   ├── pdf_generator.py     # PDF creation
-│   │   ├── sports_schedule.py   # Duke basketball schedules
-│   │   └── utils.py             # QR codes, date helpers
-│   ├── templates/            # HTML/CSS newspaper templates
-│   └── main.py              # Main newspaper generator
-├── data/                     # Data files
-│   ├── ftn/                  # Fix The News downloads & JSON
-│   ├── sports/               # Duke basketball ICS schedules
-│   └── calendar/             # Family calendar events
-├── output/                   # Generated PDFs
+│   │   ├── fetch_ftn_clean.py      # Fetch FTN using Firefox reader mode
+│   │   ├── ftn_to_json.py          # Convert FTN HTML to 4-day JSON
+│   │   ├── parser.py               # Parse and categorize FTN stories
+│   │   ├── generator.py            # Claude API integration
+│   │   ├── pdf_generator_typst.py  # PDF generation with Typst
+│   │   ├── pdf_generator.py        # Legacy HTML/CSS generator
+│   │   ├── sports_schedule.py      # Duke basketball schedules
+│   │   └── utils.py                # QR codes, date helpers
+│   ├── templates/            # Newspaper templates
+│   │   ├── newspaper.typ     # Typst template (current)
+│   │   ├── newspaper.html    # HTML template (legacy)
+│   │   └── styles.css        # CSS styles (legacy)
+│   ├── output/               # Generated PDFs
+│   ├── cache/                # QR code cache
+│   ├── main.py               # Main newspaper generator
+│   └── login_to_ftn.py       # One-time FTN login helper
 ├── prompts/                  # Claude API prompts
-├── news-fixed                # Wrapper script (use this!)
-└── login_to_ftn.py           # One-time FTN login helper
+├── venv/                     # Python virtual environment
+└── news-fixed                # Wrapper script (use from root)
 ```
 
 ## Issue Tracking

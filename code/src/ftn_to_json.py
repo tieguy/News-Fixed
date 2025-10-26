@@ -4,6 +4,11 @@
 import sys
 import json
 from pathlib import Path
+
+# Add parent directory to path so we can import src modules
+if __name__ == '__main__':
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from src.parser import FTNParser
 
 
@@ -55,12 +60,12 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         # Sort by content length to get the most substantial stories
         sorted_stories = sorted(category_stories, key=lambda s: len(s.content), reverse=True)
 
-        # Front page: 1 lead story + 2-3 secondary stories
+        # Front page: 1 lead story ONLY (to fit on 2 pages)
         main_story = sorted_stories[0]
-        front_page_stories = sorted_stories[1:4]  # 2-3 secondary stories for front page
+        front_page_stories = []  # No secondary stories - they take too much space
 
-        # Back page: remaining stories as mini articles
-        mini_stories = sorted_stories[4:8]  # Up to 4 mini articles for back page
+        # Back page: mini articles (max 4 for 2-page fit)
+        mini_stories = sorted_stories[1:5]  # Up to 4 mini articles for back page
 
         # Build day structure
         day_data = {

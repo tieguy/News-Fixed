@@ -123,3 +123,1106 @@ and the repository exists.
 [2025-10-22 09:04:39] Pulled from remote
 [2025-10-22 09:04:39] Imported from JSONL
 [2025-10-22 09:04:39] Sync cycle complete
+[2025-10-22 09:09:37] Starting sync cycle...
+[2025-10-22 09:09:37] Exported to JSONL
+[2025-10-22 09:09:39] Pulled from remote
+[2025-10-22 09:09:39] Imported from JSONL
+[2025-10-22 09:09:39] Sync cycle complete
+[2025-10-22 09:14:37] Starting sync cycle...
+[2025-10-22 09:14:37] Exported to JSONL
+[2025-10-22 09:14:44] Pulled from remote
+[2025-10-22 09:14:44] Imported from JSONL
+[2025-10-22 09:14:44] Sync cycle complete
+[2025-10-22 09:19:37] Starting sync cycle...
+[2025-10-22 09:19:37] Exported to JSONL
+[2025-10-22 09:19:39] Pulled from remote
+[2025-10-22 09:19:39] Imported from JSONL
+[2025-10-22 09:19:39] Sync cycle complete
+[2025-10-22 09:24:37] Starting sync cycle...
+[2025-10-22 09:24:37] Exported to JSONL
+[2025-10-22 09:24:38] Pulled from remote
+[2025-10-22 09:24:38] Imported from JSONL
+[2025-10-22 09:24:38] Sync cycle complete
+[2025-10-22 09:29:37] Starting sync cycle...
+[2025-10-22 09:29:37] Exported to JSONL
+[2025-10-22 09:29:39] Pulled from remote
+[2025-10-22 09:29:39] Imported from JSONL
+[2025-10-22 09:29:39] Sync cycle complete
+[2025-10-22 09:34:37] Starting sync cycle...
+[2025-10-22 09:34:37] Exported to JSONL
+[2025-10-22 09:34:39] Pulled from remote
+[2025-10-22 09:34:39] Imported from JSONL
+[2025-10-22 09:34:39] Sync cycle complete
+[2025-10-22 09:39:37] Starting sync cycle...
+[2025-10-22 09:39:37] Exported to JSONL
+[2025-10-22 09:39:38] Pulled from remote
+[2025-10-22 09:39:38] Imported from JSONL
+[2025-10-22 09:39:38] Sync cycle complete
+[2025-10-22 09:44:37] Starting sync cycle...
+[2025-10-22 09:44:37] Exported to JSONL
+[2025-10-22 09:44:39] Pulled from remote
+[2025-10-22 09:44:39] Imported from JSONL
+[2025-10-22 09:44:39] Sync cycle complete
+[2025-10-22 09:49:37] Starting sync cycle...
+[2025-10-22 09:49:37] Exported to JSONL
+[2025-10-22 09:49:39] Pulled from remote
+[2025-10-22 09:49:39] Imported from JSONL
+[2025-10-22 09:49:39] Sync cycle complete
+[2025-10-22 09:54:37] Starting sync cycle...
+[2025-10-22 09:54:37] Exported to JSONL
+[2025-10-22 09:54:39] Pulled from remote
+[2025-10-22 09:54:39] Imported from JSONL
+[2025-10-22 09:54:39] Sync cycle complete
+[2025-10-22 09:59:37] Starting sync cycle...
+[2025-10-22 09:59:37] Exported to JSONL
+[2025-10-22 09:59:39] Pulled from remote
+[2025-10-22 09:59:39] Imported from JSONL
+[2025-10-22 09:59:39] Sync cycle complete
+[2025-10-22 10:04:37] Starting sync cycle...
+[2025-10-22 10:04:37] Exported to JSONL
+[2025-10-22 10:04:39] Pulled from remote
+[2025-10-22 10:04:39] Imported from JSONL
+[2025-10-22 10:04:39] Sync cycle complete
+[2025-10-22 10:09:37] Starting sync cycle...
+[2025-10-22 10:09:37] Exported to JSONL
+[2025-10-22 10:10:38] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-22 10:14:37] Starting sync cycle...
+[2025-10-22 10:14:37] Exported to JSONL
+[2025-10-22 10:38:37] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-22 10:42:36] Starting sync cycle...
+[2025-10-22 10:42:36] Exported to JSONL
+[2025-10-22 10:42:37] Pulled from remote
+[2025-10-22 10:42:37] Imported from JSONL
+[2025-10-22 10:42:37] Sync cycle complete
+[2025-10-22 10:47:36] Starting sync cycle...
+[2025-10-22 10:47:36] Exported to JSONL
+[2025-10-22 10:47:37] Pulled from remote
+[2025-10-22 10:47:37] Imported from JSONL
+[2025-10-22 10:47:37] Sync cycle complete
+[2025-10-22 10:52:36] Starting sync cycle...
+[2025-10-22 10:52:36] Exported to JSONL
+[2025-10-22 10:52:38] Pulled from remote
+[2025-10-22 10:52:38] Imported from JSONL
+[2025-10-22 10:52:38] Sync cycle complete
+[2025-10-22 10:57:36] Starting sync cycle...
+[2025-10-22 10:57:36] Exported to JSONL
+[2025-10-22 10:57:37] Pulled from remote
+[2025-10-22 10:57:37] Imported from JSONL
+[2025-10-22 10:57:37] Sync cycle complete
+[2025-10-22 13:36:43] Starting sync cycle...
+[2025-10-22 13:36:43] Exported to JSONL
+[2025-10-22 13:36:44] Pulled from remote
+[2025-10-22 13:36:44] Imported from JSONL
+[2025-10-22 13:36:44] Sync cycle complete
+[2025-10-22 13:41:43] Starting sync cycle...
+[2025-10-22 13:41:43] Exported to JSONL
+[2025-10-22 13:42:13] Pulled from remote
+[2025-10-22 13:42:13] Imported from JSONL
+[2025-10-22 13:42:13] Sync cycle complete
+[2025-10-22 13:46:43] Starting sync cycle...
+[2025-10-22 13:46:43] Exported to JSONL
+[2025-10-22 13:46:44] Pulled from remote
+[2025-10-22 13:46:44] Imported from JSONL
+[2025-10-22 13:46:44] Sync cycle complete
+[2025-10-22 13:51:43] Starting sync cycle...
+[2025-10-22 13:51:43] Exported to JSONL
+[2025-10-22 13:51:44] Pulled from remote
+[2025-10-22 13:51:44] Imported from JSONL
+[2025-10-22 13:51:44] Sync cycle complete
+[2025-10-22 13:56:43] Starting sync cycle...
+[2025-10-22 13:56:43] Exported to JSONL
+[2025-10-22 13:56:44] Pulled from remote
+[2025-10-22 13:56:44] Imported from JSONL
+[2025-10-22 13:56:44] Sync cycle complete
+[2025-10-22 14:01:43] Starting sync cycle...
+[2025-10-22 14:01:43] Exported to JSONL
+[2025-10-22 14:02:44] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-22 14:06:43] Starting sync cycle...
+[2025-10-22 14:06:43] Exported to JSONL
+[2025-10-22 14:07:44] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-22 19:53:24] Starting sync cycle...
+[2025-10-22 19:53:24] Exported to JSONL
+[2025-10-22 19:53:26] Pulled from remote
+[2025-10-22 19:53:26] Imported from JSONL
+[2025-10-22 19:53:26] Sync cycle complete
+[2025-10-22 19:58:24] Starting sync cycle...
+[2025-10-22 19:58:24] Exported to JSONL
+[2025-10-22 19:58:25] Pulled from remote
+[2025-10-22 19:58:25] Imported from JSONL
+[2025-10-22 19:58:25] Sync cycle complete
+[2025-10-22 20:03:24] Starting sync cycle...
+[2025-10-22 20:03:24] Exported to JSONL
+[2025-10-22 20:03:25] Pulled from remote
+[2025-10-22 20:03:25] Imported from JSONL
+[2025-10-22 20:03:25] Sync cycle complete
+[2025-10-22 20:08:24] Starting sync cycle...
+[2025-10-22 20:08:24] Exported to JSONL
+[2025-10-22 20:08:25] Pulled from remote
+[2025-10-22 20:08:25] Imported from JSONL
+[2025-10-22 20:08:25] Sync cycle complete
+[2025-10-22 20:13:24] Starting sync cycle...
+[2025-10-22 20:13:24] Exported to JSONL
+[2025-10-22 20:13:25] Pulled from remote
+[2025-10-22 20:13:25] Imported from JSONL
+[2025-10-22 20:13:25] Sync cycle complete
+[2025-10-22 20:18:24] Starting sync cycle...
+[2025-10-22 20:18:24] Exported to JSONL
+[2025-10-22 20:18:26] Pulled from remote
+[2025-10-22 20:18:26] Imported from JSONL
+[2025-10-22 20:18:26] Sync cycle complete
+[2025-10-22 20:23:24] Starting sync cycle...
+[2025-10-22 20:23:24] Exported to JSONL
+[2025-10-22 20:23:26] Pulled from remote
+[2025-10-22 20:23:26] Imported from JSONL
+[2025-10-22 20:23:26] Sync cycle complete
+[2025-10-22 20:28:24] Starting sync cycle...
+[2025-10-22 20:28:24] Exported to JSONL
+[2025-10-22 20:28:25] Pulled from remote
+[2025-10-22 20:28:25] Imported from JSONL
+[2025-10-22 20:28:25] Sync cycle complete
+[2025-10-22 20:33:24] Starting sync cycle...
+[2025-10-22 20:33:24] Exported to JSONL
+[2025-10-22 20:33:25] Pulled from remote
+[2025-10-22 20:33:25] Imported from JSONL
+[2025-10-22 20:33:25] Sync cycle complete
+[2025-10-22 20:38:24] Starting sync cycle...
+[2025-10-22 20:38:24] Exported to JSONL
+[2025-10-22 20:38:26] Pulled from remote
+[2025-10-22 20:38:26] Imported from JSONL
+[2025-10-22 20:38:26] Sync cycle complete
+[2025-10-22 20:43:24] Starting sync cycle...
+[2025-10-22 20:43:24] Exported to JSONL
+[2025-10-22 20:43:26] Pulled from remote
+[2025-10-22 20:43:26] Imported from JSONL
+[2025-10-22 20:43:26] Sync cycle complete
+[2025-10-22 20:48:24] Starting sync cycle...
+[2025-10-22 20:48:24] Exported to JSONL
+[2025-10-22 20:48:26] Pulled from remote
+[2025-10-22 20:48:26] Imported from JSONL
+[2025-10-22 20:48:26] Sync cycle complete
+[2025-10-22 20:53:24] Starting sync cycle...
+[2025-10-22 20:53:24] Exported to JSONL
+[2025-10-22 20:53:46] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: agent refused operation
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-22 20:58:24] Starting sync cycle...
+[2025-10-22 20:58:24] Exported to JSONL
+[2025-10-22 20:58:26] Pulled from remote
+[2025-10-22 20:58:26] Imported from JSONL
+[2025-10-22 20:58:26] Sync cycle complete
+[2025-10-22 21:03:24] Starting sync cycle...
+[2025-10-22 21:03:24] Exported to JSONL
+[2025-10-22 21:03:25] Pulled from remote
+[2025-10-22 21:03:25] Imported from JSONL
+[2025-10-22 21:03:25] Sync cycle complete
+[2025-10-22 21:08:24] Starting sync cycle...
+[2025-10-22 21:08:24] Exported to JSONL
+[2025-10-22 21:08:26] Pulled from remote
+[2025-10-22 21:08:26] Imported from JSONL
+[2025-10-22 21:08:26] Sync cycle complete
+[2025-10-22 21:13:24] Starting sync cycle...
+[2025-10-22 21:13:24] Exported to JSONL
+[2025-10-22 21:13:25] Pulled from remote
+[2025-10-22 21:13:25] Imported from JSONL
+[2025-10-22 21:13:25] Sync cycle complete
+[2025-10-22 21:18:24] Starting sync cycle...
+[2025-10-22 21:18:24] Exported to JSONL
+[2025-10-22 21:18:26] Pulled from remote
+[2025-10-22 21:18:26] Imported from JSONL
+[2025-10-22 21:18:26] Sync cycle complete
+[2025-10-22 21:23:24] Starting sync cycle...
+[2025-10-22 21:23:24] Exported to JSONL
+[2025-10-22 21:23:25] Pulled from remote
+[2025-10-22 21:23:25] Imported from JSONL
+[2025-10-22 21:23:25] Sync cycle complete
+[2025-10-22 21:28:24] Starting sync cycle...
+[2025-10-22 21:28:24] Exported to JSONL
+[2025-10-22 21:28:26] Pulled from remote
+[2025-10-22 21:28:26] Imported from JSONL
+[2025-10-22 21:28:26] Sync cycle complete
+[2025-10-22 21:33:24] Starting sync cycle...
+[2025-10-22 21:33:24] Exported to JSONL
+[2025-10-22 21:33:25] Pulled from remote
+[2025-10-22 21:33:25] Imported from JSONL
+[2025-10-22 21:33:25] Sync cycle complete
+[2025-10-22 21:38:24] Starting sync cycle...
+[2025-10-22 21:38:24] Exported to JSONL
+[2025-10-22 21:38:26] Pulled from remote
+[2025-10-22 21:38:26] Imported from JSONL
+[2025-10-22 21:38:26] Sync cycle complete
+[2025-10-22 21:43:24] Starting sync cycle...
+[2025-10-22 21:43:24] Exported to JSONL
+[2025-10-22 21:43:26] Pulled from remote
+[2025-10-22 21:43:26] Imported from JSONL
+[2025-10-22 21:43:26] Sync cycle complete
+[2025-10-22 21:48:24] Starting sync cycle...
+[2025-10-22 21:48:24] Exported to JSONL
+[2025-10-22 21:48:26] Pulled from remote
+[2025-10-22 21:48:26] Imported from JSONL
+[2025-10-22 21:48:26] Sync cycle complete
+[2025-10-22 21:53:24] Starting sync cycle...
+[2025-10-22 21:53:24] Exported to JSONL
+[2025-10-22 21:53:25] Pulled from remote
+[2025-10-22 21:53:25] Imported from JSONL
+[2025-10-22 21:53:25] Sync cycle complete
+[2025-10-22 21:58:24] Starting sync cycle...
+[2025-10-22 21:58:24] Exported to JSONL
+[2025-10-22 21:59:25] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 09:02:22] Starting sync cycle...
+[2025-10-23 09:02:22] Exported to JSONL
+[2025-10-23 09:03:23] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 09:07:22] Starting sync cycle...
+[2025-10-23 09:07:22] Exported to JSONL
+[2025-10-23 09:07:24] Pulled from remote
+[2025-10-23 09:07:24] Imported from JSONL
+[2025-10-23 09:07:24] Sync cycle complete
+[2025-10-23 09:12:22] Starting sync cycle...
+[2025-10-23 09:12:22] Exported to JSONL
+[2025-10-23 09:12:24] Pulled from remote
+[2025-10-23 09:12:24] Imported from JSONL
+[2025-10-23 09:12:24] Sync cycle complete
+[2025-10-23 09:17:22] Starting sync cycle...
+[2025-10-23 09:17:22] Exported to JSONL
+[2025-10-23 09:17:24] Pulled from remote
+[2025-10-23 09:17:24] Imported from JSONL
+[2025-10-23 09:17:24] Sync cycle complete
+[2025-10-23 09:22:22] Starting sync cycle...
+[2025-10-23 09:22:22] Exported to JSONL
+[2025-10-23 09:22:24] Pulled from remote
+[2025-10-23 09:22:24] Imported from JSONL
+[2025-10-23 09:22:24] Sync cycle complete
+[2025-10-23 09:27:22] Starting sync cycle...
+[2025-10-23 09:27:22] Exported to JSONL
+[2025-10-23 09:27:24] Pulled from remote
+[2025-10-23 09:27:24] Imported from JSONL
+[2025-10-23 09:27:24] Sync cycle complete
+[2025-10-23 09:32:22] Starting sync cycle...
+[2025-10-23 09:32:22] Exported to JSONL
+[2025-10-23 09:32:24] Pulled from remote
+[2025-10-23 09:32:24] Imported from JSONL
+[2025-10-23 09:32:24] Sync cycle complete
+[2025-10-23 09:37:22] Starting sync cycle...
+[2025-10-23 09:37:22] Exported to JSONL
+[2025-10-23 09:37:23] Pulled from remote
+[2025-10-23 09:37:23] Imported from JSONL
+[2025-10-23 09:37:23] Sync cycle complete
+[2025-10-23 10:43:09] Starting sync cycle...
+[2025-10-23 10:43:09] Exported to JSONL
+[2025-10-23 10:43:11] Pulled from remote
+[2025-10-23 10:43:11] Imported from JSONL
+[2025-10-23 10:43:11] Sync cycle complete
+[2025-10-23 10:48:09] Starting sync cycle...
+[2025-10-23 10:48:09] Exported to JSONL
+[2025-10-23 10:48:11] Pulled from remote
+[2025-10-23 10:48:11] Imported from JSONL
+[2025-10-23 10:48:11] Sync cycle complete
+[2025-10-23 10:53:09] Starting sync cycle...
+[2025-10-23 10:53:09] Exported to JSONL
+[2025-10-23 10:53:11] Pulled from remote
+[2025-10-23 10:53:11] Imported from JSONL
+[2025-10-23 10:53:11] Sync cycle complete
+[2025-10-23 10:58:09] Starting sync cycle...
+[2025-10-23 10:58:09] Exported to JSONL
+[2025-10-23 10:58:11] Pulled from remote
+[2025-10-23 10:58:11] Imported from JSONL
+[2025-10-23 10:58:11] Sync cycle complete
+[2025-10-23 11:03:09] Starting sync cycle...
+[2025-10-23 11:03:09] Exported to JSONL
+[2025-10-23 11:03:11] Pulled from remote
+[2025-10-23 11:03:11] Imported from JSONL
+[2025-10-23 11:03:11] Sync cycle complete
+[2025-10-23 11:08:09] Starting sync cycle...
+[2025-10-23 11:08:09] Exported to JSONL
+[2025-10-23 11:08:11] Pulled from remote
+[2025-10-23 11:08:11] Imported from JSONL
+[2025-10-23 11:08:11] Sync cycle complete
+[2025-10-23 11:13:09] Starting sync cycle...
+[2025-10-23 11:13:09] Exported to JSONL
+[2025-10-23 11:13:11] Pulled from remote
+[2025-10-23 11:13:11] Imported from JSONL
+[2025-10-23 11:13:11] Sync cycle complete
+[2025-10-23 11:18:09] Starting sync cycle...
+[2025-10-23 11:18:09] Exported to JSONL
+[2025-10-23 11:18:11] Pulled from remote
+[2025-10-23 11:18:11] Imported from JSONL
+[2025-10-23 11:18:11] Sync cycle complete
+[2025-10-23 11:23:09] Starting sync cycle...
+[2025-10-23 11:23:09] Exported to JSONL
+[2025-10-23 11:23:11] Pulled from remote
+[2025-10-23 11:23:11] Imported from JSONL
+[2025-10-23 11:23:11] Sync cycle complete
+[2025-10-23 11:28:09] Starting sync cycle...
+[2025-10-23 11:28:09] Exported to JSONL
+[2025-10-23 11:28:11] Pulled from remote
+[2025-10-23 11:28:11] Imported from JSONL
+[2025-10-23 11:28:11] Sync cycle complete
+[2025-10-23 11:33:09] Starting sync cycle...
+[2025-10-23 11:33:09] Exported to JSONL
+[2025-10-23 11:33:11] Pulled from remote
+[2025-10-23 11:33:11] Imported from JSONL
+[2025-10-23 11:33:11] Sync cycle complete
+[2025-10-23 11:38:09] Starting sync cycle...
+[2025-10-23 11:38:09] Exported to JSONL
+[2025-10-23 11:38:16] Pulled from remote
+[2025-10-23 11:38:16] Imported from JSONL
+[2025-10-23 11:38:16] Sync cycle complete
+[2025-10-23 11:43:09] Starting sync cycle...
+[2025-10-23 11:43:09] Exported to JSONL
+[2025-10-23 11:43:11] Pulled from remote
+[2025-10-23 11:43:11] Imported from JSONL
+[2025-10-23 11:43:11] Sync cycle complete
+[2025-10-23 11:48:09] Starting sync cycle...
+[2025-10-23 11:48:09] Exported to JSONL
+[2025-10-23 11:48:11] Pulled from remote
+[2025-10-23 11:48:11] Imported from JSONL
+[2025-10-23 11:48:11] Sync cycle complete
+[2025-10-23 11:53:09] Starting sync cycle...
+[2025-10-23 11:53:09] Exported to JSONL
+[2025-10-23 11:53:11] Pulled from remote
+[2025-10-23 11:53:11] Imported from JSONL
+[2025-10-23 11:53:11] Sync cycle complete
+[2025-10-23 11:58:09] Starting sync cycle...
+[2025-10-23 11:58:09] Exported to JSONL
+[2025-10-23 11:58:11] Pulled from remote
+[2025-10-23 11:58:11] Imported from JSONL
+[2025-10-23 11:58:11] Sync cycle complete
+[2025-10-23 12:03:09] Starting sync cycle...
+[2025-10-23 12:03:09] Exported to JSONL
+[2025-10-23 12:03:12] Pulled from remote
+[2025-10-23 12:03:12] Imported from JSONL
+[2025-10-23 12:03:12] Sync cycle complete
+[2025-10-23 12:08:09] Starting sync cycle...
+[2025-10-23 12:08:09] Exported to JSONL
+[2025-10-23 12:09:10] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 12:13:09] Starting sync cycle...
+[2025-10-23 12:13:09] Exported to JSONL
+[2025-10-23 12:14:10] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 12:44:35] Starting sync cycle...
+[2025-10-23 12:44:35] Exported to JSONL
+[2025-10-23 12:44:37] Pulled from remote
+[2025-10-23 12:44:37] Imported from JSONL
+[2025-10-23 12:44:37] Sync cycle complete
+[2025-10-23 12:49:35] Starting sync cycle...
+[2025-10-23 12:49:35] Exported to JSONL
+[2025-10-23 12:49:37] Pulled from remote
+[2025-10-23 12:49:37] Imported from JSONL
+[2025-10-23 12:49:37] Sync cycle complete
+[2025-10-23 12:54:35] Starting sync cycle...
+[2025-10-23 12:54:35] Exported to JSONL
+[2025-10-23 12:54:37] Pulled from remote
+[2025-10-23 12:54:37] Imported from JSONL
+[2025-10-23 12:54:37] Sync cycle complete
+[2025-10-23 12:59:35] Starting sync cycle...
+[2025-10-23 12:59:35] Exported to JSONL
+[2025-10-23 12:59:37] Pulled from remote
+[2025-10-23 12:59:37] Imported from JSONL
+[2025-10-23 12:59:37] Sync cycle complete
+[2025-10-23 13:04:35] Starting sync cycle...
+[2025-10-23 13:04:35] Exported to JSONL
+[2025-10-23 13:04:37] Pulled from remote
+[2025-10-23 13:04:37] Imported from JSONL
+[2025-10-23 13:04:37] Sync cycle complete
+[2025-10-23 13:09:35] Starting sync cycle...
+[2025-10-23 13:09:35] Exported to JSONL
+[2025-10-23 13:09:37] Pulled from remote
+[2025-10-23 13:09:37] Imported from JSONL
+[2025-10-23 13:09:37] Sync cycle complete
+[2025-10-23 13:14:35] Starting sync cycle...
+[2025-10-23 13:14:35] Exported to JSONL
+[2025-10-23 13:14:37] Pulled from remote
+[2025-10-23 13:14:37] Imported from JSONL
+[2025-10-23 13:14:37] Sync cycle complete
+[2025-10-23 13:19:35] Starting sync cycle...
+[2025-10-23 13:19:35] Exported to JSONL
+[2025-10-23 13:19:37] Pulled from remote
+[2025-10-23 13:19:37] Imported from JSONL
+[2025-10-23 13:19:37] Sync cycle complete
+[2025-10-23 13:24:35] Starting sync cycle...
+[2025-10-23 13:24:35] Exported to JSONL
+[2025-10-23 13:24:37] Pulled from remote
+[2025-10-23 13:24:37] Imported from JSONL
+[2025-10-23 13:24:37] Sync cycle complete
+[2025-10-23 13:29:35] Starting sync cycle...
+[2025-10-23 13:29:35] Exported to JSONL
+[2025-10-23 13:29:37] Pulled from remote
+[2025-10-23 13:29:37] Imported from JSONL
+[2025-10-23 13:29:37] Sync cycle complete
+[2025-10-23 13:34:35] Starting sync cycle...
+[2025-10-23 13:34:35] Exported to JSONL
+[2025-10-23 13:34:37] Pulled from remote
+[2025-10-23 13:34:37] Imported from JSONL
+[2025-10-23 13:34:37] Sync cycle complete
+[2025-10-23 13:39:35] Starting sync cycle...
+[2025-10-23 13:39:35] Exported to JSONL
+[2025-10-23 13:39:37] Pulled from remote
+[2025-10-23 13:39:37] Imported from JSONL
+[2025-10-23 13:39:37] Sync cycle complete
+[2025-10-23 13:44:35] Starting sync cycle...
+[2025-10-23 13:44:35] Exported to JSONL
+[2025-10-23 13:44:37] Pulled from remote
+[2025-10-23 13:44:37] Imported from JSONL
+[2025-10-23 13:44:37] Sync cycle complete
+[2025-10-23 13:49:35] Starting sync cycle...
+[2025-10-23 13:49:35] Exported to JSONL
+[2025-10-23 14:57:49] Pull failed: git pull failed: exit status 1
+Connection reset by 140.82.116.4 port 22
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 15:01:55] Starting sync cycle...
+[2025-10-23 15:01:55] Exported to JSONL
+[2025-10-23 15:01:56] Pulled from remote
+[2025-10-23 15:01:56] Imported from JSONL
+[2025-10-23 15:01:56] Sync cycle complete
+[2025-10-23 15:06:55] Starting sync cycle...
+[2025-10-23 15:06:55] Exported to JSONL
+[2025-10-23 15:06:56] Pulled from remote
+[2025-10-23 15:06:56] Imported from JSONL
+[2025-10-23 15:06:56] Sync cycle complete
+[2025-10-23 15:11:55] Starting sync cycle...
+[2025-10-23 15:11:55] Exported to JSONL
+[2025-10-23 15:11:56] Pulled from remote
+[2025-10-23 15:11:56] Imported from JSONL
+[2025-10-23 15:11:56] Sync cycle complete
+[2025-10-23 15:16:55] Starting sync cycle...
+[2025-10-23 15:16:55] Exported to JSONL
+[2025-10-23 15:16:56] Pulled from remote
+[2025-10-23 15:16:56] Imported from JSONL
+[2025-10-23 15:16:56] Sync cycle complete
+[2025-10-23 15:21:55] Starting sync cycle...
+[2025-10-23 15:21:55] Exported to JSONL
+[2025-10-23 15:22:55] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 15:26:55] Starting sync cycle...
+[2025-10-23 15:26:55] Exported to JSONL
+[2025-10-23 15:48:04] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: agent refused operation
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 15:52:06] Starting sync cycle...
+[2025-10-23 15:52:06] Exported to JSONL
+[2025-10-23 15:52:08] Pulled from remote
+[2025-10-23 15:52:08] Imported from JSONL
+[2025-10-23 15:52:08] Sync cycle complete
+[2025-10-23 15:57:06] Starting sync cycle...
+[2025-10-23 15:57:06] Exported to JSONL
+[2025-10-23 15:57:08] Pulled from remote
+[2025-10-23 15:57:08] Imported from JSONL
+[2025-10-23 15:57:08] Sync cycle complete
+[2025-10-23 16:02:06] Starting sync cycle...
+[2025-10-23 16:02:06] Exported to JSONL
+[2025-10-23 16:02:08] Pulled from remote
+[2025-10-23 16:02:08] Imported from JSONL
+[2025-10-23 16:02:08] Sync cycle complete
+[2025-10-23 16:07:06] Starting sync cycle...
+[2025-10-23 16:07:06] Exported to JSONL
+[2025-10-23 16:07:07] Pulled from remote
+[2025-10-23 16:07:07] Imported from JSONL
+[2025-10-23 16:07:07] Sync cycle complete
+[2025-10-23 16:12:06] Starting sync cycle...
+[2025-10-23 16:12:06] Exported to JSONL
+[2025-10-23 16:12:07] Pulled from remote
+[2025-10-23 16:12:07] Imported from JSONL
+[2025-10-23 16:12:07] Sync cycle complete
+[2025-10-23 16:17:06] Starting sync cycle...
+[2025-10-23 16:17:06] Exported to JSONL
+[2025-10-23 16:17:08] Pulled from remote
+[2025-10-23 16:17:08] Imported from JSONL
+[2025-10-23 16:17:08] Sync cycle complete
+[2025-10-23 16:22:06] Starting sync cycle...
+[2025-10-23 16:22:06] Exported to JSONL
+[2025-10-23 16:22:08] Pulled from remote
+[2025-10-23 16:22:08] Imported from JSONL
+[2025-10-23 16:22:08] Sync cycle complete
+[2025-10-23 16:27:06] Starting sync cycle...
+[2025-10-23 16:27:06] Exported to JSONL
+[2025-10-23 16:28:07] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 16:32:06] Starting sync cycle...
+[2025-10-23 16:32:06] Exported to JSONL
+[2025-10-23 16:56:35] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: agent refused operation
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-23 17:00:59] Starting sync cycle...
+[2025-10-23 17:00:59] Exported to JSONL
+[2025-10-23 17:01:01] Pulled from remote
+[2025-10-23 17:01:01] Imported from JSONL
+[2025-10-23 17:01:01] Sync cycle complete
+[2025-10-23 17:05:59] Starting sync cycle...
+[2025-10-23 17:05:59] Exported to JSONL
+[2025-10-23 17:06:01] Pulled from remote
+[2025-10-23 17:06:01] Imported from JSONL
+[2025-10-23 17:06:01] Sync cycle complete
+[2025-10-23 17:10:59] Starting sync cycle...
+[2025-10-23 17:10:59] Exported to JSONL
+[2025-10-23 17:11:01] Pulled from remote
+[2025-10-23 17:11:01] Imported from JSONL
+[2025-10-23 17:11:01] Sync cycle complete
+[2025-10-23 17:15:59] Starting sync cycle...
+[2025-10-23 17:15:59] Exported to JSONL
+[2025-10-23 17:16:01] Pulled from remote
+[2025-10-23 17:16:01] Imported from JSONL
+[2025-10-23 17:16:01] Sync cycle complete
+[2025-10-23 17:20:59] Starting sync cycle...
+[2025-10-23 17:20:59] Exported to JSONL
+[2025-10-23 17:21:00] Pulled from remote
+[2025-10-23 17:21:00] Imported from JSONL
+[2025-10-23 17:21:00] Sync cycle complete
+[2025-10-23 21:46:13] Starting sync cycle...
+[2025-10-23 21:46:13] Exported to JSONL
+[2025-10-23 21:46:15] Pulled from remote
+[2025-10-23 21:46:15] Imported from JSONL
+[2025-10-23 21:46:15] Sync cycle complete
+[2025-10-23 21:51:13] Starting sync cycle...
+[2025-10-23 21:51:13] Exported to JSONL
+[2025-10-23 21:51:14] Pulled from remote
+[2025-10-23 21:51:14] Imported from JSONL
+[2025-10-23 21:51:14] Sync cycle complete
+[2025-10-23 21:56:13] Starting sync cycle...
+[2025-10-23 21:56:13] Exported to JSONL
+[2025-10-23 21:56:15] Pulled from remote
+[2025-10-23 21:56:15] Imported from JSONL
+[2025-10-23 21:56:15] Sync cycle complete
+[2025-10-23 22:01:13] Starting sync cycle...
+[2025-10-23 22:01:13] Exported to JSONL
+[2025-10-23 22:01:15] Pulled from remote
+[2025-10-23 22:01:15] Imported from JSONL
+[2025-10-23 22:01:15] Sync cycle complete
+[2025-10-23 22:06:13] Starting sync cycle...
+[2025-10-23 22:06:13] Exported to JSONL
+[2025-10-23 22:06:15] Pulled from remote
+[2025-10-23 22:06:15] Imported from JSONL
+[2025-10-23 22:06:15] Sync cycle complete
+[2025-10-23 22:11:13] Starting sync cycle...
+[2025-10-23 22:11:13] Exported to JSONL
+[2025-10-23 22:11:14] Pulled from remote
+[2025-10-23 22:11:14] Imported from JSONL
+[2025-10-23 22:11:14] Sync cycle complete
+[2025-10-23 22:16:13] Starting sync cycle...
+[2025-10-23 22:16:13] Exported to JSONL
+[2025-10-23 22:16:16] Pulled from remote
+[2025-10-23 22:16:16] Imported from JSONL
+[2025-10-23 22:16:16] Sync cycle complete
+[2025-10-23 22:21:13] Starting sync cycle...
+[2025-10-23 22:21:13] Exported to JSONL
+[2025-10-23 22:21:14] Pulled from remote
+[2025-10-23 22:21:14] Imported from JSONL
+[2025-10-23 22:21:14] Sync cycle complete
+[2025-10-23 22:26:13] Starting sync cycle...
+[2025-10-23 22:26:13] Exported to JSONL
+[2025-10-23 22:26:15] Pulled from remote
+[2025-10-23 22:26:15] Imported from JSONL
+[2025-10-23 22:26:15] Sync cycle complete
+[2025-10-23 22:31:13] Starting sync cycle...
+[2025-10-23 22:31:13] Exported to JSONL
+[2025-10-23 22:31:15] Pulled from remote
+[2025-10-23 22:31:15] Imported from JSONL
+[2025-10-23 22:31:15] Sync cycle complete
+[2025-10-23 22:36:13] Starting sync cycle...
+[2025-10-23 22:36:13] Exported to JSONL
+[2025-10-23 22:36:17] Pulled from remote
+[2025-10-23 22:36:17] Imported from JSONL
+[2025-10-23 22:36:17] Sync cycle complete
+[2025-10-23 22:41:13] Starting sync cycle...
+[2025-10-23 22:41:13] Exported to JSONL
+[2025-10-23 22:41:14] Pulled from remote
+[2025-10-23 22:41:14] Imported from JSONL
+[2025-10-23 22:41:14] Sync cycle complete
+[2025-10-23 22:46:13] Starting sync cycle...
+[2025-10-23 22:46:13] Exported to JSONL
+[2025-10-23 22:46:14] Pulled from remote
+[2025-10-23 22:46:14] Imported from JSONL
+[2025-10-23 22:46:14] Sync cycle complete
+[2025-10-24 07:07:48] Starting sync cycle...
+[2025-10-24 07:07:48] Exported to JSONL
+[2025-10-24 07:07:56] Pulled from remote
+[2025-10-24 07:07:56] Imported from JSONL
+[2025-10-24 07:07:56] Sync cycle complete
+[2025-10-24 07:12:48] Starting sync cycle...
+[2025-10-24 07:12:48] Exported to JSONL
+[2025-10-24 07:12:49] Pulled from remote
+[2025-10-24 07:12:49] Imported from JSONL
+[2025-10-24 07:12:49] Sync cycle complete
+[2025-10-24 07:17:48] Starting sync cycle...
+[2025-10-24 07:17:48] Exported to JSONL
+[2025-10-24 07:17:49] Pulled from remote
+[2025-10-24 07:17:49] Imported from JSONL
+[2025-10-24 07:17:49] Sync cycle complete
+[2025-10-24 07:22:48] Starting sync cycle...
+[2025-10-24 07:22:48] Exported to JSONL
+[2025-10-24 07:22:50] Pulled from remote
+[2025-10-24 07:22:50] Imported from JSONL
+[2025-10-24 07:22:50] Sync cycle complete
+[2025-10-24 11:08:21] Starting sync cycle...
+[2025-10-24 11:08:21] Exported to JSONL
+[2025-10-24 11:08:23] Pulled from remote
+[2025-10-24 11:08:23] Imported from JSONL
+[2025-10-24 11:08:23] Sync cycle complete
+[2025-10-24 11:13:21] Starting sync cycle...
+[2025-10-24 11:13:21] Exported to JSONL
+[2025-10-24 11:13:22] Pulled from remote
+[2025-10-24 11:13:22] Imported from JSONL
+[2025-10-24 11:13:22] Sync cycle complete
+[2025-10-24 11:18:21] Starting sync cycle...
+[2025-10-24 11:18:21] Exported to JSONL
+[2025-10-24 11:18:23] Pulled from remote
+[2025-10-24 11:18:23] Imported from JSONL
+[2025-10-24 11:18:23] Sync cycle complete
+[2025-10-24 11:23:21] Starting sync cycle...
+[2025-10-24 11:23:21] Exported to JSONL
+[2025-10-24 11:23:23] Pulled from remote
+[2025-10-24 11:23:23] Imported from JSONL
+[2025-10-24 11:23:23] Sync cycle complete
+[2025-10-24 11:28:21] Starting sync cycle...
+[2025-10-24 11:28:21] Exported to JSONL
+[2025-10-24 11:28:23] Pulled from remote
+[2025-10-24 11:28:23] Imported from JSONL
+[2025-10-24 11:28:23] Sync cycle complete
+[2025-10-24 11:33:21] Starting sync cycle...
+[2025-10-24 11:33:21] Exported to JSONL
+[2025-10-24 11:33:23] Pulled from remote
+[2025-10-24 11:33:23] Imported from JSONL
+[2025-10-24 11:33:23] Sync cycle complete
+[2025-10-24 11:38:21] Starting sync cycle...
+[2025-10-24 11:38:21] Exported to JSONL
+[2025-10-24 11:38:23] Pulled from remote
+[2025-10-24 11:38:23] Imported from JSONL
+[2025-10-24 11:38:23] Sync cycle complete
+[2025-10-24 11:43:21] Starting sync cycle...
+[2025-10-24 11:43:21] Exported to JSONL
+[2025-10-24 11:43:23] Pulled from remote
+[2025-10-24 11:43:23] Imported from JSONL
+[2025-10-24 11:43:23] Sync cycle complete
+[2025-10-24 11:48:21] Starting sync cycle...
+[2025-10-24 11:48:21] Exported to JSONL
+[2025-10-24 11:49:22] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-24 11:53:21] Starting sync cycle...
+[2025-10-24 11:53:21] Exported to JSONL
+[2025-10-24 11:57:07] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: agent refused operation
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-24 12:01:35] Starting sync cycle...
+[2025-10-24 12:01:35] Exported to JSONL
+[2025-10-24 12:01:36] Pulled from remote
+[2025-10-24 12:01:36] Imported from JSONL
+[2025-10-24 12:01:36] Sync cycle complete
+[2025-10-24 12:06:35] Starting sync cycle...
+[2025-10-24 12:06:35] Exported to JSONL
+[2025-10-24 12:06:36] Pulled from remote
+[2025-10-24 12:06:36] Imported from JSONL
+[2025-10-24 12:06:36] Sync cycle complete
+[2025-10-24 12:11:35] Starting sync cycle...
+[2025-10-24 12:11:35] Exported to JSONL
+[2025-10-24 12:12:35] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-24 12:34:27] Starting sync cycle...
+[2025-10-24 12:34:27] Exported to JSONL
+[2025-10-24 12:34:27] Pull failed: git pull failed: exit status 1
+ssh: Could not resolve hostname github.com: Temporary failure in name resolution
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-24 17:07:57] Starting sync cycle...
+[2025-10-24 17:07:57] Exported to JSONL
+[2025-10-24 17:07:58] Pulled from remote
+[2025-10-24 17:07:58] Imported from JSONL
+[2025-10-24 17:07:58] Sync cycle complete
+[2025-10-24 17:12:57] Starting sync cycle...
+[2025-10-24 17:12:57] Exported to JSONL
+[2025-10-24 17:12:58] Pulled from remote
+[2025-10-24 17:12:58] Imported from JSONL
+[2025-10-24 17:12:58] Sync cycle complete
+[2025-10-24 17:17:57] Starting sync cycle...
+[2025-10-24 17:17:57] Exported to JSONL
+[2025-10-24 17:17:58] Pulled from remote
+[2025-10-24 17:17:58] Imported from JSONL
+[2025-10-24 17:17:58] Sync cycle complete
+[2025-10-24 17:22:57] Starting sync cycle...
+[2025-10-24 17:22:57] Exported to JSONL
+[2025-10-24 17:22:58] Pulled from remote
+[2025-10-24 17:22:58] Imported from JSONL
+[2025-10-24 17:22:58] Sync cycle complete
+[2025-10-24 17:27:57] Starting sync cycle...
+[2025-10-24 17:27:57] Exported to JSONL
+[2025-10-24 17:27:58] Pulled from remote
+[2025-10-24 17:27:58] Imported from JSONL
+[2025-10-24 17:27:58] Sync cycle complete
+[2025-10-24 17:32:57] Starting sync cycle...
+[2025-10-24 17:32:57] Exported to JSONL
+[2025-10-24 17:32:58] Pulled from remote
+[2025-10-24 17:32:58] Imported from JSONL
+[2025-10-24 17:32:58] Sync cycle complete
+[2025-10-24 17:37:57] Starting sync cycle...
+[2025-10-24 17:37:57] Exported to JSONL
+[2025-10-24 17:37:58] Pulled from remote
+[2025-10-24 17:37:58] Imported from JSONL
+[2025-10-24 17:37:58] Sync cycle complete
+[2025-10-24 17:42:57] Starting sync cycle...
+[2025-10-24 17:42:57] Exported to JSONL
+[2025-10-24 17:42:58] Pulled from remote
+[2025-10-24 17:42:58] Imported from JSONL
+[2025-10-24 17:42:58] Sync cycle complete
+[2025-10-24 17:47:57] Starting sync cycle...
+[2025-10-24 17:47:57] Exported to JSONL
+[2025-10-24 17:48:02] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: agent refused operation
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-24 17:52:57] Starting sync cycle...
+[2025-10-24 17:52:57] Exported to JSONL
+[2025-10-24 17:52:58] Pulled from remote
+[2025-10-24 17:52:58] Imported from JSONL
+[2025-10-24 17:52:58] Sync cycle complete
+[2025-10-24 17:57:57] Starting sync cycle...
+[2025-10-24 17:57:57] Exported to JSONL
+[2025-10-24 17:57:58] Pulled from remote
+[2025-10-24 17:57:58] Imported from JSONL
+[2025-10-24 17:57:58] Sync cycle complete
+[2025-10-24 18:02:57] Starting sync cycle...
+[2025-10-24 18:02:57] Exported to JSONL
+[2025-10-24 18:03:36] Pulled from remote
+[2025-10-24 18:03:36] Imported from JSONL
+[2025-10-24 18:03:36] Sync cycle complete
+[2025-10-24 18:07:58] Starting sync cycle...
+[2025-10-24 18:07:58] Exported to JSONL
+[2025-10-24 18:08:00] Pulled from remote
+[2025-10-24 18:08:00] Imported from JSONL
+[2025-10-24 18:08:00] Sync cycle complete
+[2025-10-24 18:12:58] Starting sync cycle...
+[2025-10-24 18:12:58] Exported to JSONL
+[2025-10-24 18:13:00] Pulled from remote
+[2025-10-24 18:13:00] Imported from JSONL
+[2025-10-24 18:13:00] Sync cycle complete
+[2025-10-24 18:17:58] Starting sync cycle...
+[2025-10-24 18:17:58] Exported to JSONL
+[2025-10-24 18:18:59] Pull failed: git pull failed: exit status 1
+sign_and_send_pubkey: signing failed for ED25519 "GitHub SSH Key" from agent: communication with agent failed
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2025-10-24 18:22:58] Starting sync cycle...
+[2025-10-24 18:22:58] Exported to JSONL
+[2025-10-24 18:23:00] Pulled from remote
+[2025-10-24 18:23:00] Imported from JSONL
+[2025-10-24 18:23:00] Sync cycle complete
+[2025-10-24 18:27:58] Starting sync cycle...
+[2025-10-24 18:27:58] Exported to JSONL
+[2025-10-24 18:27:59] Pulled from remote
+[2025-10-24 18:27:59] Imported from JSONL
+[2025-10-24 18:27:59] Sync cycle complete
+[2025-10-24 20:14:52] Starting sync cycle...
+[2025-10-24 20:14:52] Exported to JSONL
+[2025-10-24 20:14:59] Pulled from remote
+[2025-10-24 20:14:59] Imported from JSONL
+[2025-10-24 20:14:59] Sync cycle complete
+[2025-10-24 20:19:52] Starting sync cycle...
+[2025-10-24 20:19:52] Exported to JSONL
+[2025-10-24 20:19:53] Pulled from remote
+[2025-10-24 20:19:53] Imported from JSONL
+[2025-10-24 20:19:53] Sync cycle complete
+[2025-10-24 20:24:52] Starting sync cycle...
+[2025-10-24 20:24:52] Exported to JSONL
+[2025-10-24 20:24:53] Pulled from remote
+[2025-10-24 20:24:53] Imported from JSONL
+[2025-10-24 20:24:53] Sync cycle complete
+[2025-10-24 20:29:52] Starting sync cycle...
+[2025-10-24 20:29:52] Exported to JSONL
+[2025-10-24 20:29:53] Pulled from remote
+[2025-10-24 20:29:53] Imported from JSONL
+[2025-10-24 20:29:53] Sync cycle complete
+[2025-10-24 20:34:52] Starting sync cycle...
+[2025-10-24 20:34:52] Exported to JSONL
+[2025-10-24 20:34:53] Pulled from remote
+[2025-10-24 20:34:53] Imported from JSONL
+[2025-10-24 20:34:53] Sync cycle complete
+[2025-10-24 20:39:52] Starting sync cycle...
+[2025-10-24 20:39:52] Exported to JSONL
+[2025-10-24 20:39:53] Pulled from remote
+[2025-10-24 20:39:53] Imported from JSONL
+[2025-10-24 20:39:53] Sync cycle complete
+[2025-10-24 20:44:52] Starting sync cycle...
+[2025-10-24 20:44:52] Exported to JSONL
+[2025-10-24 20:44:53] Pulled from remote
+[2025-10-24 20:44:53] Imported from JSONL
+[2025-10-24 20:44:53] Sync cycle complete
+[2025-10-24 20:49:52] Starting sync cycle...
+[2025-10-24 20:49:52] Exported to JSONL
+[2025-10-24 20:49:53] Pulled from remote
+[2025-10-24 20:49:53] Imported from JSONL
+[2025-10-24 20:49:53] Sync cycle complete
+[2025-10-24 20:54:52] Starting sync cycle...
+[2025-10-24 20:54:52] Exported to JSONL
+[2025-10-24 20:54:53] Pulled from remote
+[2025-10-24 20:54:53] Imported from JSONL
+[2025-10-24 20:54:53] Sync cycle complete
+[2025-10-25 13:36:48] Starting sync cycle...
+[2025-10-25 13:36:48] Exported to JSONL
+[2025-10-25 13:37:15] Pulled from remote
+[2025-10-25 13:37:15] Imported from JSONL
+[2025-10-25 13:37:15] Sync cycle complete
+[2025-10-25 13:41:48] Starting sync cycle...
+[2025-10-25 13:41:48] Exported to JSONL
+[2025-10-25 13:41:49] Pulled from remote
+[2025-10-25 13:41:49] Imported from JSONL
+[2025-10-25 13:41:49] Sync cycle complete
+[2025-10-25 13:46:48] Starting sync cycle...
+[2025-10-25 13:46:48] Exported to JSONL
+[2025-10-25 13:46:49] Pulled from remote
+[2025-10-25 13:46:49] Imported from JSONL
+[2025-10-25 13:46:49] Sync cycle complete
+[2025-10-25 13:51:48] Starting sync cycle...
+[2025-10-25 13:51:48] Exported to JSONL
+[2025-10-25 13:51:49] Pulled from remote
+[2025-10-25 13:51:49] Imported from JSONL
+[2025-10-25 13:51:49] Sync cycle complete
+[2025-10-25 13:56:48] Starting sync cycle...
+[2025-10-25 13:56:48] Exported to JSONL
+[2025-10-25 13:56:49] Pulled from remote
+[2025-10-25 13:56:49] Imported from JSONL
+[2025-10-25 13:56:49] Sync cycle complete
+[2025-10-25 14:01:48] Starting sync cycle...
+[2025-10-25 14:01:48] Exported to JSONL
+[2025-10-25 14:01:50] Pulled from remote
+[2025-10-25 14:01:50] Imported from JSONL
+[2025-10-25 14:01:50] Sync cycle complete
+[2025-10-25 14:06:48] Starting sync cycle...
+[2025-10-25 14:06:48] Exported to JSONL
+[2025-10-25 14:06:50] Pulled from remote
+[2025-10-25 14:06:50] Imported from JSONL
+[2025-10-25 14:06:50] Sync cycle complete
+[2025-10-25 15:44:48] Starting sync cycle...
+[2025-10-25 15:44:48] Exported to JSONL
+[2025-10-25 15:44:50] Pulled from remote
+[2025-10-25 15:44:50] Imported from JSONL
+[2025-10-25 15:44:50] Sync cycle complete
+[2025-10-25 15:49:48] Starting sync cycle...
+[2025-10-25 15:49:48] Exported to JSONL
+[2025-10-25 15:49:50] Pulled from remote
+[2025-10-25 15:49:50] Imported from JSONL
+[2025-10-25 15:49:50] Sync cycle complete
+[2025-10-25 15:54:48] Starting sync cycle...
+[2025-10-25 15:54:48] Exported to JSONL
+[2025-10-25 15:54:50] Pulled from remote
+[2025-10-25 15:54:50] Imported from JSONL
+[2025-10-25 15:54:50] Sync cycle complete
+[2025-10-25 15:59:48] Starting sync cycle...
+[2025-10-25 15:59:48] Exported to JSONL
+[2025-10-25 15:59:50] Pulled from remote
+[2025-10-25 15:59:50] Imported from JSONL
+[2025-10-25 15:59:50] Sync cycle complete
+[2025-10-25 16:04:48] Starting sync cycle...
+[2025-10-25 16:04:48] Exported to JSONL
+[2025-10-25 16:04:50] Pulled from remote
+[2025-10-25 16:04:50] Imported from JSONL
+[2025-10-25 16:04:50] Sync cycle complete
+[2025-10-25 16:09:48] Starting sync cycle...
+[2025-10-25 16:09:48] Exported to JSONL
+[2025-10-25 16:09:51] Pulled from remote
+[2025-10-25 16:09:51] Imported from JSONL
+[2025-10-25 16:09:51] Sync cycle complete
+[2025-10-25 16:14:48] Starting sync cycle...
+[2025-10-25 16:14:48] Exported to JSONL
+[2025-10-25 16:14:50] Pulled from remote
+[2025-10-25 16:14:50] Imported from JSONL
+[2025-10-25 16:14:50] Sync cycle complete
+[2025-10-25 16:19:48] Starting sync cycle...
+[2025-10-25 16:19:48] Exported to JSONL
+[2025-10-25 16:19:50] Pulled from remote
+[2025-10-25 16:19:50] Imported from JSONL
+[2025-10-25 16:19:50] Sync cycle complete
+[2025-10-25 16:24:48] Starting sync cycle...
+[2025-10-25 16:24:48] Exported to JSONL
+[2025-10-25 16:24:50] Pulled from remote
+[2025-10-25 16:24:50] Imported from JSONL
+[2025-10-25 16:24:50] Sync cycle complete
+[2025-10-25 16:29:48] Starting sync cycle...
+[2025-10-25 16:29:48] Exported to JSONL
+[2025-10-25 16:29:50] Pulled from remote
+[2025-10-25 16:29:50] Imported from JSONL
+[2025-10-25 16:29:50] Sync cycle complete
+[2025-10-25 16:34:48] Starting sync cycle...
+[2025-10-25 16:34:48] Exported to JSONL
+[2025-10-25 16:34:50] Pulled from remote
+[2025-10-25 16:34:50] Imported from JSONL
+[2025-10-25 16:34:50] Sync cycle complete
+[2025-10-25 16:39:48] Starting sync cycle...
+[2025-10-25 16:39:48] Exported to JSONL
+[2025-10-25 16:39:50] Pulled from remote
+[2025-10-25 16:39:50] Imported from JSONL
+[2025-10-25 16:39:50] Sync cycle complete
+[2025-10-25 21:18:54] Starting sync cycle...
+[2025-10-25 21:18:54] Exported to JSONL
+[2025-10-25 21:19:01] Pulled from remote
+[2025-10-25 21:19:01] Imported from JSONL
+[2025-10-25 21:19:01] Sync cycle complete
+[2025-10-25 21:23:54] Starting sync cycle...
+[2025-10-25 21:23:54] Exported to JSONL
+[2025-10-25 21:23:55] Pulled from remote
+[2025-10-25 21:23:55] Imported from JSONL
+[2025-10-25 21:23:55] Sync cycle complete
+[2025-10-25 21:28:54] Starting sync cycle...
+[2025-10-25 21:28:54] Exported to JSONL
+[2025-10-25 21:28:55] Pulled from remote
+[2025-10-25 21:28:55] Imported from JSONL
+[2025-10-25 21:28:55] Sync cycle complete
+[2025-10-25 21:33:54] Starting sync cycle...
+[2025-10-25 21:33:54] Exported to JSONL
+[2025-10-25 21:33:55] Pulled from remote
+[2025-10-25 21:33:55] Imported from JSONL
+[2025-10-25 21:33:55] Sync cycle complete
+[2025-10-25 21:38:54] Starting sync cycle...
+[2025-10-25 21:38:54] Exported to JSONL
+[2025-10-25 21:38:55] Pulled from remote
+[2025-10-25 21:38:55] Imported from JSONL
+[2025-10-25 21:38:55] Sync cycle complete
+[2025-10-25 21:43:54] Starting sync cycle...
+[2025-10-25 21:43:54] Exported to JSONL
+[2025-10-25 21:43:55] Pulled from remote
+[2025-10-25 21:43:55] Imported from JSONL
+[2025-10-25 21:43:55] Sync cycle complete
+[2025-10-25 21:48:54] Starting sync cycle...
+[2025-10-25 21:48:54] Exported to JSONL
+[2025-10-25 21:48:55] Pulled from remote
+[2025-10-25 21:48:55] Imported from JSONL
+[2025-10-25 21:48:55] Sync cycle complete
+[2025-10-25 21:53:54] Starting sync cycle...
+[2025-10-25 21:53:54] Exported to JSONL
+[2025-10-25 21:53:55] Pulled from remote
+[2025-10-25 21:53:55] Imported from JSONL
+[2025-10-25 21:53:55] Sync cycle complete
+[2025-10-25 21:58:54] Starting sync cycle...
+[2025-10-25 21:58:54] Exported to JSONL
+[2025-10-25 21:58:55] Pulled from remote
+[2025-10-25 21:58:55] Imported from JSONL
+[2025-10-25 21:58:55] Sync cycle complete
+[2025-10-25 22:03:54] Starting sync cycle...
+[2025-10-25 22:03:54] Exported to JSONL
+[2025-10-25 22:03:55] Pulled from remote
+[2025-10-25 22:03:55] Imported from JSONL
+[2025-10-25 22:03:55] Sync cycle complete
+[2025-10-25 22:08:54] Starting sync cycle...
+[2025-10-25 22:08:54] Exported to JSONL
+[2025-10-25 22:08:55] Pulled from remote
+[2025-10-25 22:08:55] Imported from JSONL
+[2025-10-25 22:08:55] Sync cycle complete
+[2025-10-25 22:13:54] Starting sync cycle...
+[2025-10-25 22:13:54] Exported to JSONL
+[2025-10-25 22:13:55] Pulled from remote
+[2025-10-25 22:13:55] Imported from JSONL
+[2025-10-25 22:13:55] Sync cycle complete
+[2025-10-25 22:18:54] Starting sync cycle...
+[2025-10-25 22:18:54] Exported to JSONL
+[2025-10-25 22:18:55] Pulled from remote
+[2025-10-25 22:18:55] Imported from JSONL
+[2025-10-25 22:18:55] Sync cycle complete

@@ -154,6 +154,9 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
                 )
                 main_story['source_url'] = day_data['main_story']['source_url']
 
+                # Get front page stories from JSON (no AI rewriting for these yet)
+                front_page_stories = day_data.get('front_page_stories', [])
+
                 # Generate mini articles
                 click.echo(f"  ✍️  Generating {len(day_data['mini_articles'])} mini articles...")
                 mini_articles = []
@@ -230,6 +233,8 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
 
         except Exception as e:
             click.echo(f"  ❌ Error generating Day {day_num}: {e}")
+            import traceback
+            traceback.print_exc()
             continue
 
     click.echo("\n✨ Done! Your newspapers are ready to print.")
@@ -303,9 +308,12 @@ For anyone who cares about the environment, this is a powerful reminder: nature 
     pdf_gen.generate_pdf(
         day_number=1,
         main_story=main_story,
+        front_page_stories=[],  # No secondary stories for test
         mini_articles=mini_articles,
         statistics=statistics,
         output_path=str(output_path),
+        date_str="Monday, October 20, 2025",
+        day_of_week="Monday",
         feature_box=feature_box,
         tomorrow_teaser=tomorrow_teaser
     )

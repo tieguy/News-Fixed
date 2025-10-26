@@ -28,7 +28,7 @@ class ContentGenerator:
 
         self.client = Anthropic(api_key=self.api_key)
         self.model = model
-        self.prompts_dir = Path(__file__).parent.parent / "prompts"
+        self.prompts_dir = Path(__file__).parent.parent.parent / "prompts"
 
     def _load_prompt(self, prompt_name: str) -> str:
         """Load a prompt template from the prompts directory."""

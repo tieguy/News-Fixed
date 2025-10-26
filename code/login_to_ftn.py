@@ -14,9 +14,12 @@ def main():
     print(f"Profile directory: {profile_dir}")
     print()
     print("Instructions:")
-    print("1. Log in to Fix The News in the browser window")
-    print("2. Navigate around to verify you're logged in")
-    print("3. Press Ctrl+C here when done to close the browser")
+    print("1. Log in to Fix The News with your PAID SUBSCRIBER account")
+    print("2. After login, open a recent post to verify you can see full content")
+    print("   (Look for absence of 'You're reading the free version' text)")
+    print("3. Once verified, press Ctrl+C here to save the session")
+    print()
+    print("IMPORTANT: Make sure you're logged in to a PAID account!")
     print("=" * 70)
 
     with sync_playwright() as p:
