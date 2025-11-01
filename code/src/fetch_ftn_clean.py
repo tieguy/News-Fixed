@@ -10,7 +10,8 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 def get_profile_dir() -> Path:
     """Get the dedicated Firefox profile directory for FTN fetching."""
-    profile_dir = Path(__file__).parent.parent / ".firefox-profile-ftn"
+    # Navigate from code/src/ to project root
+    profile_dir = Path(__file__).parent.parent.parent / ".firefox-profile-ftn"
     profile_dir.mkdir(exist_ok=True)
     return profile_dir
 

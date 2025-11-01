@@ -37,10 +37,11 @@ ENV/
 
 # Project specific
 output/*.pdf
-cache/*.json
-cache/*.html
+cache/
+data/raw/
+data/processed/
 
-# FTN source material
+# FTN source material (anywhere in project)
 FTN-*.html
 ftn-*.html
 ftn-*.json
@@ -50,4 +51,7 @@ ftn-*.json
 
 # Keep directory structure
 !output/.gitkeep
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
 !cache/.gitkeep

@@ -1,54 +1,52 @@
 # Fetching Fix The News Content
 
-This document explains the different methods for getting FTN content into the News, Fixed pipeline.
+This document explains how to fetch FTN content for the News, Fixed pipeline.
 
-## Recommended: Dedicated Firefox Profile (Automated)
+## Using the Unified Wrapper (Recommended)
 
-The `fetch_ftn_clean.py` script uses a dedicated Firefox profile just for fetching FTN content.
+The `news-fixed` script provides a simple interface for fetching FTN content.
 
 ### First Time Setup
 
+On your first run, you'll need to log in to Fix The News:
+
 ```bash
 # Run with visible browser for first-time login
-python -m src.fetch_ftn_clean --no-headless
+./news-fixed fetch https://fixthenews.com/latest --no-headless
 ```
 
 This will:
-1. Open Firefox with a clean, dedicated profile
-2. Navigate to fixthenews.com
+1. Open Firefox with a clean, dedicated profile (`.firefox-profile-ftn/`)
+2. Navigate to the FTN URL
 3. Wait for you to log in with your Substack credentials
 4. Save your session cookies for future use
 
-**Press Enter after logging in** to continue the script.
+**Press Enter in the terminal after logging in** to continue the script.
 
 ### Subsequent Runs (Automated)
 
-Once you've logged in once, future runs can be fully automated:
+Once you've logged in once, future runs are fully automated:
 
 ```bash
-# Headless mode (no browser window)
-python -m src.fetch_ftn_clean
+# Fetch latest issue (headless mode)
+./news-fixed fetch https://fixthenews.com/latest
 
-# Or with visible browser for debugging
-python -m src.fetch_ftn_clean --no-headless
-
-# Save to specific directory
-python -m src.fetch_ftn_clean --output ~/Downloads
+# Or use the complete pipeline
+./news-fixed run https://fixthenews.com/latest
 ```
 
 The script will:
 - Use your saved login session
-- Navigate to FTN
-- Find the latest post
-- Download the HTML
-- Save as `FTN-{issue_number}.html`
+- Navigate to FTN and strip preview URL suffix
+- Extract issue number from URL
+- Download the HTML to `data/raw/FTN-{issue}.html`
 
 ### Refresh Login
 
 If your session expires:
 
 ```bash
-python -m src.fetch_ftn_clean --force-login
+./news-fixed fetch https://fixthenews.com/latest --force-login
 ```
 
 ## Alternative: Manual Save (Current Method)
@@ -103,12 +101,15 @@ rm -rf .firefox-profile-ftn/
 
 ## Next Steps
 
-Once FTN HTML is downloaded, use the parser to extract stories:
+Once FTN HTML is downloaded, parse and generate:
 
 ```bash
 # Parse FTN content
-python -m src.parser FTN-315.html
+./news-fixed parse data/raw/FTN-317.html
 
-# Or integrate into full pipeline (future enhancement)
-python main.py --fetch-and-generate --day 1
+# Generate PDFs
+./news-fixed generate data/processed/ftn-317.json --all
+
+# Or use complete pipeline
+./news-fixed run https://fixthenews.com/latest
 ```

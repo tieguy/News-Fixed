@@ -42,14 +42,14 @@ class DukeBasketballSchedule:
             cal = Calendar.from_ical(f.read())
 
         for component in cal.walk('VEVENT'):
-            # Get start time (convert from UTC to Eastern)
+            # Get start time (convert to local Pacific time)
             dtstart = component.get('dtstart').dt
             if isinstance(dtstart, datetime):
-                # Convert to Eastern Time
-                eastern = pytz.timezone('US/Eastern')
+                # Convert to Pacific Time
+                pacific = pytz.timezone('US/Pacific')
                 if dtstart.tzinfo is None:
                     dtstart = pytz.utc.localize(dtstart)
-                dtstart = dtstart.astimezone(eastern)
+                dtstart = dtstart.astimezone(pacific)
 
             # Parse summary for opponent and result
             summary = str(component.get('summary', ''))
@@ -171,7 +171,7 @@ class DukeBasketballSchedule:
         lines.append(f"<strong>{date_str}</strong><br>")
 
         if game['time']:
-            lines.append(f"{game['time']} ET<br>")
+            lines.append(f"{game['time']} PT<br>")
 
         # Opponent with home/away
         if game['home_away'] == 'Home':

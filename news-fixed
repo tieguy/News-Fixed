@@ -1,13 +1,270 @@
-#!/bin/bash
-# News, Fixed - Wrapper script to run from project root.
+#!/usr/bin/env python3
+"""
+News, Fixed - Unified wrapper for fetching FTN content and generating newspapers.
 
-# Get the directory containing this script
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+Usage:
+  ./news-fixed fetch <url>              Fetch FTN content from URL
+  ./news-fixed parse <html-file>        Parse HTML to JSON
+  ./news-fixed generate <json-file>     Generate PDFs from JSON
+  ./news-fixed run <url>                Do all three steps (fetch, parse, generate)
+  ./news-fixed test                     Generate test newspaper
+"""
 
-# Activate venv if it exists
-if [ -f "$SCRIPT_DIR/venv/bin/activate" ]; then
-    source "$SCRIPT_DIR/venv/bin/activate"
-fi
+import sys
+import os
+import subprocess
+from pathlib import Path
 
-# Run the Python main module
-exec python3 "$SCRIPT_DIR/code/main.py" "$@"
+# Get project root (where this script lives)
+PROJECT_ROOT = Path(__file__).parent.resolve()
+CODE_DIR = PROJECT_ROOT / "code"
+VENV_DIR = PROJECT_ROOT / "venv"
+VENV_PYTHON = VENV_DIR / "bin" / "python3"
+
+# Check if we're already in a venv
+def is_venv():
+    """Check if we're running inside a virtual environment."""
+    return (hasattr(sys, 'real_prefix') or
+            (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix))
+
+# If not in venv, re-exec with venv python
+if not is_venv():
+    if not VENV_PYTHON.exists():
+        print(f"❌ Error: Virtual environment not found at {VENV_DIR}")
+        print("   Run: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt")
+        sys.exit(1)
+
+    # Re-execute this script with the venv Python
+    # Note: os.execv replaces the current process, so this message won't show on re-entry
+    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON)] + sys.argv)
+
+# Now we're guaranteed to be in the venv
+import json
+from datetime import datetime
+import click
+
+# Standard paths (relative to project root)
+DATA_DIR = PROJECT_ROOT / "data"
+DATA_RAW_DIR = DATA_DIR / "raw"
+DATA_PROCESSED_DIR = DATA_DIR / "processed"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+CACHE_DIR = PROJECT_ROOT / "cache"
+
+# Firefox profile for FTN (in project root)
+FIREFOX_PROFILE = PROJECT_ROOT / ".firefox-profile-ftn"
+
+
+def ensure_dirs():
+    """Create standard directories if they don't exist."""
+    for d in [DATA_RAW_DIR, DATA_PROCESSED_DIR, OUTPUT_DIR, CACHE_DIR]:
+        d.mkdir(parents=True, exist_ok=True)
+
+
+def get_issue_number_from_url(url: str) -> str:
+    """Extract issue number from FTN URL."""
+    import re
+    match = re.search(r'fixthenews\.com/(\d+)', url)
+    if match:
+        return match.group(1)
+    # Fallback: use timestamp
+    return datetime.now().strftime('%Y%m%d-%H%M%S')
+
+
+@click.group()
+def cli():
+    """News, Fixed - Transform positive news into daily newspapers for kids."""
+    pass
+
+
+@cli.command()
+@click.argument('url')
+@click.option('--force-login', is_flag=True, help='Force interactive login')
+@click.option('--headless/--no-headless', default=True, help='Run browser in headless mode')
+def fetch(url, force_login, headless):
+    """Fetch FTN content from URL and save to data/raw/."""
+    ensure_dirs()
+
+    click.echo(f"📥 Fetching content from {url}")
+
+    # Import fetch function
+    sys.path.insert(0, str(CODE_DIR))
+    from src.fetch_ftn_clean import fetch_ftn_latest
+
+    # Determine output filename
+    issue_num = get_issue_number_from_url(url)
+    output_file = DATA_RAW_DIR / f"FTN-{issue_num}.html"
+
+    try:
+        saved_path = fetch_ftn_latest(
+            output_dir=str(DATA_RAW_DIR),
+            headless=headless,
+            force_login=force_login,
+            url=url
+        )
+
+        click.echo(f"✅ Saved to: {saved_path}")
+        click.echo(f"\n💡 Next step: ./news-fixed parse {saved_path}")
+
+    except Exception as e:
+        click.echo(f"❌ Error fetching content: {e}")
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument('html_file', type=click.Path(exists=True))
+@click.option('--output', '-o', type=click.Path(), help='Output JSON file (default: auto-generate)')
+def parse(html_file, output):
+    """Parse FTN HTML file to JSON format."""
+    ensure_dirs()
+
+    html_path = Path(html_file)
+    click.echo(f"📖 Parsing {html_path.name}")
+
+    # Import parser
+    sys.path.insert(0, str(CODE_DIR))
+    from src.ftn_to_json import create_json_from_ftn
+
+    # Auto-generate output filename if not specified
+    if not output:
+        # Extract issue number from filename (e.g., FTN-317.html -> ftn-317.json)
+        import re
+        match = re.search(r'FTN-(\d+)', html_path.name)
+        if match:
+            issue_num = match.group(1)
+            output = DATA_PROCESSED_DIR / f"ftn-{issue_num}.json"
+        else:
+            output = DATA_PROCESSED_DIR / f"{html_path.stem}.json"
+    else:
+        output = Path(output)
+
+    try:
+        json_path = create_json_from_ftn(str(html_path), str(output))
+        click.echo(f"✅ Saved to: {json_path}")
+        click.echo(f"\n💡 Next step: ./news-fixed generate {json_path}")
+
+    except Exception as e:
+        click.echo(f"❌ Error parsing HTML: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument('json_file', type=click.Path(exists=True))
+@click.option('--day', '-d', type=click.IntRange(1, 4), help='Generate specific day (1-4)')
+@click.option('--all', 'generate_all', is_flag=True, help='Generate all 4 days')
+@click.option('--output', '-o', type=click.Path(), help='Output directory (default: ./output)')
+@click.option('--no-rewrite', is_flag=True, help='Skip AI rewriting')
+def generate(json_file, day, generate_all, output, no_rewrite):
+    """Generate PDF newspapers from JSON file."""
+    ensure_dirs()
+
+    if not output:
+        output = OUTPUT_DIR
+
+    # Build command for code/main.py
+    cmd = [str(VENV_PYTHON), str(CODE_DIR / "main.py")]
+    cmd.extend(['--input', str(Path(json_file).resolve())])
+    cmd.extend(['--output', str(Path(output).resolve())])
+
+    if generate_all:
+        cmd.append('--all')
+    elif day:
+        cmd.extend(['--day', str(day)])
+    else:
+        # Default to generating all days
+        cmd.append('--all')
+
+    if no_rewrite:
+        cmd.append('--no-rewrite')
+
+    # Run the generator
+    try:
+        result = subprocess.run(cmd, cwd=CODE_DIR, check=True)
+        click.echo(f"\n✅ PDFs generated in: {output}")
+
+    except subprocess.CalledProcessError as e:
+        click.echo(f"❌ Error generating PDFs: {e}")
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument('url')
+@click.option('--force-login', is_flag=True, help='Force interactive login')
+@click.option('--no-rewrite', is_flag=True, help='Skip AI rewriting')
+def run(url, force_login, no_rewrite):
+    """Complete pipeline: fetch, parse, and generate from a URL."""
+    ensure_dirs()
+
+    click.echo("🚀 Running complete pipeline: fetch → parse → generate\n")
+
+    # Step 1: Fetch
+    sys.path.insert(0, str(CODE_DIR))
+    from src.fetch_ftn_clean import fetch_ftn_latest
+
+    click.echo(f"📥 Step 1/3: Fetching content from {url}")
+    issue_num = get_issue_number_from_url(url)
+
+    try:
+        html_path = fetch_ftn_latest(
+            output_dir=str(DATA_RAW_DIR),
+            headless=True,
+            force_login=force_login,
+            url=url
+        )
+        click.echo(f"   ✅ Saved HTML to: {html_path}\n")
+    except Exception as e:
+        click.echo(f"❌ Error fetching: {e}")
+        sys.exit(1)
+
+    # Step 2: Parse
+    click.echo(f"📖 Step 2/3: Parsing HTML to JSON")
+    from src.ftn_to_json import create_json_from_ftn
+
+    json_output = DATA_PROCESSED_DIR / f"ftn-{issue_num}.json"
+
+    try:
+        json_path = create_json_from_ftn(str(html_path), str(json_output))
+        click.echo(f"   ✅ Saved JSON to: {json_path}\n")
+    except Exception as e:
+        click.echo(f"❌ Error parsing: {e}")
+        sys.exit(1)
+
+    # Step 3: Generate
+    click.echo(f"📰 Step 3/3: Generating PDFs")
+
+    cmd = [str(VENV_PYTHON), str(CODE_DIR / "main.py")]
+    cmd.extend(['--input', str(Path(json_path).resolve())])
+    cmd.extend(['--output', str(OUTPUT_DIR.resolve())])
+    cmd.append('--all')  # Always generate all 4 days in run mode
+
+    if no_rewrite:
+        cmd.append('--no-rewrite')
+
+    try:
+        subprocess.run(cmd, cwd=CODE_DIR, check=True)
+        click.echo(f"\n✅ Complete! PDFs are in: {OUTPUT_DIR}")
+
+    except subprocess.CalledProcessError as e:
+        click.echo(f"❌ Error generating PDFs: {e}")
+        sys.exit(1)
+
+
+@cli.command()
+def test():
+    """Generate a test newspaper with sample data (no API calls)."""
+    ensure_dirs()
+
+    cmd = [str(VENV_PYTHON), str(CODE_DIR / "main.py")]
+    cmd.extend(['--test', '--output', str(OUTPUT_DIR)])
+
+    try:
+        subprocess.run(cmd, cwd=CODE_DIR, check=True)
+
+    except subprocess.CalledProcessError as e:
+        click.echo(f"❌ Error generating test: {e}")
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    cli()
