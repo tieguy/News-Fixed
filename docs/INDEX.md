@@ -20,7 +20,9 @@ DailyNews/
 ├── prompts/               # Claude API prompt templates
 ├── data/
 │   ├── raw/               # FTN HTML downloads
-│   └── processed/         # Parsed JSON files
+│   ├── processed/         # Parsed JSON files
+│   ├── calendar/          # Calendar events
+│   └── sports/            # Sports schedules
 └── output/                # Generated PDFs
 ```
 

@@ -48,7 +48,6 @@ DATA_DIR = PROJECT_ROOT / "data"
 DATA_RAW_DIR = DATA_DIR / "raw"
 DATA_PROCESSED_DIR = DATA_DIR / "processed"
 OUTPUT_DIR = PROJECT_ROOT / "output"
-CACHE_DIR = PROJECT_ROOT / "cache"
 
 # Firefox profile for FTN (in project root)
 FIREFOX_PROFILE = PROJECT_ROOT / ".firefox-profile-ftn"
@@ -56,7 +55,7 @@ FIREFOX_PROFILE = PROJECT_ROOT / ".firefox-profile-ftn"
 
 def ensure_dirs():
     """Create standard directories if they don't exist."""
-    for d in [DATA_RAW_DIR, DATA_PROCESSED_DIR, OUTPUT_DIR, CACHE_DIR]:
+    for d in [DATA_RAW_DIR, DATA_PROCESSED_DIR, OUTPUT_DIR]:
         d.mkdir(parents=True, exist_ok=True)
 
 

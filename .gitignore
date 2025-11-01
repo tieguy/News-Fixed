@@ -37,7 +37,6 @@ ENV/
 
 # Project specific
 output/*.pdf
-cache/
 data/raw/
 data/processed/
 
@@ -54,4 +53,3 @@ ftn-*.json
 !data/.gitkeep
 !data/raw/.gitkeep
 !data/processed/.gitkeep
-!cache/.gitkeep
