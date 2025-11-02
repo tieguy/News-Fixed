@@ -55,6 +55,40 @@ class FTNParser:
 
         return list(dict.fromkeys(urls))  # Remove duplicates, preserve order
 
+    def _should_skip_paragraph(self, text: str) -> bool:
+        """Check if paragraph should be skipped (footer/subscription content)."""
+        if not text:
+            return True
+        skip_phrases = [
+            "you're reading the free version",
+            "if someone forwarded this",
+            "institutional subscriptions",
+            "get in touch",
+            "profit-driven organisations"
+        ]
+        return any(skip in text.lower() for skip in skip_phrases)
+
+    def _extract_urls_from_paragraph(self, para) -> List[str]:
+        """Extract valid URLs from a paragraph."""
+        urls = []
+        for link in para.find_all('a', href=True):
+            href = link['href']
+            if href.startswith('http') and 'substackcdn' not in href:
+                urls.append(href)
+        return urls
+
+    def _save_current_story(
+        self,
+        stories: List[FTNStory],
+        story_text: List[str],
+        story_urls: List[str]
+    ) -> None:
+        """Save current story if it has content."""
+        if story_text:
+            story = self._create_story_from_reader(story_text, story_urls)
+            if story:
+                stories.append(story)
+
     def extract_stories(self) -> List[FTNStory]:
         """
         Extract stories from FTN content (now works with reader mode HTML).
@@ -77,15 +111,9 @@ class FTNParser:
         current_urls = []
 
         for para in paragraphs:
-            # Skip subscription/footer content
             text = para.get_text().strip()
-            if not text or any(skip in text.lower() for skip in [
-                "you're reading the free version",
-                "if someone forwarded this",
-                "institutional subscriptions",
-                "get in touch",
-                "profit-driven organisations"
-            ]):
+
+            if self._should_skip_paragraph(text):
                 continue
 
             # Check if this paragraph starts a story (has bold/strong tag)
@@ -93,38 +121,49 @@ class FTNParser:
 
             if strong_tag:
                 # Save previous story if exists
-                if current_story_text:
-                    story = self._create_story_from_reader(current_story_text, current_urls)
-                    if story:
-                        stories.append(story)
+                self._save_current_story(stories, current_story_text, current_urls)
 
                 # Start new story
                 current_story_text = [text]
-                current_urls = []
-
-                # Extract URLs from this paragraph
-                for link in para.find_all('a', href=True):
-                    href = link['href']
-                    if href.startswith('http') and 'substackcdn' not in href:
-                        current_urls.append(href)
+                current_urls = self._extract_urls_from_paragraph(para)
 
             elif current_story_text:
                 # Continue current story
                 current_story_text.append(text)
-
-                # Extract URLs
-                for link in para.find_all('a', href=True):
-                    href = link['href']
-                    if href.startswith('http') and 'substackcdn' not in href:
-                        current_urls.append(href)
+                current_urls.extend(self._extract_urls_from_paragraph(para))
 
         # Add last story
-        if current_story_text:
-            story = self._create_story_from_reader(current_story_text, current_urls)
+        self._save_current_story(stories, current_story_text, current_urls)
+
+        return stories
+
+    def _should_save_story(self, story_lines: List[str]) -> bool:
+        """Check if accumulated story lines are long enough to save."""
+        return len(story_lines) > 0 and len(' '.join(story_lines)) > 100
+
+    def _save_story_if_valid(
+        self,
+        stories: List[FTNStory],
+        story_lines: List[str],
+        urls: List[str]
+    ) -> None:
+        """Save story if it meets minimum requirements."""
+        if self._should_save_story(story_lines):
+            story = self._create_story(story_lines, urls)
             if story:
                 stories.append(story)
 
-        return stories
+    def _is_story_start(self, line: str) -> bool:
+        """Check if line starts a new story."""
+        return line.startswith('*') and len(line) > 50
+
+    def _is_story_end(self, lines: List[str], current_index: int) -> bool:
+        """Check if current position is the end of a story."""
+        next_index = current_index + 1
+        if next_index >= len(lines):
+            return False
+        next_line = lines[next_index].strip()
+        return not next_line or next_line.startswith('*')
 
     def _extract_stories_from_text(self) -> List[FTNStory]:
         """Fallback text-based extraction for non-reader-mode HTML."""
@@ -142,11 +181,8 @@ class FTNParser:
                 continue
 
             # Check if line starts a story
-            if line.startswith('*') and len(line) > 50:
-                if current_story_lines and len(' '.join(current_story_lines)) > 100:
-                    story = self._create_story(current_story_lines, current_urls)
-                    if story:
-                        stories.append(story)
+            if self._is_story_start(line):
+                self._save_story_if_valid(stories, current_story_lines, current_urls)
 
                 current_story_lines = [line]
                 current_urls = []
@@ -157,19 +193,14 @@ class FTNParser:
                 current_urls.extend(urls_in_line)
                 current_story_lines.append(line)
 
-                if i + 1 < len(lines) and (not lines[i + 1].strip() or lines[i + 1].strip().startswith('*')):
-                    if len(' '.join(current_story_lines)) > 100:
-                        story = self._create_story(current_story_lines, current_urls)
-                        if story:
-                            stories.append(story)
+                if self._is_story_end(lines, i):
+                    self._save_story_if_valid(stories, current_story_lines, current_urls)
                     current_story_lines = []
                     current_urls = []
                     in_story = False
 
-        if current_story_lines and len(' '.join(current_story_lines)) > 100:
-            story = self._create_story(current_story_lines, current_urls)
-            if story:
-                stories.append(story)
+        # Save final story if exists
+        self._save_story_if_valid(stories, current_story_lines, current_urls)
 
         return stories
 

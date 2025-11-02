@@ -25,6 +25,65 @@ class DukeBasketballSchedule:
         self.data_dir = data_dir
         self.sports_dir = data_dir / "sports"
 
+    def _convert_to_pacific_time(self, dtstart) -> datetime:
+        """Convert datetime to Pacific timezone."""
+        if isinstance(dtstart, datetime):
+            pacific = pytz.timezone('US/Pacific')
+            if dtstart.tzinfo is None:
+                dtstart = pytz.utc.localize(dtstart)
+            return dtstart.astimezone(pacific)
+        return dtstart
+
+    def _parse_opponent_and_home_away(self, summary: str) -> tuple[str, str]:
+        """Extract opponent name and home/away status from summary."""
+        if ' vs ' in summary:
+            opponent = summary.split(' vs ')[1].split('-')[0].strip()
+            return opponent, 'Home'
+        elif ' at ' in summary:
+            opponent = summary.split(' at ')[1].strip()
+            return opponent, 'Away'
+        return '', 'Home'
+
+    def _extract_result_from_description(self, summary: str, description: str) -> Optional[str]:
+        """Extract game result (W/L with score) from description."""
+        if '[W]' not in summary and '\nW ' not in description:
+            return None
+
+        for line in description.split('\n'):
+            if line.startswith('W ') or line.startswith('L '):
+                return line.strip()
+        return None
+
+    def _extract_tv_info(self, description: str) -> Optional[str]:
+        """Extract TV channel info from description."""
+        if 'TV:' not in description:
+            return None
+
+        for line in description.split('\n'):
+            if line.startswith('TV:'):
+                return line.replace('TV:', '').strip()
+        return None
+
+    def _create_event_dict(
+        self,
+        dtstart,
+        opponent: str,
+        location: str,
+        home_away: str,
+        tv: Optional[str],
+        result: Optional[str]
+    ) -> Dict:
+        """Create event dictionary from parsed components."""
+        return {
+            'date': dtstart.date() if isinstance(dtstart, datetime) else dtstart,
+            'time': dtstart.strftime('%I:%M %p') if isinstance(dtstart, datetime) else None,
+            'opponent': opponent,
+            'location': location,
+            'home_away': home_away,
+            'tv': tv,
+            'result': result
+        }
+
     def parse_ics_file(self, ics_path: Path) -> List[Dict]:
         """
         Parse an ICS file and return list of events.
@@ -43,58 +102,39 @@ class DukeBasketballSchedule:
 
         for component in cal.walk('VEVENT'):
             # Get start time (convert to local Pacific time)
-            dtstart = component.get('dtstart').dt
-            if isinstance(dtstart, datetime):
-                # Convert to Pacific Time
-                pacific = pytz.timezone('US/Pacific')
-                if dtstart.tzinfo is None:
-                    dtstart = pytz.utc.localize(dtstart)
-                dtstart = dtstart.astimezone(pacific)
+            dtstart = self._convert_to_pacific_time(component.get('dtstart').dt)
 
             # Parse summary for opponent and result
             summary = str(component.get('summary', ''))
             description = str(component.get('description', ''))
             location = str(component.get('location', ''))
 
-            # Determine home/away and opponent
-            home_away = 'Home'
-            opponent = ''
-            result = None
+            # Extract all components
+            opponent, home_away = self._parse_opponent_and_home_away(summary)
+            result = self._extract_result_from_description(summary, description)
+            tv = self._extract_tv_info(description)
 
-            if ' vs ' in summary:
-                home_away = 'Home'
-                opponent = summary.split(' vs ')[1].split('-')[0].strip()
-            elif ' at ' in summary:
-                home_away = 'Away'
-                opponent = summary.split(' at ')[1].strip()
-
-            # Check for result (Win/Loss with score)
-            if '[W]' in summary or '\nW ' in description:
-                # Extract score from description if available
-                for line in description.split('\n'):
-                    if line.startswith('W ') or line.startswith('L '):
-                        result = line.strip()
-                        break
-
-            # Extract TV info
-            tv = None
-            if 'TV:' in description:
-                for line in description.split('\n'):
-                    if line.startswith('TV:'):
-                        tv = line.replace('TV:', '').strip()
-                        break
-
-            events.append({
-                'date': dtstart.date() if isinstance(dtstart, datetime) else dtstart,
-                'time': dtstart.strftime('%I:%M %p') if isinstance(dtstart, datetime) else None,
-                'opponent': opponent,
-                'location': location,
-                'home_away': home_away,
-                'tv': tv,
-                'result': result
-            })
+            # Create and add event
+            event = self._create_event_dict(dtstart, opponent, location, home_away, tv, result)
+            events.append(event)
 
         return events
+
+    def _get_games_from_schedule(
+        self,
+        schedule_file: Path,
+        team_name: str,
+        target_date: datetime.date
+    ) -> List[Dict]:
+        """Get games from a specific schedule file for a given date."""
+        games = []
+        if schedule_file.exists():
+            events = self.parse_ics_file(schedule_file)
+            for event in events:
+                if event['date'] == target_date:
+                    event['team'] = team_name
+                    games.append(event)
+        return games
 
     def get_games_for_date(self, date: datetime.date, team: str = 'both') -> List[Dict]:
         """
@@ -112,22 +152,12 @@ class DukeBasketballSchedule:
         # Check men's schedule
         if team in ('mens', 'both'):
             mbb_file = self.sports_dir / 'duke-mbb-25-26.ics'
-            if mbb_file.exists():
-                events = self.parse_ics_file(mbb_file)
-                for event in events:
-                    if event['date'] == date:
-                        event['team'] = "Men's Basketball"
-                        games.append(event)
+            games.extend(self._get_games_from_schedule(mbb_file, "Men's Basketball", date))
 
         # Check women's schedule
         if team in ('womens', 'both'):
             wbb_file = self.sports_dir / 'duke-wbb-25-26.ics'
-            if wbb_file.exists():
-                events = self.parse_ics_file(wbb_file)
-                for event in events:
-                    if event['date'] == date:
-                        event['team'] = "Women's Basketball"
-                        games.append(event)
+            games.extend(self._get_games_from_schedule(wbb_file, "Women's Basketball", date))
 
         return games
 
