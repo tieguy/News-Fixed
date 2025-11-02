@@ -72,6 +72,97 @@ class NewspaperGenerator:
             return truncated + '...'
         return content
 
+    def _add_qr_codes_to_article(self, article: Dict) -> Dict:
+        """Add QR code and source name to an article."""
+        return {
+            **article,
+            "qr_code": generate_qr_code(article["source_url"]),
+            "source_name": extract_source_name(article["source_url"])
+        }
+
+    def _prepare_context(
+        self,
+        day_number: int,
+        day_of_week: str,
+        date_str: str,
+        main_story: Dict,
+        front_page_stories: List[Dict],
+        mini_articles: List[Dict],
+        statistics: List[Dict],
+        feature_box: Dict,
+        tomorrow_teaser: str
+    ) -> Dict:
+        """Prepare the template context with all article data and QR codes."""
+        theme = get_theme_name(day_number)
+
+        # Format date
+        if date_str and (',' in date_str or len(date_str) > 10):
+            date_formatted = date_str
+        else:
+            date_formatted = format_date(date_str)
+
+        # Format day of week
+        if day_of_week is None:
+            day_of_week = f"DAY {day_number} OF 4"
+
+        # Add QR codes to all articles
+        main_story_with_qr = self._add_qr_codes_to_article(main_story)
+        front_page_stories_with_qr = [
+            self._add_qr_codes_to_article(article)
+            for article in (front_page_stories or [])
+        ]
+        mini_articles_with_qr = [
+            self._add_qr_codes_to_article(article)
+            for article in mini_articles
+        ]
+
+        return {
+            "day_number": day_number,
+            "day_of_week": day_of_week,
+            "date": date_formatted,
+            "theme": theme,
+            "main_story": main_story_with_qr,
+            "front_page_stories": front_page_stories_with_qr,
+            "mini_articles": mini_articles_with_qr,
+            "statistics": statistics,
+            "feature_box": feature_box,
+            "tomorrow_teaser": tomorrow_teaser,
+            "footer_message": "Good news exists, but it travels slowly."
+        }
+
+    def _render_and_write_pdf(self, template, context: Dict, output_path: str) -> Path:
+        """Render HTML template and write to PDF file."""
+        html_content = template.render(**context)
+        css_path = self.templates_dir / "styles.css"
+
+        html = HTML(string=html_content, base_url=str(self.templates_dir))
+        css = CSS(filename=str(css_path))
+
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        html.write_pdf(output_file, stylesheets=[css])
+
+        return output_file
+
+    def _truncate_context_content(
+        self,
+        context: Dict,
+        main_story: Dict,
+        truncation_percent: float
+    ):
+        """Truncate all content in the context by the given percentage."""
+        context["main_story"]["content"] = self.truncate_content(
+            main_story["content"], truncation_percent
+        )
+        for story in context["front_page_stories"]:
+            story["content"] = self.truncate_content(
+                story["content"], truncation_percent
+            )
+        for article in context["mini_articles"]:
+            article["content"] = self.truncate_content(
+                article["content"], truncation_percent
+            )
+
     def generate_pdf(
         self,
         day_number: int,
@@ -103,127 +194,42 @@ class NewspaperGenerator:
         Returns:
             Path to generated PDF
         """
-        # Get theme for this day
-        theme = get_theme_name(day_number)
-
-        # Format date (if it's already formatted, use as-is; otherwise format it)
-        if date_str and (',' in date_str or len(date_str) > 10):
-            # Already formatted like "October 21, 2025"
-            date_formatted = date_str
-        else:
-            # ISO format or None, needs formatting
-            date_formatted = format_date(date_str)
-
-        # Use provided day_of_week or default to "DAY X OF 4"
-        if day_of_week is None:
-            day_of_week = f"DAY {day_number} OF 4"
-
-        # Generate QR codes for main story
-        main_story_with_qr = {
-            **main_story,
-            "qr_code": generate_qr_code(main_story["source_url"]),
-            "source_name": extract_source_name(main_story["source_url"])
-        }
-
-        # Generate QR codes for front page stories
-        if front_page_stories is None:
-            front_page_stories = []
-
-        front_page_stories_with_qr = [
-            {
-                **article,
-                "qr_code": generate_qr_code(article["source_url"]),
-                "source_name": extract_source_name(article["source_url"])
-            }
-            for article in front_page_stories
-        ]
-
-        # Generate QR codes for mini articles
-        mini_articles_with_qr = [
-            {
-                **article,
-                "qr_code": generate_qr_code(article["source_url"]),
-                "source_name": extract_source_name(article["source_url"])
-            }
-            for article in mini_articles
-        ]
-
         # Prepare template context
-        context = {
-            "day_number": day_number,
-            "day_of_week": day_of_week,
-            "date": date_formatted,
-            "theme": theme,
-            "main_story": main_story_with_qr,
-            "front_page_stories": front_page_stories_with_qr,
-            "mini_articles": mini_articles_with_qr,
-            "statistics": statistics,
-            "feature_box": feature_box,
-            "tomorrow_teaser": tomorrow_teaser,
-            "footer_message": "Good news exists, but it travels slowly."
-        }
+        context = self._prepare_context(
+            day_number, day_of_week, date_str, main_story,
+            front_page_stories, mini_articles, statistics,
+            feature_box, tomorrow_teaser
+        )
 
-        # Load template
         template = self.env.get_template("newspaper.html")
-
-        # Try generating PDF, check page count, and retry with truncation if needed
         max_attempts = 3
         truncation_percent = 1.0
 
         for attempt in range(max_attempts):
-            # Render HTML with current content
-            html_content = template.render(**context)
-
-            # Load CSS
-            css_path = self.templates_dir / "styles.css"
-
-            # Generate PDF
-            html = HTML(string=html_content, base_url=str(self.templates_dir))
-            css = CSS(filename=str(css_path))
-
-            output_file = Path(output_path)
-            output_file.parent.mkdir(parents=True, exist_ok=True)
-
-            html.write_pdf(output_file, stylesheets=[css])
-
-            # Check page count
+            output_file = self._render_and_write_pdf(template, context, output_path)
             page_count = self.get_pdf_page_count(str(output_file))
 
             if page_count == 2:
-                # Success!
                 return output_file
-            elif page_count > 2:
-                # Overflow - need to truncate
-                print(f"   ⚠️  PDF has {page_count} pages (expected 2)")
 
-                if attempt < max_attempts - 1:
-                    # Try again with truncated content
-                    truncation_percent *= 0.85  # Reduce by 15% each time
-                    print(f"   🔄 Retrying with {int(truncation_percent * 100)}% content length...")
-
-                    # Truncate all content
-                    context["main_story"]["content"] = self.truncate_content(
-                        main_story["content"], truncation_percent
-                    )
-                    for story in context["front_page_stories"]:
-                        story["content"] = self.truncate_content(
-                            story["content"], truncation_percent
-                        )
-                    for article in context["mini_articles"]:
-                        article["content"] = self.truncate_content(
-                            article["content"], truncation_percent
-                        )
-                else:
-                    # Final attempt failed
-                    print(f"   ❌ Could not fit content to 2 pages after {max_attempts} attempts")
-                    print(f"      Final PDF has {page_count} pages")
-                    return output_file
-            elif page_count == -1:
-                # Couldn't determine page count, assume it's okay
+            if page_count == -1:
                 print("   ⚠️  Could not determine page count, assuming it's correct")
                 return output_file
 
-        return output_file
+            if page_count > 2:
+                print(f"   ⚠️  PDF has {page_count} pages (expected 2)")
+
+                if attempt < max_attempts - 1:
+                    truncation_percent *= 0.85
+                    print(f"   🔄 Retrying with {int(truncation_percent * 100)}% content length...")
+                    self._truncate_context_content(context, main_story, truncation_percent)
+                else:
+                    print(f"   ❌ Could not fit content to 2 pages after {max_attempts} attempts")
+                    print(f"      Final PDF has {page_count} pages")
+                    return output_file
+
+        # This should be unreachable, but satisfy type checker
+        raise RuntimeError("PDF generation loop completed without returning")
 
 
 if __name__ == "__main__":

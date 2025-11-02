@@ -62,6 +62,157 @@ def calculate_week_dates(base_date=None):
     return week_dates
 
 
+def load_ftn_data(input_file: str) -> dict:
+    """Load and parse FTN data from JSON file."""
+    try:
+        with open(input_file, 'r') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        click.echo(f"❌ Error parsing input file: {e}")
+        sys.exit(1)
+
+
+def initialize_generators(no_rewrite: bool) -> tuple:
+    """Initialize PDF and optionally AI content generators."""
+    pdf_gen = NewspaperGenerator()
+    content_gen = None
+
+    if not no_rewrite:
+        try:
+            content_gen = ContentGenerator()
+        except ValueError as e:
+            click.echo(f"❌ Error: {e}")
+            click.echo("   Make sure ANTHROPIC_API_KEY is set in your .env file")
+            click.echo("   Or use --no-rewrite to skip AI generation")
+            sys.exit(1)
+
+    return pdf_gen, content_gen
+
+
+def generate_content_with_ai(content_gen, day_data: dict, day_num: int) -> tuple:
+    """Generate content using AI."""
+    click.echo("  ✍️  Generating main story...")
+    main_story = content_gen.generate_main_story(
+        original_content=day_data['main_story']['content'],
+        source_url=day_data['main_story']['source_url'],
+        theme=get_theme_name(day_num)
+    )
+    main_story['source_url'] = day_data['main_story']['source_url']
+
+    front_page_stories = day_data.get('front_page_stories', [])
+
+    click.echo(f"  ✍️  Generating {len(day_data['mini_articles'])} mini articles...")
+    mini_articles = []
+    for article_data in day_data['mini_articles']:
+        mini_article = content_gen.generate_mini_article(
+            original_content=article_data['content'],
+            source_url=article_data['source_url']
+        )
+        mini_article['source_url'] = article_data['source_url']
+        mini_articles.append(mini_article)
+
+    click.echo("  📊 Generating statistics...")
+    stories_summary = f"Main: {main_story['title']}\n"
+    stories_summary += "\n".join([a['title'] for a in mini_articles])
+    statistics = content_gen.generate_statistics(
+        stories_summary=stories_summary,
+        theme=get_theme_name(day_num)
+    )
+
+    tomorrow_teaser = ""
+    if day_num < 4:
+        click.echo("  👀 Generating tomorrow teaser...")
+        tomorrow_teaser = content_gen.generate_teaser(
+            tomorrow_theme=get_theme_name(day_num + 1)
+        )
+
+    return main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser
+
+
+def use_content_from_json(day_data: dict) -> tuple:
+    """Use content from JSON file without AI rewriting."""
+    click.echo("  📝 Using content from JSON...")
+    main_story = day_data['main_story']
+    front_page_stories = day_data.get('front_page_stories', [])
+    mini_articles = day_data['mini_articles']
+    statistics = day_data.get('statistics', [])
+    tomorrow_teaser = day_data.get('tomorrow_teaser', '')
+
+    return main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser
+
+
+def check_for_sports_games(date_info: dict) -> dict | None:
+    """Check for Duke basketball games and return feature box if found."""
+    sports_schedule = DukeBasketballSchedule()
+    games = []
+
+    if date_info['day_name'] == 'Thursday':
+        # For Thursday, check Fri-Sun for weekend games
+        for days_ahead in range(1, 4):
+            weekend_date = date_info['date_obj'].date() + timedelta(days=days_ahead)
+            weekend_games = sports_schedule.get_games_for_date(weekend_date)
+            if weekend_games:
+                games.extend(weekend_games)
+    else:
+        # For Mon-Wed, check the actual day
+        games = sports_schedule.get_games_for_date(date_info['date_obj'].date())
+
+    if games:
+        click.echo(f"  🏀 Adding {games[0]['team']} game to feature box")
+        return sports_schedule.format_game_box(games[0])
+
+    return None
+
+
+def generate_day_newspaper(
+    day_num: int,
+    day_data: dict,
+    date_info: dict,
+    pdf_gen,
+    content_gen,
+    output: str,
+    no_rewrite: bool
+) -> None:
+    """Generate newspaper for a single day."""
+    click.echo(f"\n📅 Generating {date_info['day_name']}, {date_info['formatted_date']} ({get_theme_name(day_num)})...")
+
+    # Generate or load content
+    if no_rewrite:
+        main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser = \
+            use_content_from_json(day_data)
+        feature_box = day_data.get('feature_box')
+    else:
+        main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser = \
+            generate_content_with_ai(content_gen, day_data, day_num)
+        feature_box = None
+
+    # Check for sports games (always takes priority)
+    sports_feature = check_for_sports_games(date_info)
+    if sports_feature:
+        feature_box = sports_feature
+
+    # Generate PDF
+    click.echo("  📄 Generating PDF...")
+    date_str_iso = date_info['date_obj'].strftime('%Y-%m-%d')
+    output_filename = f"news_fixed_{date_str_iso}.pdf"
+    output_path = Path(output) / output_filename
+
+    pdf_gen.generate_pdf(
+        day_number=day_num,
+        main_story=main_story,
+        front_page_stories=front_page_stories,
+        mini_articles=mini_articles,
+        statistics=statistics,
+        output_path=str(output_path),
+        date_str=date_info['formatted_date'],
+        day_of_week=date_info['day_name'],
+        feature_box=feature_box,
+        tomorrow_teaser=tomorrow_teaser
+    )
+
+    click.echo(f"  ✅ Generated: {output_path}")
+
+
 @click.command()
 @click.option('--input', '-i', 'input_file', type=click.Path(exists=True),
               help='Input file with Fix The News content (JSON format)')
@@ -84,7 +235,6 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
     click.echo("📰 News, Fixed - Daily Positive News Generator\n")
 
     if test:
-        # Generate test newspaper with sample data
         generate_test_newspaper(output)
         return
 
@@ -93,144 +243,27 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
         click.echo("   Or use --test to generate a test newspaper")
         sys.exit(1)
 
-    # Load input data
-    try:
-        with open(input_file, 'r') as f:
-            ftn_data = json.load(f)
-    except json.JSONDecodeError as e:
-        click.echo(f"❌ Error parsing input file: {e}")
-        sys.exit(1)
-
-    # Initialize generators
-    pdf_gen = NewspaperGenerator()
-
-    # Only initialize AI generator if we need it
-    content_gen = None
-    if not no_rewrite:
-        try:
-            content_gen = ContentGenerator()
-        except ValueError as e:
-            click.echo(f"❌ Error: {e}")
-            click.echo("   Make sure ANTHROPIC_API_KEY is set in your .env file")
-            click.echo("   Or use --no-rewrite to skip AI generation")
-            sys.exit(1)
-
-    # Calculate week dates (Mon-Thu)
+    ftn_data = load_ftn_data(input_file)
+    pdf_gen, content_gen = initialize_generators(no_rewrite)
     week_dates = calculate_week_dates(date_str)
-
-    # Determine which days to generate
     days_to_generate = range(1, 5) if generate_all else [day]
 
     for day_num in days_to_generate:
-        date_info = week_dates[day_num]
-        click.echo(f"\n📅 Generating {date_info['day_name']}, {date_info['formatted_date']} ({get_theme_name(day_num)})...")
-
-        # Get stories for this day
         day_key = f"day_{day_num}"
         if day_key not in ftn_data:
             click.echo(f"⚠️  No data found for {day_key} in input file, skipping...")
             continue
 
-        day_data = ftn_data[day_key]
-
         try:
-            # Use content directly or generate with AI
-            if no_rewrite:
-                # Use content from JSON as-is
-                click.echo("  📝 Using content from JSON...")
-                main_story = day_data['main_story']
-                front_page_stories = day_data.get('front_page_stories', [])
-                mini_articles = day_data['mini_articles']
-                statistics = day_data.get('statistics', [])
-                tomorrow_teaser = day_data.get('tomorrow_teaser', '')
-                feature_box = day_data.get('feature_box')
-            else:
-                # Generate main story
-                click.echo("  ✍️  Generating main story...")
-                main_story = content_gen.generate_main_story(
-                    original_content=day_data['main_story']['content'],
-                    source_url=day_data['main_story']['source_url'],
-                    theme=get_theme_name(day_num)
-                )
-                main_story['source_url'] = day_data['main_story']['source_url']
-
-                # Get front page stories from JSON (no AI rewriting for these yet)
-                front_page_stories = day_data.get('front_page_stories', [])
-
-                # Generate mini articles
-                click.echo(f"  ✍️  Generating {len(day_data['mini_articles'])} mini articles...")
-                mini_articles = []
-                for article_data in day_data['mini_articles']:
-                    mini_article = content_gen.generate_mini_article(
-                        original_content=article_data['content'],
-                        source_url=article_data['source_url']
-                    )
-                    mini_article['source_url'] = article_data['source_url']
-                    mini_articles.append(mini_article)
-
-                # Generate statistics
-                click.echo("  📊 Generating statistics...")
-                stories_summary = f"Main: {main_story['title']}\n"
-                stories_summary += "\n".join([a['title'] for a in mini_articles])
-                statistics = content_gen.generate_statistics(
-                    stories_summary=stories_summary,
-                    theme=get_theme_name(day_num)
-                )
-
-                # Generate tomorrow teaser (if not day 4)
-                tomorrow_teaser = ""
-                feature_box = None
-                if day_num < 4:
-                    click.echo("  👀 Generating tomorrow teaser...")
-                    tomorrow_teaser = content_gen.generate_teaser(
-                        tomorrow_theme=get_theme_name(day_num + 1)
-                    )
-
-            # Check for Duke basketball games on this date (or weekend if Thursday)
-            sports_schedule = DukeBasketballSchedule()
-            games = []
-
-            # For Thursday, check Fri-Sun for weekend games
-            if date_info['day_name'] == 'Thursday':
-                friday = date_info['date_obj'].date() + timedelta(days=1)
-                saturday = date_info['date_obj'].date() + timedelta(days=2)
-                sunday = date_info['date_obj'].date() + timedelta(days=3)
-
-                for weekend_date in [friday, saturday, sunday]:
-                    weekend_games = sports_schedule.get_games_for_date(weekend_date)
-                    if weekend_games:
-                        games.extend(weekend_games)
-            else:
-                # For Mon-Wed, check the actual day
-                games = sports_schedule.get_games_for_date(date_info['date_obj'].date())
-
-            # Sports always takes priority over other feature boxes
-            if games:
-                feature_box = sports_schedule.format_game_box(games[0])
-                click.echo(f"  🏀 Adding {games[0]['team']} game to feature box")
-
-            # Generate PDF
-            click.echo("  📄 Generating PDF...")
-            # Format: news_fixed_2025-10-21.pdf (ISO date for easy sorting)
-            date_str_iso = date_info['date_obj'].strftime('%Y-%m-%d')
-            output_filename = f"news_fixed_{date_str_iso}.pdf"
-            output_path = Path(output) / output_filename
-
-            pdf_gen.generate_pdf(
-                day_number=day_num,
-                main_story=main_story,
-                front_page_stories=front_page_stories,
-                mini_articles=mini_articles,
-                statistics=statistics,
-                output_path=str(output_path),
-                date_str=date_info['formatted_date'],
-                day_of_week=date_info['day_name'],
-                feature_box=feature_box,
-                tomorrow_teaser=tomorrow_teaser
+            generate_day_newspaper(
+                day_num=day_num,
+                day_data=ftn_data[day_key],
+                date_info=week_dates[day_num],
+                pdf_gen=pdf_gen,
+                content_gen=content_gen,
+                output=output,
+                no_rewrite=no_rewrite
             )
-
-            click.echo(f"  ✅ Generated: {output_path}")
-
         except Exception as e:
             click.echo(f"  ❌ Error generating Day {day_num}: {e}")
             import traceback
