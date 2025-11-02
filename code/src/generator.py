@@ -153,7 +153,7 @@ class ContentGenerator:
             json_str = response[start:end]
             stats = json.loads(json_str)
             return stats
-        except (json.JSONDecodeError, ValueError) as e:
+        except json.JSONDecodeError as e:
             print(f"Error parsing statistics JSON: {e}")
             # Return dummy stats as fallback
             return [

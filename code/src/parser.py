@@ -6,6 +6,9 @@ from typing import List, Dict, Optional
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
+# Constants
+FTN_DOMAIN = 'fixthenews.com'
+
 
 class FTNStory:
     """Represents a single story from Fix The News."""
@@ -47,7 +50,7 @@ class FTNParser:
         # Also get from href attributes
         for link in self.soup.find_all('a', href=True):
             href = link['href']
-            if href.startswith('http') and 'substackcdn' not in href and 'fixthenews.com' not in href:
+            if href.startswith('http') and 'substackcdn' not in href and FTN_DOMAIN not in href:
                 urls.append(href)
 
         return list(dict.fromkeys(urls))  # Remove duplicates, preserve order
@@ -201,7 +204,7 @@ class FTNParser:
         # Get source URL (first non-FTN, non-Substack URL)
         source_url = None
         for url in urls:
-            if 'fixthenews.com' not in url and 'substackcdn' not in url and 'tinyurl' not in url:
+            if FTN_DOMAIN not in url and 'substackcdn' not in url and 'tinyurl' not in url:
                 source_url = url
                 break
 
@@ -246,7 +249,7 @@ class FTNParser:
         # Get source URL (first non-FTN URL)
         source_url = None
         for url in urls:
-            if 'fixthenews.com' not in url and 'substackcdn' not in url and 'tinyurl' not in url:
+            if FTN_DOMAIN not in url and 'substackcdn' not in url and 'tinyurl' not in url:
                 source_url = url
                 break
 

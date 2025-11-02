@@ -11,6 +11,9 @@ if __name__ == '__main__':
 
 from src.parser import FTNParser
 
+# Constants
+FTN_BASE_URL = "https://fixthenews.com"
+
 
 def create_json_from_ftn(html_file: str, output_file: str = None):
     """
@@ -73,13 +76,13 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
             "main_story": {
                 "title": main_story.title,
                 "content": main_story.content,
-                "source_url": main_story.source_url or "https://fixthenews.com"
+                "source_url": main_story.source_url or FTN_BASE_URL
             },
             "front_page_stories": [
                 {
                     "title": story.title,
                     "content": story.content,
-                    "source_url": story.source_url or "https://fixthenews.com"
+                    "source_url": story.source_url or FTN_BASE_URL
                 }
                 for story in front_page_stories
             ],
@@ -87,7 +90,7 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
                 {
                     "title": story.title,
                     "content": story.content,
-                    "source_url": story.source_url or "https://fixthenews.com"
+                    "source_url": story.source_url or FTN_BASE_URL
                 }
                 for story in mini_stories
             ],

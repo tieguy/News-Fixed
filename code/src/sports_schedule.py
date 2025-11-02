@@ -214,7 +214,7 @@ if __name__ == '__main__':
         print("  No games today")
 
     # Test with upcoming week
-    print(f"\nGames in next 7 days:")
+    print("\nGames in next 7 days:")
     upcoming = schedule.get_upcoming_games(today, days=7)
     if upcoming:
         for game in upcoming:

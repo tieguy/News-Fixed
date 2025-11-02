@@ -220,7 +220,7 @@ class NewspaperGenerator:
                     return output_file
             elif page_count == -1:
                 # Couldn't determine page count, assume it's okay
-                print(f"   ⚠️  Could not determine page count, assuming it's correct")
+                print("   ⚠️  Could not determine page count, assuming it's correct")
                 return output_file
 
         return output_file

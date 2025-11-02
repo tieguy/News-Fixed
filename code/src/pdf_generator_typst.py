@@ -121,7 +121,7 @@ class TypstNewspaperGenerator:
 
         # Compile with Typst
         try:
-            result = subprocess.run(
+            subprocess.run(
                 [str(self.typst_bin), "compile", str(temp_typ), str(output_path_abs)],
                 capture_output=True,
                 text=True,
@@ -145,7 +145,7 @@ class TypstNewspaperGenerator:
 
         parts = []
         for story in stories[:3]:  # Max 3 secondary stories
-            qr_path = self._generate_qr(story.get('source_url', ''), size=0.25)
+            qr_path = self._generate_qr(story.get('source_url', ''))
             source_name = extract_source_name(story.get('source_url', ''))
 
             title = self._escape_typst(story.get('title', ''))
@@ -173,7 +173,7 @@ class TypstNewspaperGenerator:
 
         parts = []
         for i, article in enumerate(articles):
-            qr_path = self._generate_qr(article.get('source_url', ''), size=0.6)
+            qr_path = self._generate_qr(article.get('source_url', ''))
             source_name = extract_source_name(article.get('source_url', ''))
 
             title = self._escape_typst(article.get('title', ''))
@@ -268,8 +268,8 @@ class TypstNewspaperGenerator:
 
         return text
 
-    def _generate_qr(self, url: str, size=None) -> str:
-        """Generate QR code file and return relative path."""
+    def _generate_qr(self, url: str) -> str | None:
+        """Generate QR code file and return relative path, or None if generation fails."""
         if not url:
             return None
         try:
