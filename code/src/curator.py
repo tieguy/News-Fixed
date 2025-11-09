@@ -164,6 +164,76 @@ class StoryCurator:
         console.print(f"  New main: {new_main.get('title', 'Untitled')[:50]}...")
         console.print(f"  Demoted: {current_main.get('title', 'Untitled')[:50]}...")
 
+    def move_story(self, from_day: int, story_index: int, to_day: int) -> bool:
+        """
+        Move a story between days.
+
+        Args:
+            from_day: Source day number (1-4)
+            story_index: Story index in source day (1-based)
+            to_day: Destination day number (1-4)
+
+        Returns:
+            True if move succeeded, False if cancelled/failed
+        """
+        from_key = f"day_{from_day}"
+        to_key = f"day_{to_day}"
+
+        if from_key not in self.working_data or to_key not in self.working_data:
+            console.print("[red]Error: Invalid day number[/red]")
+            return False
+
+        from_data = self.working_data[from_key]
+        to_data = self.working_data[to_key]
+
+        # Get story to move
+        if story_index == 1:
+            story = from_data.get('main_story', {})
+            was_main = True
+        else:
+            minis = from_data.get('mini_articles', [])
+            mini_idx = story_index - 2
+            if mini_idx < 0 or mini_idx >= len(minis):
+                console.print(f"[red]Error: Story {story_index} not found[/red]")
+                return False
+            story = minis[mini_idx]
+            was_main = False
+
+        # Check if target day is full (1 main + 4 minis = 5 total)
+        to_minis = to_data.get('mini_articles', [])
+        to_has_main = bool(to_data.get('main_story'))
+        to_count = len(to_minis) + (1 if to_has_main else 0)
+
+        if to_count >= 5:
+            console.print(f"[yellow]⚠️  Warning: Day {to_day} already has 5 stories[/yellow]")
+            console.print("   Overflow handling not yet implemented - move cancelled")
+            return False
+
+        # Remove from source day
+        if was_main:
+            # If moving main story, promote first mini (if exists)
+            if from_data.get('mini_articles'):
+                from_data['main_story'] = from_data['mini_articles'].pop(0)
+            else:
+                from_data['main_story'] = {}
+        else:
+            from_data['mini_articles'].pop(mini_idx)
+
+        # Add to target day as mini article
+        if 'mini_articles' not in to_data:
+            to_data['mini_articles'] = []
+        to_data['mini_articles'].append(story)
+
+        # Record change
+        story_title = story.get('title', 'Untitled')[:40]
+        change_msg = f"Day {from_day} → Day {to_day}: {story_title}"
+        self.changes_made.append(change_msg)
+
+        console.print(f"[green]✓[/green] Moved: {story_title}")
+        console.print(f"  From: Day {from_day} → To: Day {to_day} (mini)")
+
+        return True
+
     def save_curated(self, output_file: Path) -> None:
         """
         Save working_data to new JSON file.
