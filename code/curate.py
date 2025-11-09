@@ -78,6 +78,18 @@ def main(json_file, output, dry_run):
             elif choice == 'back':
                 current_day = max(1, current_day - 1)
 
+        # Review unused stories
+        reviewing_unused = True
+        while reviewing_unused:
+            choice = curator.review_unused()
+
+            if choice == 'accept':
+                reviewing_unused = False
+            elif choice == 'move':
+                curator._handle_unused_move_action()
+            elif choice == 'view':
+                curator._handle_unused_view_action()
+
         # Show final summary
         click.echo("\n" + "=" * 60)
         click.echo("✅ Curation complete!\n")

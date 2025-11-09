@@ -344,6 +344,208 @@ class StoryCurator:
 
         return True
 
+    def move_to_unused(self, from_day: int, story_index: int) -> None:
+        """
+        Move a story from a day to unused (delete from newspaper).
+
+        Args:
+            from_day: Source day number (1-4)
+            story_index: Story index in source day (1-based)
+        """
+        from_key = f"day_{from_day}"
+        if from_key not in self.working_data:
+            console.print("[red]Error: Invalid day number[/red]")
+            return
+
+        from_data = self.working_data[from_key]
+
+        # Get story to move
+        if story_index == 1:
+            story = from_data.get('main_story', {})
+            was_main = True
+        else:
+            minis = from_data.get('mini_articles', [])
+            mini_idx = story_index - 2
+            if mini_idx < 0 or mini_idx >= len(minis):
+                console.print(f"[red]Error: Story {story_index} not found[/red]")
+                return
+            story = minis[mini_idx]
+            was_main = False
+
+        # Remove from source day
+        if was_main:
+            if from_data.get('mini_articles'):
+                from_data['main_story'] = from_data['mini_articles'].pop(0)
+            else:
+                console.print(f"[yellow]⚠️  Warning: Day {from_day} will have no main story after this move[/yellow]")
+                console.print(f"[dim]   (This will cause validation to fail when saving)[/dim]")
+                from_data['main_story'] = {}
+        else:
+            from_data['mini_articles'].pop(mini_idx)
+
+        # Add to unused
+        if 'unused' not in self.working_data:
+            self.working_data['unused'] = {'stories': []}
+        self.working_data['unused']['stories'].append(story)
+
+        story_title = story.get('title', 'Untitled')[:40]
+        change_msg = f"Day {from_day} → Unused: {story_title}"
+        self.changes_made.append(change_msg)
+
+        console.print(f"[green]✓[/green] Moved to unused: {story_title}")
+        console.print(f"  Story removed from newspaper")
+
+    def move_from_unused(self, story_index: int, to_day: int) -> None:
+        """
+        Move a story from unused to a day.
+
+        Args:
+            story_index: Story index in unused (1-based)
+            to_day: Target day number (1-4)
+        """
+        if 'unused' not in self.working_data:
+            console.print("[red]Error: No unused stories[/red]")
+            return
+
+        unused_stories = self.working_data['unused'].get('stories', [])
+        if story_index < 1 or story_index > len(unused_stories):
+            console.print(f"[red]Error: Story {story_index} not found in unused[/red]")
+            return
+
+        story = unused_stories.pop(story_index - 1)
+
+        to_key = f"day_{to_day}"
+        if to_key not in self.working_data:
+            console.print(f"[red]Error: Day {to_day} not found[/red]")
+            return
+
+        to_data = self.working_data[to_key]
+
+        # Check if target day is full
+        to_minis = to_data.get('mini_articles', [])
+        to_has_main = bool(to_data.get('main_story'))
+        to_count = len(to_minis) + (1 if to_has_main else 0)
+
+        if to_count >= 5:
+            console.print(f"[yellow]⚠️  Warning: Day {to_day} already has 5 stories[/yellow]")
+            console.print("   Cannot add story from unused - day is full")
+            # Put story back
+            unused_stories.insert(story_index - 1, story)
+            return
+
+        # Add to target day as mini article
+        if 'mini_articles' not in to_data:
+            to_data['mini_articles'] = []
+        to_data['mini_articles'].append(story)
+
+        story_title = story.get('title', 'Untitled')[:40]
+        change_msg = f"Unused → Day {to_day}: {story_title}"
+        self.changes_made.append(change_msg)
+
+        console.print(f"[green]✓[/green] Moved from unused: {story_title}")
+        console.print(f"  Added to Day {to_day} (mini)")
+
+    def review_unused(self) -> str:
+        """
+        Interactive review for unused stories.
+
+        Returns:
+            User's choice: 'accept', 'move', 'view'
+        """
+        if 'unused' not in self.working_data:
+            return 'accept'
+
+        unused_stories = self.working_data['unused'].get('stories', [])
+        if not unused_stories:
+            return 'accept'
+
+        console.print(f"\n[bold]Review Unused Stories ({len(unused_stories)} total)[/bold]")
+        console.print("  [A] Accept as-is (keep all unused)")
+        console.print("  [M] Move story to a day")
+        console.print("  [V] View story details")
+
+        choice = console.input("\n[cyan]Choice:[/cyan] ").strip().lower()
+
+        if choice == 'a':
+            return 'accept'
+        elif choice == 'm':
+            return 'move'
+        elif choice == 'v':
+            return 'view'
+        else:
+            console.print("[yellow]Invalid choice, treating as 'accept'[/yellow]")
+            return 'accept'
+
+    def _handle_unused_move_action(self) -> None:
+        """Handle moving a story from unused to a day."""
+        unused_stories = self.working_data['unused'].get('stories', [])
+        max_index = len(unused_stories)
+
+        story_num = console.input(f"\nWhich unused story to move? (1-{max_index}, or 'back'): ").strip()
+
+        if story_num == 'back':
+            return
+
+        try:
+            story_index = int(story_num)
+        except ValueError:
+            console.print("[red]Invalid story number[/red]")
+            return
+
+        console.print(f"\nMove story to which day?")
+        console.print("  [1] Health & Education")
+        console.print("  [2] Environment & Conservation")
+        console.print("  [3] Technology & Energy")
+        console.print("  [4] Society & Youth Movements")
+
+        target = console.input("\nChoice (1-4, or 'back'): ").strip()
+
+        if target == 'back':
+            return
+
+        try:
+            to_day = int(target)
+            if to_day < 1 or to_day > 4:
+                console.print("[red]Invalid day number[/red]")
+                return
+            self.move_from_unused(story_index, to_day)
+        except ValueError:
+            console.print("[red]Invalid choice[/red]")
+
+    def _handle_unused_view_action(self) -> None:
+        """Handle viewing an unused story."""
+        unused_stories = self.working_data['unused'].get('stories', [])
+        max_index = len(unused_stories)
+
+        story_num = console.input(f"Which story? (1-{max_index}, or 'back'): ").strip()
+
+        if story_num == 'back':
+            return
+
+        try:
+            story_index = int(story_num)
+            if story_index < 1 or story_index > max_index:
+                console.print(f"[red]Invalid story number[/red]")
+                return
+
+            story = unused_stories[story_index - 1]
+            title = story.get('title', 'Untitled')
+            content = story.get('content', '')
+            source_url = story.get('source_url', 'No URL')
+
+            panel_content = f"""[bold]Title:[/bold] {title}
+[bold]Length:[/bold] {len(content)} characters
+[bold]Source:[/bold] {source_url}
+[bold]Status:[/bold] Unused (will not appear in newspaper)
+
+[bold]Content:[/bold]
+{content[:500]}{'...' if len(content) > 500 else ''}"""
+
+            console.print(Panel(panel_content, title=f"Unused Story {story_index}"))
+            console.input("\nPress Enter to continue...")
+        except ValueError:
+            console.print("[red]Invalid story number[/red]")
+
     def review_day(self, day_num: int) -> str:
         """
         Interactive review for one day.
@@ -450,10 +652,15 @@ class StoryCurator:
         console.print(f"  [2] Environment & Conservation (current)" if day_num == 2 else "  [2] Environment & Conservation")
         console.print(f"  [3] Technology & Energy (current)" if day_num == 3 else "  [3] Technology & Energy")
         console.print(f"  [4] Society & Youth Movements (current)" if day_num == 4 else "  [4] Society & Youth Movements")
+        console.print(f"  [U] Unused (delete from newspaper)")
 
-        target = console.input("\nChoice (1-4, or 'back'): ").strip()
+        target = console.input("\nChoice (1-4, U, or 'back'): ").strip().lower()
 
         if target == 'back':
+            return
+
+        if target == 'u':
+            self.move_to_unused(day_num, story_index)
             return
 
         try:
@@ -513,12 +720,21 @@ class StoryCurator:
 
     def save_curated(self, output_file: Path) -> None:
         """
-        Save working_data to new JSON file.
+        Save working_data to new JSON file (excluding unused stories).
 
         Args:
             output_file: Path to save curated JSON
         """
+        # Create output data without unused category
+        output_data = {k: v for k, v in self.working_data.items() if k != 'unused'}
+
         with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(self.working_data, f, indent=2, ensure_ascii=False)
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
 
         console.print(f"\n[green]✓[/green] Saved to: {output_file}")
+
+        # Report unused stories count if any
+        if 'unused' in self.working_data:
+            unused_count = len(self.working_data['unused'].get('stories', []))
+            if unused_count > 0:
+                console.print(f"[dim]  ({unused_count} unused stories excluded from newspaper)[/dim]")
