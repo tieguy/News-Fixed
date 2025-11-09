@@ -95,7 +95,8 @@ def generate_content_with_ai(content_gen, day_data: dict, day_num: int) -> tuple
     main_story = content_gen.generate_main_story(
         original_content=day_data['main_story']['content'],
         source_url=day_data['main_story']['source_url'],
-        theme=get_theme_name(day_num)
+        theme=get_theme_name(day_num),
+        original_title=day_data['main_story'].get('title', '')
     )
     main_story['source_url'] = day_data['main_story']['source_url']
 
@@ -106,7 +107,8 @@ def generate_content_with_ai(content_gen, day_data: dict, day_num: int) -> tuple
     for article_data in day_data['mini_articles']:
         mini_article = content_gen.generate_mini_article(
             original_content=article_data['content'],
-            source_url=article_data['source_url']
+            source_url=article_data['source_url'],
+            original_title=article_data.get('title', '')
         )
         mini_article['source_url'] = article_data['source_url']
         mini_articles.append(mini_article)

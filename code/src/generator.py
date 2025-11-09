@@ -65,7 +65,8 @@ class ContentGenerator:
         self,
         original_content: str,
         source_url: str,
-        theme: str
+        theme: str,
+        original_title: str = ""
     ) -> Dict[str, str]:
         """
         Generate main story content (400-500 words).
@@ -74,13 +75,17 @@ class ContentGenerator:
             original_content: Original news story text
             source_url: Source URL
             theme: Today's theme
+            original_title: Original story title (first sentence)
 
         Returns:
             Dict with 'title' and 'content' keys
         """
+        # Combine title and content for full context
+        full_text = f"{original_title} {original_content}".strip() if original_title else original_content
+
         template = self._load_prompt("main_story")
         prompt = template.format(
-            original_content=original_content,
+            original_content=full_text,
             source_url=source_url,
             theme=theme
         )
@@ -96,7 +101,8 @@ class ContentGenerator:
     def generate_mini_article(
         self,
         original_content: str,
-        source_url: str
+        source_url: str,
+        original_title: str = ""
     ) -> Dict[str, str]:
         """
         Generate a mini article (100-150 words).
@@ -104,13 +110,17 @@ class ContentGenerator:
         Args:
             original_content: Original news story text
             source_url: Source URL
+            original_title: Original story title (first sentence)
 
         Returns:
             Dict with 'title' and 'content' keys
         """
+        # Combine title and content for full context
+        full_text = f"{original_title} {original_content}".strip() if original_title else original_content
+
         template = self._load_prompt("mini_article")
         prompt = template.format(
-            original_content=original_content,
+            original_content=full_text,
             source_url=source_url
         )
 

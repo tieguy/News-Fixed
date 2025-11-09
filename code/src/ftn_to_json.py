@@ -21,21 +21,25 @@ from src.parser import FTNParser
 FTN_BASE_URL = "https://fixthenews.com"
 
 
-def generate_tui_headline(story_content: str, anthropic_client: Anthropic) -> str:
+def generate_tui_headline(story_title: str, story_content: str, anthropic_client: Anthropic) -> str:
     """
     Generate a concise 40-50 character headline for TUI display.
 
     Args:
-        story_content: The story content
+        story_title: The story title (first sentence)
+        story_content: The story content (remaining text)
         anthropic_client: Initialized Anthropic client
 
     Returns:
         40-50 character headline
     """
+    # Combine title and content for context
+    full_text = f"{story_title} {story_content}".strip()
+
     prompt = f"""Generate a concise, informative headline of exactly 40-50 characters (including spaces) for this news story. The headline should be suitable for display in a text user interface.
 
 Story:
-{story_content[:500]}
+{full_text[:500]}
 
 Return ONLY the headline, nothing else. Make it engaging and clear."""
 
@@ -60,7 +64,8 @@ Return ONLY the headline, nothing else. Make it engaging and clear."""
     except Exception as e:
         print(f"   ⚠️  Error generating headline: {e}")
         # Fallback to truncated title
-        return story_content[:47] + "..."
+        fallback = full_text[:47]
+        return fallback + "..." if len(full_text) > 47 else fallback
 
 
 def create_json_from_ftn(html_file: str, output_file: str = None):
@@ -95,10 +100,11 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
     for i, story in enumerate(stories, 1):
         if anthropic_client:
             print(f"   [{i}/{len(stories)}] Generating headline...", end="\r")
-            story.tui_headline = generate_tui_headline(story.content, anthropic_client)
+            story.tui_headline = generate_tui_headline(story.title, story.content, anthropic_client)
         else:
-            # Fallback: use truncated content
-            story.tui_headline = story.content[:47] + "..."
+            # Fallback: use truncated title + content
+            full_text = f"{story.title} {story.content}".strip()
+            story.tui_headline = full_text[:47] + ("..." if len(full_text) > 47 else "")
 
     if anthropic_client:
         print(f"   ✓ Generated {len(stories)} headlines" + " " * 20)
