@@ -57,15 +57,22 @@ The `news-fixed` wrapper automatically activates the venv and provides a clean i
 # 2. Parse HTML to JSON
 ./news-fixed parse data/raw/FTN-317.html
 
-# 3. Generate PDFs (all 4 days)
-./news-fixed generate data/processed/ftn-317.json --all
+# 3. Curate stories (NEW - interactive review and categorization)
+python code/curate.py data/processed/ftn-317.json
+# Creates data/processed/ftn-317-curated.json
+# Interactive CLI to fix auto-categorization, move stories, swap main/mini
+
+# 4. Generate PDFs (all 4 days)
+./news-fixed generate data/processed/ftn-317-curated.json --all
 
 # Or generate single day
-./news-fixed generate data/processed/ftn-317.json --day 1
+./news-fixed generate data/processed/ftn-317-curated.json --day 1
 
 # Skip AI rewriting (faster, uses content as-is)
-./news-fixed generate data/processed/ftn-317.json --all --no-rewrite
+./news-fixed generate data/processed/ftn-317-curated.json --all --no-rewrite
 ```
+
+See [docs/CURATION.md](docs/CURATION.md) for detailed curation guide.
 
 ### Test Mode
 
@@ -98,11 +105,13 @@ News-Fixed/
 │   │   ├── fetch_ftn_clean.py   # Fetch FTN content
 │   │   ├── ftn_to_json.py       # Parse HTML to JSON
 │   │   ├── parser.py            # Story categorization
+│   │   ├── curator.py           # Interactive story curation
 │   │   ├── generator.py         # Claude API integration
 │   │   ├── pdf_generator.py     # PDF generation (WeasyPrint)
 │   │   ├── sports_schedule.py   # Duke basketball schedules
 │   │   └── utils.py             # QR codes, date helpers
 │   ├── templates/            # HTML/CSS newspaper templates
+│   ├── curate.py             # Interactive curation CLI
 │   └── main.py               # PDF generator
 ├── data/
 │   ├── raw/                  # FTN HTML downloads
@@ -151,6 +160,7 @@ Each daily edition contains:
 - **AI Assistance:** [CLAUDE.md](CLAUDE.md)
 - **Documentation Index:** [docs/INDEX.md](docs/INDEX.md)
 - **Fetching Guide:** [docs/FETCHING.md](docs/FETCHING.md)
+- **Curation Guide:** [docs/CURATION.md](docs/CURATION.md)
 - **Design Spec:** [docs/design-spec.md](docs/design-spec.md)
 
 ## Requirements
