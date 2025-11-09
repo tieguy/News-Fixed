@@ -59,8 +59,9 @@ class StoryCurator:
 
                 for i, story in enumerate(unused_stories, start=1):
                     title = story.get('tui_headline') or story.get('title', 'Untitled')[:60]
-                    length = len(story.get('content', ''))
-                    table.add_row(str(i), title, f"{length} chars")
+                    # Calculate full length: title + content
+                    full_length = len(story.get('title', '')) + len(story.get('content', ''))
+                    table.add_row(str(i), title, f"{full_length} chars")
 
                 console.print(table)
                 console.print()
@@ -85,15 +86,17 @@ class StoryCurator:
             main = day_data.get('main_story', {})
             if main:
                 title = main.get('tui_headline') or main.get('title', 'Untitled')[:60]
-                length = len(main.get('content', ''))
-                table.add_row("1", "[bold]MAIN[/bold]", title, f"{length} chars")
+                # Calculate full length: title + content
+                full_length = len(main.get('title', '')) + len(main.get('content', ''))
+                table.add_row("1", "[bold]MAIN[/bold]", title, f"{full_length} chars")
 
             # Add mini articles
             minis = day_data.get('mini_articles', [])
             for i, mini in enumerate(minis, start=2):
                 title = mini.get('tui_headline') or mini.get('title', 'Untitled')[:60]
-                length = len(mini.get('content', ''))
-                table.add_row(str(i), "mini", title, f"{length} chars")
+                # Calculate full length: title + content
+                full_length = len(mini.get('title', '')) + len(mini.get('content', ''))
+                table.add_row(str(i), "mini", title, f"{full_length} chars")
 
             console.print(table)
             console.print()  # Blank line between tables
