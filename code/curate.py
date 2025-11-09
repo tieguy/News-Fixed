@@ -71,6 +71,12 @@ def main(json_file, output, dry_run):
             click.echo("\n[DRY RUN] Not saving changes.")
             return
 
+        # Validate before saving
+        if not curator.validate_data():
+            click.echo("\n❌ Validation failed - cannot save")
+            click.echo("   Fix errors and try again")
+            sys.exit(1)
+
         # Save
         click.echo(f"\n💾 Saving to: {output}")
         curator.save_curated(output)

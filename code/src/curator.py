@@ -443,6 +443,52 @@ class StoryCurator:
         except ValueError:
             console.print("[red]Invalid choice[/red]")
 
+    def validate_data(self) -> bool:
+        """
+        Validate working_data before saving.
+
+        Returns:
+            True if valid, False if critical errors found
+        """
+        valid = True
+        warnings = []
+
+        for day_num in range(1, 5):
+            day_key = f"day_{day_num}"
+            if day_key not in self.working_data:
+                warnings.append(f"Day {day_num} not found in data")
+                continue
+
+            day_data = self.working_data[day_key]
+            main_story = day_data.get('main_story', {})
+            mini_articles = day_data.get('mini_articles', [])
+
+            # Check for empty day
+            if not main_story and not mini_articles:
+                warnings.append(f"Day {day_num} is empty")
+                continue
+
+            # Check for missing main story
+            if not main_story or not main_story.get('title'):
+                console.print(f"[red]Error: Day {day_num} has no main story[/red]")
+                valid = False
+
+            # Check for no mini articles
+            if not mini_articles:
+                warnings.append(f"Day {day_num} has no mini articles (only main story)")
+
+            # Check for too many mini articles
+            if len(mini_articles) > 4:
+                warnings.append(f"Day {day_num} has {len(mini_articles)} mini articles (recommended max: 4)")
+
+        # Show warnings
+        if warnings:
+            console.print("\n[yellow]Validation warnings:[/yellow]")
+            for warning in warnings:
+                console.print(f"  ⚠️  {warning}")
+
+        return valid
+
     def save_curated(self, output_file: Path) -> None:
         """
         Save working_data to new JSON file.
