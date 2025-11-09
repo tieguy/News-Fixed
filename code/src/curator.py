@@ -425,17 +425,10 @@ class StoryCurator:
 
         to_data = self.working_data[to_key]
 
-        # Check if target day is full
+        # Check if target day is full - warn but allow
         to_minis = to_data.get('mini_articles', [])
         to_has_main = bool(to_data.get('main_story'))
         to_count = len(to_minis) + (1 if to_has_main else 0)
-
-        if to_count >= 5:
-            console.print(f"[yellow]⚠️  Warning: Day {to_day} already has 5 stories[/yellow]")
-            console.print("   Cannot add story from unused - day is full")
-            # Put story back
-            unused_stories.insert(story_index - 1, story)
-            return
 
         # Add to target day as mini article
         if 'mini_articles' not in to_data:
@@ -448,6 +441,12 @@ class StoryCurator:
 
         console.print(f"[green]✓[/green] Moved from unused: {story_title}")
         console.print(f"  Added to Day {to_day} (mini)")
+
+        # Warn if day now exceeds capacity
+        new_count = to_count + 1
+        if new_count > 5:
+            console.print(f"[yellow]⚠️  Day {to_day} now has {new_count} stories (over capacity)[/yellow]")
+            console.print(f"[dim]   You'll need to remove {new_count - 5} during day review[/dim]")
 
     def review_unused(self) -> str:
         """
