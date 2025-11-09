@@ -121,6 +121,49 @@ class StoryCurator:
 
         console.print(Panel(panel_content, title=f"Day {day_num} - Story {story_index}"))
 
+    def swap_main_story(self, day_num: int, new_main_index: int) -> None:
+        """
+        Change which story is main vs mini.
+
+        Args:
+            day_num: Day number (1-4)
+            new_main_index: Story index to make main (1-based, 2+ = currently minis)
+        """
+        day_key = f"day_{day_num}"
+        if day_key not in self.working_data:
+            console.print(f"[red]Error: {day_key} not found[/red]")
+            return
+
+        day_data = self.working_data[day_key]
+
+        # Can't swap with itself
+        if new_main_index == 1:
+            console.print("[yellow]Story 1 is already the main story[/yellow]")
+            return
+
+        # Get current main and target mini
+        current_main = day_data.get('main_story', {})
+        minis = day_data.get('mini_articles', [])
+
+        mini_idx = new_main_index - 2
+        if mini_idx < 0 or mini_idx >= len(minis):
+            console.print(f"[red]Error: Story {new_main_index} not found[/red]")
+            return
+
+        new_main = minis[mini_idx]
+
+        # Swap
+        day_data['main_story'] = new_main
+        minis[mini_idx] = current_main
+
+        # Record change
+        change_msg = f"Day {day_num}: Swapped main story"
+        self.changes_made.append(change_msg)
+
+        console.print(f"[green]✓[/green] {change_msg}")
+        console.print(f"  New main: {new_main.get('title', 'Untitled')[:50]}...")
+        console.print(f"  Demoted: {current_main.get('title', 'Untitled')[:50]}...")
+
     def save_curated(self, output_file: Path) -> None:
         """
         Save working_data to new JSON file.
