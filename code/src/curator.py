@@ -509,6 +509,9 @@ class StoryCurator:
                 console.print("[red]Invalid day number[/red]")
                 return
             self.move_from_unused(story_index, to_day)
+            # Refresh display after move from unused
+            console.print("\n" + "=" * 60)
+            self.display_overview()
         except ValueError:
             console.print("[red]Invalid choice[/red]")
 
@@ -628,6 +631,9 @@ class StoryCurator:
 
         try:
             self.swap_main_story(day_num, int(choice))
+            # Refresh display after swap
+            console.print("\n" + "=" * 60)
+            self.display_overview()
         except ValueError:
             console.print("[red]Invalid choice[/red]")
 
@@ -661,6 +667,9 @@ class StoryCurator:
 
         if target == 'u':
             self.move_to_unused(day_num, story_index)
+            # Refresh display after move to unused
+            console.print("\n" + "=" * 60)
+            self.display_overview()
             return
 
         try:
@@ -669,6 +678,9 @@ class StoryCurator:
                 console.print("[yellow]Story is already in this day[/yellow]")
                 return
             self.move_story(day_num, story_index, to_day)
+            # Refresh display after move
+            console.print("\n" + "=" * 60)
+            self.display_overview()
         except ValueError:
             console.print("[red]Invalid choice[/red]")
 
