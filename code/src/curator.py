@@ -43,9 +43,29 @@ class StoryCurator:
         return data
 
     def display_overview(self) -> None:
-        """Show all 4 days + unused stories in rich tables."""
+        """Show unused stories first, then all 4 days in rich tables."""
         console.print("\n[bold cyan]Story Curation Overview[/bold cyan]\n")
 
+        # Display unused stories FIRST
+        if 'unused' in self.working_data:
+            unused_data = self.working_data['unused']
+            unused_stories = unused_data.get('stories', [])
+
+            if unused_stories:
+                table = Table(title="Unused Stories (Blocklisted or Uncategorized)")
+                table.add_column("#", style="dim", width=3)
+                table.add_column("Title", style="yellow")
+                table.add_column("Length", justify="right", width=10)
+
+                for i, story in enumerate(unused_stories, start=1):
+                    title = story.get('tui_headline') or story.get('title', 'Untitled')[:60]
+                    length = len(story.get('content', ''))
+                    table.add_row(str(i), title, f"{length} chars")
+
+                console.print(table)
+                console.print()
+
+        # Then display day tables
         for day_num in range(1, 5):
             day_key = f"day_{day_num}"
             if day_key not in self.working_data:
@@ -77,25 +97,6 @@ class StoryCurator:
 
             console.print(table)
             console.print()  # Blank line between tables
-
-        # Display unused stories
-        if 'unused' in self.working_data:
-            unused_data = self.working_data['unused']
-            unused_stories = unused_data.get('stories', [])
-
-            if unused_stories:
-                table = Table(title="Unused Stories (Blocklisted or Uncategorized)")
-                table.add_column("#", style="dim", width=3)
-                table.add_column("Title", style="yellow")
-                table.add_column("Length", justify="right", width=10)
-
-                for i, story in enumerate(unused_stories, start=1):
-                    title = story.get('tui_headline') or story.get('title', 'Untitled')[:60]
-                    length = len(story.get('content', ''))
-                    table.add_row(str(i), title, f"{length} chars")
-
-                console.print(table)
-                console.print()
 
     def view_story(self, day_num: int, story_index: int) -> None:
         """
@@ -459,12 +460,26 @@ class StoryCurator:
         if not unused_stories:
             return 'accept'
 
-        console.print(f"\n[bold]Review Unused Stories ({len(unused_stories)} total)[/bold]")
+        max_index = len(unused_stories)
+
+        console.print(f"\n[bold]Review Unused Stories ({max_index} total)[/bold]")
         console.print("  [A] Accept as-is (keep all unused)")
         console.print("  [M] Move story to a day")
         console.print("  [V] View story details")
+        console.print(f"  [1-{max_index}] Quick move story # to a day")
 
         choice = console.input("\n[cyan]Choice:[/cyan] ").strip().lower()
+
+        # Check for numeric shortcut (e.g., "3" means move unused story 3)
+        if choice.isdigit():
+            story_num = int(choice)
+            if 1 <= story_num <= max_index:
+                # Trigger move action with this story number pre-selected
+                self._handle_unused_move_action(story_num)
+                return 'move'  # Signal that we handled a move
+            else:
+                console.print(f"[red]Invalid story number (must be 1-{max_index})[/red]")
+                return 'accept'
 
         if choice == 'a':
             return 'accept'
@@ -476,21 +491,28 @@ class StoryCurator:
             console.print("[yellow]Invalid choice, treating as 'accept'[/yellow]")
             return 'accept'
 
-    def _handle_unused_move_action(self) -> None:
-        """Handle moving a story from unused to a day."""
+    def _handle_unused_move_action(self, preselected_story: int = None) -> None:
+        """Handle moving a story from unused to a day.
+
+        Args:
+            preselected_story: If provided, skip asking which story to move
+        """
         unused_stories = self.working_data['unused'].get('stories', [])
         max_index = len(unused_stories)
 
-        story_num = console.input(f"\nWhich unused story to move? (1-{max_index}, or 'back'): ").strip()
+        if preselected_story is not None:
+            story_index = preselected_story
+        else:
+            story_num = console.input(f"\nWhich unused story to move? (1-{max_index}, or 'back'): ").strip()
 
-        if story_num == 'back':
-            return
+            if story_num == 'back':
+                return
 
-        try:
-            story_index = int(story_num)
-        except ValueError:
-            console.print("[red]Invalid story number[/red]")
-            return
+            try:
+                story_index = int(story_num)
+            except ValueError:
+                console.print("[red]Invalid story number[/red]")
+                return
 
         console.print(f"\nMove story to which day?")
         console.print("  [1] Health & Education")
@@ -566,16 +588,37 @@ class StoryCurator:
 
         day_data = self.working_data[day_key]
         theme = day_data.get('theme', 'Unknown Theme')
+        minis = day_data.get('mini_articles', [])
+        total_stories = 1 + len(minis)  # 1 main + N minis
+        max_index = total_stories
+
+        # Auto-prompt if day has 6+ stories
+        if total_stories >= 6:
+            console.print(f"\n[yellow]⚠️  Day {day_num} has {total_stories} stories (capacity exceeded!)[/yellow]")
+            console.print(f"[dim]   Maximum is 1 main + 4 minis = 5 total stories[/dim]")
+            console.print(f"[dim]   You need to remove at least {total_stories - 5} stories[/dim]\n")
 
         console.print(f"\n[bold]Review Day {day_num}: {theme}[/bold]")
         console.print("  [A] Accept as-is")
         console.print("  [M] Move stories to different day")
         console.print("  [S] Swap main/mini assignments")
         console.print("  [V] View story details")
+        console.print(f"  [1-{max_index}] Quick move story # to another day")
         if day_num > 1:
             console.print("  [B] Back to previous day")
 
         choice = console.input("\n[cyan]Choice:[/cyan] ").strip().lower()
+
+        # Check for numeric shortcut (e.g., "3" means move story 3)
+        if choice.isdigit():
+            story_num = int(choice)
+            if 1 <= story_num <= max_index:
+                # Trigger move action with this story number pre-selected
+                self._handle_move_action(day_num, story_num)
+                return 'move'  # Signal that we handled a move
+            else:
+                console.print(f"[red]Invalid story number (must be 1-{max_index})[/red]")
+                return 'accept'
 
         if choice == 'a':
             return 'accept'
@@ -637,21 +680,29 @@ class StoryCurator:
         except ValueError:
             console.print("[red]Invalid choice[/red]")
 
-    def _handle_move_action(self, day_num: int) -> None:
-        """Handle move story action."""
+    def _handle_move_action(self, day_num: int, preselected_story: int = None) -> None:
+        """Handle move story action.
+
+        Args:
+            day_num: Day number (1-4)
+            preselected_story: If provided, skip asking which story to move
+        """
         day_data = self.working_data[f"day_{day_num}"]
         max_index = 1 + len(day_data.get('mini_articles', []))
 
-        story_num = console.input(f"\nWhich story to move? (1-{max_index}, or 'back'): ").strip()
+        if preselected_story is not None:
+            story_index = preselected_story
+        else:
+            story_num = console.input(f"\nWhich story to move? (1-{max_index}, or 'back'): ").strip()
 
-        if story_num == 'back':
-            return
+            if story_num == 'back':
+                return
 
-        try:
-            story_index = int(story_num)
-        except ValueError:
-            console.print("[red]Invalid story number[/red]")
-            return
+            try:
+                story_index = int(story_num)
+            except ValueError:
+                console.print("[red]Invalid story number[/red]")
+                return
 
         console.print(f"\nMove story to which day?")
         console.print(f"  [1] Health & Education (current)" if day_num == 1 else "  [1] Health & Education")
