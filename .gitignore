@@ -48,6 +48,9 @@ ftn-*.json
 # Firefox profile for fetching (contains cookies)
 .firefox-profile-ftn/
 
+# Git worktrees
+.worktrees/
+
 # Keep directory structure
 !output/.gitkeep
 !data/.gitkeep
