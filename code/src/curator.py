@@ -164,6 +164,78 @@ class StoryCurator:
         console.print(f"  New main: {new_main.get('title', 'Untitled')[:50]}...")
         console.print(f"  Demoted: {current_main.get('title', 'Untitled')[:50]}...")
 
+    def _handle_overflow(self, to_day: int, incoming_story: dict) -> Optional[dict]:
+        """
+        Handle adding story to a full day (5 stories already).
+
+        Args:
+            to_day: Target day number
+            incoming_story: Story being moved
+
+        Returns:
+            Story to swap back to source day, or None if cancelled/replaced
+        """
+        to_data = self.working_data[f"day_{to_day}"]
+        minis = to_data.get('mini_articles', [])
+
+        incoming_title = incoming_story.get('title', 'Untitled')[:40]
+
+        console.print(f"\n[yellow]⚠️  Warning: Day {to_day} already has 5 stories (1 main + 4 minis)[/yellow]")
+        console.print(f"   Moving '{incoming_title}' would exceed the limit.\n")
+        console.print("Options:")
+        console.print("  [S] Swap with an existing mini article")
+        console.print("  [R] Replace an existing mini article")
+        console.print("  [C] Cancel move")
+
+        choice = console.input("\nChoice: ").strip().lower()
+
+        if choice == 'c':
+            console.print("[yellow]Move cancelled[/yellow]")
+            return None
+
+        if choice not in ['s', 'r']:
+            console.print("[yellow]Invalid choice, cancelling move[/yellow]")
+            return None
+
+        # Show mini articles to swap/replace
+        console.print(f"\n{'Swap' if choice == 's' else 'Replace'} with which Day {to_day} mini article?")
+        for i, mini in enumerate(minis, start=1):
+            title = mini.get('title', 'Untitled')[:50]
+            length = len(mini.get('content', ''))
+            console.print(f"  [{i}] {title} ({length} chars)")
+
+        target = console.input(f"\nChoice (1-{len(minis)}, or 'back'): ").strip()
+
+        if target == 'back':
+            console.print("[yellow]Move cancelled[/yellow]")
+            return None
+
+        try:
+            target_idx = int(target) - 1
+            if target_idx < 0 or target_idx >= len(minis):
+                console.print("[red]Invalid choice, cancelling move[/red]")
+                return None
+
+            target_story = minis[target_idx]
+            target_title = target_story.get('title', 'Untitled')[:40]
+
+            # Add incoming story to target day
+            minis[target_idx] = incoming_story
+
+            if choice == 's':
+                # Swap: return target story to source day
+                console.print(f"[green]✓[/green] Swapped: {incoming_title} ↔ {target_title}")
+                return target_story
+            else:
+                # Replace: target story is removed
+                console.print(f"[green]✓[/green] Replaced {target_title} with {incoming_title}")
+                console.print(f"[dim]  ({target_title} removed from curation)[/dim]")
+                return None
+
+        except ValueError:
+            console.print("[red]Invalid choice, cancelling move[/red]")
+            return None
+
     def move_story(self, from_day: int, story_index: int, to_day: int) -> bool:
         """
         Move a story between days.
@@ -204,12 +276,7 @@ class StoryCurator:
         to_has_main = bool(to_data.get('main_story'))
         to_count = len(to_minis) + (1 if to_has_main else 0)
 
-        if to_count >= 5:
-            console.print(f"[yellow]⚠️  Warning: Day {to_day} already has 5 stories[/yellow]")
-            console.print("   Overflow handling not yet implemented - move cancelled")
-            return False
-
-        # Remove from source day
+        # Remove from source day first
         if was_main:
             # If moving main story, promote first mini (if exists)
             if from_data.get('mini_articles'):
@@ -218,6 +285,27 @@ class StoryCurator:
                 from_data['main_story'] = {}
         else:
             from_data['mini_articles'].pop(mini_idx)
+
+        if to_count >= 5:
+            # Handle overflow (swap or replace)
+            swapped_story = self._handle_overflow(to_day, story)
+
+            if swapped_story is None:
+                # User cancelled or chose replace (no story to add back)
+                # Story removed from source day (already done above)
+                return True
+
+            # User chose swap - add swapped story to source day
+            if was_main:
+                # Source lost its main, make swapped story the main
+                from_data['main_story'] = swapped_story
+            else:
+                # Add swapped story as mini
+                if 'mini_articles' not in from_data:
+                    from_data['mini_articles'] = []
+                from_data['mini_articles'].insert(mini_idx, swapped_story)
+
+            return True
 
         # Add to target day as mini article
         if 'mini_articles' not in to_data:
