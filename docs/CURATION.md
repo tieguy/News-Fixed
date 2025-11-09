@@ -11,17 +11,17 @@ The story curation CLI (`code/curate.py`) provides an interactive workflow for m
 First, run `ftn_to_json.py` to parse FTN HTML and auto-categorize stories:
 
 ```bash
-python code/src/ftn_to_json.py data/ftn/FTN-316.html
+python code/src/ftn_to_json.py data/raw/FTN-316.html -o data/processed/ftn-316.json
 ```
 
-This creates `data/ftn/ftn-316.json` with stories assigned to days based on keyword matching.
+This creates `data/processed/ftn-316.json` with stories assigned to days based on keyword matching.
 
 ### 2. Interactive Curation
 
 Run the curation tool to review and fix categorization:
 
 ```bash
-python code/curate.py data/ftn/ftn-316.json
+python code/curate.py data/processed/ftn-316.json
 ```
 
 You'll see an overview table showing all 4 days with their stories, then review each day interactively.

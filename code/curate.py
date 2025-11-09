@@ -3,8 +3,8 @@
 Interactive CLI for curating FTN stories before newspaper generation.
 
 Usage:
-    python code/curate.py data/ftn/ftn-316.json
-    python code/curate.py data/ftn/ftn-316.json --output data/ftn/custom-name.json
+    python code/curate.py data/processed/ftn-316.json
+    python code/curate.py data/processed/ftn-316.json --output data/processed/custom-name.json
 """
 
 import sys
@@ -36,17 +36,17 @@ def main(json_file, output, dry_run):
     \b
     Examples:
         # Basic curation
-        python code/curate.py data/ftn/ftn-316.json
+        python code/curate.py data/processed/ftn-316.json
 
         # Custom output filename
-        python code/curate.py data/ftn/ftn-316.json -o data/ftn/monday.json
+        python code/curate.py data/processed/ftn-316.json -o data/processed/monday.json
 
         # Preview without saving
-        python code/curate.py data/ftn/ftn-316.json --dry-run
+        python code/curate.py data/processed/ftn-316.json --dry-run
 
     \b
     Next steps after curation:
-        python code/main.py --input data/ftn/ftn-316-curated.json --all
+        python code/main.py --input data/processed/ftn-316-curated.json --all
     """
     click.echo("📰 News, Fixed - Story Curation Tool\n")
 
