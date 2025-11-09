@@ -21,10 +21,32 @@ from src.curator import StoryCurator
               help='Preview without saving')
 def main(json_file, output, dry_run):
     """
-    Interactively curate FTN stories.
+    Interactively curate FTN stories before newspaper generation.
 
-    Loads auto-categorized JSON from ftn_to_json.py, displays stories
-    in tables, and allows manual curation before saving.
+    Loads auto-categorized JSON from ftn_to_json.py, displays stories in
+    rich tables, and provides an interactive review workflow:
+
+    \b
+    1. Review Day 1-4 stories with auto-categorization
+    2. Move stories between days to fix miscategorizations
+    3. Swap main/mini assignments when length-based choice is wrong
+    4. View full story details before making decisions
+    5. Save curated results to new JSON file
+
+    \b
+    Examples:
+        # Basic curation
+        python code/curate.py data/ftn/ftn-316.json
+
+        # Custom output filename
+        python code/curate.py data/ftn/ftn-316.json -o data/ftn/monday.json
+
+        # Preview without saving
+        python code/curate.py data/ftn/ftn-316.json --dry-run
+
+    \b
+    Next steps after curation:
+        python code/main.py --input data/ftn/ftn-316-curated.json --all
     """
     click.echo("📰 News, Fixed - Story Curation Tool\n")
 
