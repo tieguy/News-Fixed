@@ -49,8 +49,22 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         4: 'society'
     }
 
-    # Build 4-day structure
+    # Build 4-day structure + unused
     four_days = {}
+
+    # Add unused stories
+    unused_stories = categories.get('unused', [])
+    if unused_stories:
+        four_days['unused'] = {
+            "stories": [
+                {
+                    "title": story.title,
+                    "content": story.content,
+                    "source_url": story.source_url or FTN_BASE_URL
+                }
+                for story in unused_stories
+            ]
+        }
 
     for day_num, category_key in day_mapping.items():
         category_stories = categories.get(category_key, [])

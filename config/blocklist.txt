@@ -1,0 +1,16 @@
+# Blocklist - Keywords to filter sensitive content
+#
+# Stories matching these keywords will be moved to "unused" category
+# during auto-categorization. You can review unused stories in the
+# curation UI and manually move them to days if appropriate.
+#
+# One keyword per line. Case-insensitive matching.
+# Lines starting with # are comments.
+
+# Violence and crime
+rape
+sexual assault
+murder
+genocide
+
+# Add your own keywords below:

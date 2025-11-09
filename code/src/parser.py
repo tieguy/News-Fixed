@@ -290,6 +290,40 @@ class FTNParser:
 
         return FTNStory(title=title, content=content, source_url=source_url)
 
+    def _load_blocklist(self) -> List[str]:
+        """
+        Load blocklist keywords from config/blocklist.txt.
+
+        Returns:
+            List of lowercase blocklist keywords
+        """
+        blocklist_path = Path(__file__).parent.parent.parent / 'config' / 'blocklist.txt'
+        blocklist = []
+
+        if blocklist_path.exists():
+            with open(blocklist_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if line and not line.startswith('#'):
+                        blocklist.append(line.lower())
+
+        return blocklist
+
+    def _is_blocklisted(self, story: 'FTNStory', blocklist: List[str]) -> bool:
+        """
+        Check if story matches any blocklist keywords.
+
+        Args:
+            story: FTNStory to check
+            blocklist: List of blocklist keywords
+
+        Returns:
+            True if story matches blocklist, False otherwise
+        """
+        text = (story.title + ' ' + story.content).lower()
+        return any(keyword in text for keyword in blocklist)
+
     def categorize_stories(self, stories: List[FTNStory]) -> Dict[str, List[FTNStory]]:
         """
         Categorize stories by theme.
@@ -298,14 +332,18 @@ class FTNParser:
             stories: List of FTNStory objects
 
         Returns:
-            Dict mapping theme names to story lists
+            Dict mapping theme names to story lists (includes 'unused' category)
         """
         categories = {
             'health_education': [],
             'environment': [],
             'technology_energy': [],
-            'society': []
+            'society': [],
+            'unused': []
         }
+
+        # Load blocklist
+        blocklist = self._load_blocklist()
 
         # Keywords for each category
         keywords = {
@@ -316,10 +354,17 @@ class FTNParser:
         }
 
         for story in stories:
+            # Check blocklist first
+            if self._is_blocklisted(story, blocklist):
+                categories['unused'].append(story)
+                continue
+
             text = (story.title + ' ' + story.content).lower()
             scores = {}
 
             for category, terms in keywords.items():
+                if category == 'unused':
+                    continue
                 score = sum(1 for term in terms if term in text)
                 scores[category] = score
 
@@ -329,8 +374,8 @@ class FTNParser:
                 if scores[best_category] > 0:
                     categories[best_category].append(story)
                 else:
-                    # Default to society if no clear match
-                    categories['society'].append(story)
+                    # No clear match - move to unused
+                    categories['unused'].append(story)
 
         return categories
 

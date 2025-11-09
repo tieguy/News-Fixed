@@ -43,7 +43,7 @@ class StoryCurator:
         return data
 
     def display_overview(self) -> None:
-        """Show all 4 days in rich tables."""
+        """Show all 4 days + unused stories in rich tables."""
         console.print("\n[bold cyan]Story Curation Overview[/bold cyan]\n")
 
         for day_num in range(1, 5):
@@ -77,6 +77,25 @@ class StoryCurator:
 
             console.print(table)
             console.print()  # Blank line between tables
+
+        # Display unused stories
+        if 'unused' in self.working_data:
+            unused_data = self.working_data['unused']
+            unused_stories = unused_data.get('stories', [])
+
+            if unused_stories:
+                table = Table(title="Unused Stories (Blocklisted or Uncategorized)")
+                table.add_column("#", style="dim", width=3)
+                table.add_column("Title", style="yellow")
+                table.add_column("Length", justify="right", width=10)
+
+                for i, story in enumerate(unused_stories, start=1):
+                    title = story.get('title', 'Untitled')[:60]
+                    length = len(story.get('content', ''))
+                    table.add_row(str(i), title, f"{length} chars")
+
+                console.print(table)
+                console.print()
 
     def view_story(self, day_num: int, story_index: int) -> None:
         """
