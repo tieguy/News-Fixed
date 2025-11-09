@@ -234,6 +234,127 @@ class StoryCurator:
 
         return True
 
+    def review_day(self, day_num: int) -> str:
+        """
+        Interactive review for one day.
+
+        Args:
+            day_num: Day number (1-4)
+
+        Returns:
+            User's choice: 'accept', 'move', 'swap', 'view', 'back'
+        """
+        day_key = f"day_{day_num}"
+        if day_key not in self.working_data:
+            console.print(f"[red]Error: {day_key} not found[/red]")
+            return 'accept'
+
+        day_data = self.working_data[day_key]
+        theme = day_data.get('theme', 'Unknown Theme')
+
+        console.print(f"\n[bold]Review Day {day_num}: {theme}[/bold]")
+        console.print("  [A] Accept as-is")
+        console.print("  [M] Move stories to different day")
+        console.print("  [S] Swap main/mini assignments")
+        console.print("  [V] View story details")
+        if day_num > 1:
+            console.print("  [B] Back to previous day")
+
+        choice = console.input("\n[cyan]Choice:[/cyan] ").strip().lower()
+
+        if choice == 'a':
+            return 'accept'
+        elif choice == 'm':
+            return 'move'
+        elif choice == 's':
+            return 'swap'
+        elif choice == 'v':
+            return 'view'
+        elif choice == 'b' and day_num > 1:
+            return 'back'
+        else:
+            console.print("[yellow]Invalid choice, treating as 'accept'[/yellow]")
+            return 'accept'
+
+    def _handle_view_action(self, day_num: int) -> None:
+        """Handle view story action."""
+        day_data = self.working_data[f"day_{day_num}"]
+        max_index = 1 + len(day_data.get('mini_articles', []))
+
+        story_num = console.input(f"Which story? (1-{max_index}, or 'back'): ").strip()
+
+        if story_num == 'back':
+            return
+
+        try:
+            self.view_story(day_num, int(story_num))
+            console.input("\nPress Enter to continue...")
+        except ValueError:
+            console.print("[red]Invalid story number[/red]")
+
+    def _handle_swap_action(self, day_num: int) -> None:
+        """Handle swap main story action."""
+        day_data = self.working_data[f"day_{day_num}"]
+        minis = day_data.get('mini_articles', [])
+
+        if not minis:
+            console.print("[yellow]No mini articles to swap with[/yellow]")
+            return
+
+        console.print("\nPick new main story:")
+        console.print(f"  [1] {day_data.get('main_story', {}).get('title', 'Untitled')[:50]} (currently MAIN)")
+
+        for i, mini in enumerate(minis, start=2):
+            title = mini.get('title', 'Untitled')[:50]
+            length = len(mini.get('content', ''))
+            console.print(f"  [{i}] {title} ({length} chars)")
+
+        choice = console.input(f"\nChoice (2-{len(minis)+1}, or 'back'): ").strip()
+
+        if choice == 'back':
+            return
+
+        try:
+            self.swap_main_story(day_num, int(choice))
+        except ValueError:
+            console.print("[red]Invalid choice[/red]")
+
+    def _handle_move_action(self, day_num: int) -> None:
+        """Handle move story action."""
+        day_data = self.working_data[f"day_{day_num}"]
+        max_index = 1 + len(day_data.get('mini_articles', []))
+
+        story_num = console.input(f"\nWhich story to move? (1-{max_index}, or 'back'): ").strip()
+
+        if story_num == 'back':
+            return
+
+        try:
+            story_index = int(story_num)
+        except ValueError:
+            console.print("[red]Invalid story number[/red]")
+            return
+
+        console.print(f"\nMove story to which day?")
+        console.print(f"  [1] Health & Education (current)" if day_num == 1 else "  [1] Health & Education")
+        console.print(f"  [2] Environment & Conservation (current)" if day_num == 2 else "  [2] Environment & Conservation")
+        console.print(f"  [3] Technology & Energy (current)" if day_num == 3 else "  [3] Technology & Energy")
+        console.print(f"  [4] Society & Youth Movements (current)" if day_num == 4 else "  [4] Society & Youth Movements")
+
+        target = console.input("\nChoice (1-4, or 'back'): ").strip()
+
+        if target == 'back':
+            return
+
+        try:
+            to_day = int(target)
+            if to_day == day_num:
+                console.print("[yellow]Story is already in this day[/yellow]")
+                return
+            self.move_story(day_num, story_index, to_day)
+        except ValueError:
+            console.print("[red]Invalid choice[/red]")
+
     def save_curated(self, output_file: Path) -> None:
         """
         Save working_data to new JSON file.
