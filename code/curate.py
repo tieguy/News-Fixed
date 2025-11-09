@@ -40,11 +40,38 @@ def main(json_file, output, dry_run):
         curator = StoryCurator(Path(json_file))
         curator.display_overview()
 
+        # Interactive review
+        current_day = 1
+        while current_day <= 4:
+            choice = curator.review_day(current_day)
+
+            if choice == 'accept':
+                current_day += 1
+            elif choice == 'move':
+                curator._handle_move_action(current_day)
+            elif choice == 'swap':
+                curator._handle_swap_action(current_day)
+            elif choice == 'view':
+                curator._handle_view_action(current_day)
+            elif choice == 'back':
+                current_day = max(1, current_day - 1)
+
+        # Show final summary
+        click.echo("\n" + "=" * 60)
+        click.echo("✅ Curation complete!\n")
+
+        if curator.changes_made:
+            click.echo("Summary of changes:")
+            for change in curator.changes_made:
+                click.echo(f"  - {change}")
+        else:
+            click.echo("No changes made.")
+
         if dry_run:
             click.echo("\n[DRY RUN] Not saving changes.")
             return
 
-        # For now, just save (no interactive changes yet)
+        # Save
         click.echo(f"\n💾 Saving to: {output}")
         curator.save_curated(output)
 
@@ -53,6 +80,9 @@ def main(json_file, output, dry_run):
 
     except FileNotFoundError as e:
         click.echo(f"❌ Error: {e}", err=True)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        click.echo("\n\n❌ Cancelled by user")
         sys.exit(1)
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
