@@ -282,6 +282,9 @@ class StoryCurator:
             if from_data.get('mini_articles'):
                 from_data['main_story'] = from_data['mini_articles'].pop(0)
             else:
+                # No mini to promote - day will have no main story
+                console.print(f"[yellow]⚠️  Warning: Day {from_day} will have no main story after this move[/yellow]")
+                console.print(f"[dim]   (This will cause validation to fail when saving)[/dim]")
                 from_data['main_story'] = {}
         else:
             from_data['mini_articles'].pop(mini_idx)
