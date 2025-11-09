@@ -78,6 +78,49 @@ class StoryCurator:
             console.print(table)
             console.print()  # Blank line between tables
 
+    def view_story(self, day_num: int, story_index: int) -> None:
+        """
+        Display full story details.
+
+        Args:
+            day_num: Day number (1-4)
+            story_index: Story index (1-based, 1=main, 2+=minis)
+        """
+        day_key = f"day_{day_num}"
+        if day_key not in self.working_data:
+            console.print(f"[red]Error: {day_key} not found[/red]")
+            return
+
+        day_data = self.working_data[day_key]
+
+        # Get the story
+        if story_index == 1:
+            story = day_data.get('main_story', {})
+            role = "MAIN story"
+        else:
+            minis = day_data.get('mini_articles', [])
+            mini_idx = story_index - 2
+            if mini_idx < 0 or mini_idx >= len(minis):
+                console.print(f"[red]Error: Story {story_index} not found[/red]")
+                return
+            story = minis[mini_idx]
+            role = "mini article"
+
+        # Display story details
+        title = story.get('title', 'Untitled')
+        content = story.get('content', '')
+        source_url = story.get('source_url', 'No URL')
+
+        panel_content = f"""[bold]Title:[/bold] {title}
+[bold]Length:[/bold] {len(content)} characters
+[bold]Source:[/bold] {source_url}
+[bold]Role:[/bold] {role}
+
+[bold]Content:[/bold]
+{content[:500]}{'...' if len(content) > 500 else ''}"""
+
+        console.print(Panel(panel_content, title=f"Day {day_num} - Story {story_index}"))
+
     def save_curated(self, output_file: Path) -> None:
         """
         Save working_data to new JSON file.
