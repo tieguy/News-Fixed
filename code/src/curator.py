@@ -339,7 +339,7 @@ class StoryCurator:
         to_data['mini_articles'].append(story)
 
         # Record change
-        story_title = story.get('title', 'Untitled')[:40]
+        story_title = story.get('tui_headline') or story.get('title', 'Untitled')[:40]
         change_msg = f"Day {from_day} → Day {to_day}: {story_title}"
         self.changes_made.append(change_msg)
 
@@ -392,7 +392,7 @@ class StoryCurator:
             self.working_data['unused'] = {'stories': []}
         self.working_data['unused']['stories'].append(story)
 
-        story_title = story.get('title', 'Untitled')[:40]
+        story_title = story.get('tui_headline') or story.get('title', 'Untitled')[:40]
         change_msg = f"Day {from_day} → Unused: {story_title}"
         self.changes_made.append(change_msg)
 
@@ -435,7 +435,7 @@ class StoryCurator:
             to_data['mini_articles'] = []
         to_data['mini_articles'].append(story)
 
-        story_title = story.get('title', 'Untitled')[:40]
+        story_title = story.get('tui_headline') or story.get('title', 'Untitled')[:40]
         change_msg = f"Unused → Day {to_day}: {story_title}"
         self.changes_made.append(change_msg)
 
