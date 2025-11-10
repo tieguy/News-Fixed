@@ -51,6 +51,9 @@ ftn-*.json
 # Git worktrees
 .worktrees/
 
+# Beads socket file
+.beads/bd.sock
+
 # Keep directory structure
 !output/.gitkeep
 !data/.gitkeep

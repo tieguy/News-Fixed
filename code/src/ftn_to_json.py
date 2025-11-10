@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
+#
+# SPDX-License-Identifier: BlueOak-1.0.0
+
 """Convert fetched FTN HTML into a 4-day JSON file for News, Fixed."""
 
 import sys

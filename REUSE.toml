@@ -1,0 +1,61 @@
+version = 1
+
+# Documentation files
+[[annotations]]
+path = ["*.md", "docs/**"]
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Configuration files
+[[annotations]]
+path = ["*.toml", "*.json", ".env.example", ".gitignore", "code/.env.example"]
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# HTML/CSS/Typst templates
+[[annotations]]
+path = ["code/templates/**"]
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Sports data files (ICS calendars)
+[[annotations]]
+path = ["data/sports/**"]
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Prompt templates
+[[annotations]]
+path = "prompts/**"
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Configuration data
+[[annotations]]
+path = "config/**"
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Shell script
+[[annotations]]
+path = "news-fixed"
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Requirements and gitkeep files
+[[annotations]]
+path = ["requirements.txt", "**/.gitkeep"]
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Claude-specific files
+[[annotations]]
+path = [".claude/**", "CLAUDE.md", "AGENTS.md"]
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"
+
+# Beads issue tracking
+[[annotations]]
+path = ".beads/**"
+SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
+SPDX-License-Identifier = "BlueOak-1.0.0"

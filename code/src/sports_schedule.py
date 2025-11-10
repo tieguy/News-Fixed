@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
+#
+# SPDX-License-Identifier: BlueOak-1.0.0
+
 """Parse Duke basketball schedules from ICS files."""
 
 from datetime import datetime, timedelta

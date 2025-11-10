@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
+#
+# SPDX-License-Identifier: BlueOak-1.0.0
+
 """Parse Fix The News HTML content into structured stories."""
 
 import re
