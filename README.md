@@ -1,3 +1,5 @@
+> **Note:** This project is built for Luis's personal use to create a daily newspaper for his family. You're welcome to fork it and adapt it for your own needs!
+
 # News, Fixed
 
 A daily 2-page newspaper for bright children (ages 10-14) that transforms positive news content from [Fix The News](https://fixthe.news) into engaging, print-ready reading material.
