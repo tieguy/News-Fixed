@@ -58,7 +58,7 @@ The `news-fixed` wrapper automatically activates the venv and provides a clean i
 ./news-fixed parse data/raw/FTN-317.html
 
 # 3. Curate stories (NEW - interactive review and categorization)
-python code/curate.py data/processed/ftn-317.json
+python code/src/curate.py data/processed/ftn-317.json
 # Creates data/processed/ftn-317-curated.json
 # Interactive CLI to fix auto-categorization, move stories, swap main/mini
 
@@ -109,17 +109,17 @@ News-Fixed/
 │   │   ├── generator.py         # Claude API integration
 │   │   ├── pdf_generator.py     # PDF generation (WeasyPrint)
 │   │   ├── sports_schedule.py   # Duke basketball schedules
-│   │   └── utils.py             # QR codes, date helpers
+│   │   ├── utils.py             # QR codes, date helpers
+│   │   ├── curate.py            # Interactive curation CLI
+│   │   └── main.py              # PDF generator
 │   ├── templates/            # HTML/CSS newspaper templates
-│   ├── curate.py             # Interactive curation CLI
-│   └── main.py               # PDF generator
+│   └── prompts/              # Claude API prompt templates
 ├── data/
 │   ├── raw/                  # FTN HTML downloads
 │   ├── processed/            # Parsed JSON files
 │   ├── sports/               # Basketball schedules (ICS files)
 │   └── calendar/             # Family calendar events
 ├── output/                   # Generated PDFs
-├── prompts/                  # Claude API prompts
 ├── docs/                     # Detailed documentation
 └── venv/                     # Python virtual environment
 ```

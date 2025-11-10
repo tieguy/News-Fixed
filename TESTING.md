@@ -29,13 +29,13 @@
 
 1. **Basic dry-run test:**
    ```bash
-   python code/curate.py data/ftn/ftn-315.json --dry-run
+   python code/src/curate.py data/ftn/ftn-315.json --dry-run
    ```
    Result: ✅ Displayed overview tables correctly
 
 2. **Interactive workflow test:**
    ```bash
-   python code/curate.py data/ftn/ftn-315.json -o data/ftn/ftn-315-test-curated.json
+   python code/src/curate.py data/ftn/ftn-315.json -o data/ftn/ftn-315-test-curated.json
    ```
    Actions tested:
    - [V]iew story 1 - ✅ Displayed full story details in panel

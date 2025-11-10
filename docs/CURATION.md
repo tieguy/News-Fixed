@@ -2,7 +2,7 @@
 
 ## Overview
 
-The story curation CLI (`code/curate.py`) provides an interactive workflow for manually reviewing and organizing FTN stories before newspaper generation.
+The story curation CLI (`code/src/curate.py`) provides an interactive workflow for manually reviewing and organizing FTN stories before newspaper generation.
 
 ## Workflow
 
@@ -21,7 +21,7 @@ This creates `data/processed/ftn-316.json` with stories assigned to days based o
 Run the curation tool to review and fix categorization:
 
 ```bash
-python code/curate.py data/processed/ftn-316.json
+python code/src/curate.py data/processed/ftn-316.json
 ```
 
 You'll see an overview table showing all 4 days with their stories, then review each day interactively.

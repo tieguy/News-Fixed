@@ -14,7 +14,7 @@ Usage:
 import sys
 from pathlib import Path
 import click
-from src.curator import StoryCurator
+from curator import StoryCurator
 
 
 @click.command()
@@ -40,17 +40,17 @@ def main(json_file, output, dry_run):
     \b
     Examples:
         # Basic curation
-        python code/curate.py data/processed/ftn-316.json
+        python code/src/curate.py data/processed/ftn-316.json
 
         # Custom output filename
-        python code/curate.py data/processed/ftn-316.json -o data/processed/monday.json
+        python code/src/curate.py data/processed/ftn-316.json -o data/processed/monday.json
 
         # Preview without saving
-        python code/curate.py data/processed/ftn-316.json --dry-run
+        python code/src/curate.py data/processed/ftn-316.json --dry-run
 
     \b
     Next steps after curation:
-        python code/main.py --input data/processed/ftn-316-curated.json --all
+        python code/src/main.py --input data/processed/ftn-316-curated.json --all
     """
     click.echo("📰 News, Fixed - Story Curation Tool\n")
 
@@ -120,7 +120,7 @@ def main(json_file, output, dry_run):
         curator.save_curated(output)
 
         click.echo(f"\n✨ Next step:")
-        click.echo(f"   python code/main.py --input {output} --all")
+        click.echo(f"   python code/src/main.py --input {output} --all")
 
     except FileNotFoundError as e:
         click.echo(f"❌ Error: {e}", err=True)

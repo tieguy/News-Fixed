@@ -8,7 +8,7 @@
 import subprocess
 from pathlib import Path
 from typing import Dict, List
-from src.utils import generate_qr_code_file, format_date, extract_source_name
+from utils import generate_qr_code_file, format_date, extract_source_name
 
 
 class TypstNewspaperGenerator:
@@ -299,7 +299,7 @@ def main():
     day_data = data.get('day_2', {})
 
     # Add feature box for testing
-    from src.sports_schedule import DukeBasketballSchedule
+    from sports_schedule import DukeBasketballSchedule
     from datetime import datetime, timedelta
 
     sports_schedule = DukeBasketballSchedule()

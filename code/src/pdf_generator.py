@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
-from src.utils import generate_qr_code, format_date, get_theme_name, extract_source_name
+from utils import generate_qr_code, format_date, get_theme_name, extract_source_name
 
 
 class NewspaperGenerator:

@@ -12,10 +12,10 @@ import json
 from pathlib import Path
 from datetime import datetime, timedelta
 import click
-from src.generator import ContentGenerator
-from src.pdf_generator import NewspaperGenerator
-from src.utils import get_theme_name
-from src.sports_schedule import DukeBasketballSchedule
+from generator import ContentGenerator
+from pdf_generator import NewspaperGenerator
+from utils import get_theme_name
+from sports_schedule import DukeBasketballSchedule
 
 
 def calculate_week_dates(base_date=None):

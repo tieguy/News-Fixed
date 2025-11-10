@@ -165,8 +165,8 @@ def generate(json_file, day, generate_all, output, no_rewrite):
     if not output:
         output = OUTPUT_DIR
 
-    # Build command for code/main.py
-    cmd = [str(VENV_PYTHON), str(CODE_DIR / "main.py")]
+    # Build command for code/src/main.py
+    cmd = [str(VENV_PYTHON), str(CODE_DIR / "src" / "main.py")]
     cmd.extend(['--input', str(Path(json_file).resolve())])
     cmd.extend(['--output', str(Path(output).resolve())])
 
@@ -236,7 +236,7 @@ def run(url, force_login, no_rewrite):
     # Step 3: Generate
     click.echo(f"📰 Step 3/3: Generating PDFs")
 
-    cmd = [str(VENV_PYTHON), str(CODE_DIR / "main.py")]
+    cmd = [str(VENV_PYTHON), str(CODE_DIR / "src" / "main.py")]
     cmd.extend(['--input', str(Path(json_path).resolve())])
     cmd.extend(['--output', str(OUTPUT_DIR.resolve())])
     cmd.append('--all')  # Always generate all 4 days in run mode
@@ -258,7 +258,7 @@ def test():
     """Generate a test newspaper with sample data (no API calls)."""
     ensure_dirs()
 
-    cmd = [str(VENV_PYTHON), str(CODE_DIR / "main.py")]
+    cmd = [str(VENV_PYTHON), str(CODE_DIR / "src" / "main.py")]
     cmd.extend(['--test', '--output', str(OUTPUT_DIR)])
 
     try:
