@@ -172,4 +172,6 @@ Each daily edition contains:
 
 ## License
 
-MIT
+[Blue Oak Model License 1.0.0](https://blueoakcouncil.org/license/1.0.0) - A modern, permissive open source license written in plain English.
+
+This project is [REUSE 3.3 compliant](https://reuse.software/). All files contain clear copyright and licensing information.
