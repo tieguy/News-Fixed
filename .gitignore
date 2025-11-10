@@ -39,6 +39,7 @@ ENV/
 output/*.pdf
 data/raw/
 data/processed/
+data/sports/*.ics
 
 # FTN source material (anywhere in project)
 FTN-*.html

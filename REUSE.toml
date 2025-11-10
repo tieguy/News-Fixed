@@ -18,12 +18,6 @@ path = ["code/templates/**"]
 SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
 SPDX-License-Identifier = "BlueOak-1.0.0"
 
-# Sports data files (ICS calendars)
-[[annotations]]
-path = ["data/sports/**"]
-SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
-SPDX-License-Identifier = "BlueOak-1.0.0"
-
 # Prompt templates
 [[annotations]]
 path = "prompts/**"
@@ -33,12 +27,6 @@ SPDX-License-Identifier = "BlueOak-1.0.0"
 # Configuration data
 [[annotations]]
 path = "config/**"
-SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
-SPDX-License-Identifier = "BlueOak-1.0.0"
-
-# Shell script
-[[annotations]]
-path = "news-fixed"
 SPDX-FileCopyrightText = "2025 Luis Villa <luis@lu.is>"
 SPDX-License-Identifier = "BlueOak-1.0.0"
 
