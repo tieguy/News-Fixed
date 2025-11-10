@@ -173,7 +173,8 @@ def generate_day_newspaper(
     pdf_gen,
     content_gen,
     output: str,
-    no_rewrite: bool
+    no_rewrite: bool,
+    ftn_number: str = None
 ) -> None:
     """Generate newspaper for a single day."""
     click.echo(f"\n📅 Generating {date_info['day_name']}, {date_info['formatted_date']} ({get_theme_name(day_num)})...")
@@ -196,7 +197,13 @@ def generate_day_newspaper(
     # Generate PDF
     click.echo("  📄 Generating PDF...")
     date_str_iso = date_info['date_obj'].strftime('%Y-%m-%d')
-    output_filename = f"news_fixed_{date_str_iso}.pdf"
+
+    # Build filename: news_fixed_NNN_YYYY-MM-DD.pdf
+    if ftn_number:
+        output_filename = f"news_fixed_{ftn_number}_{date_str_iso}.pdf"
+    else:
+        output_filename = f"news_fixed_{date_str_iso}.pdf"
+
     output_path = Path(output) / output_filename
 
     pdf_gen.generate_pdf(
@@ -250,6 +257,14 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
     week_dates = calculate_week_dates(date_str)
     days_to_generate = range(1, 5) if generate_all else [day]
 
+    # Extract FTN issue number from input filename (e.g., "ftn-316.json" -> "316")
+    import re
+    ftn_number = None
+    if input_file:
+        match = re.search(r'ftn-?(\d+)', Path(input_file).name, re.IGNORECASE)
+        if match:
+            ftn_number = match.group(1)
+
     for day_num in days_to_generate:
         day_key = f"day_{day_num}"
         if day_key not in ftn_data:
@@ -264,7 +279,8 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
                 pdf_gen=pdf_gen,
                 content_gen=content_gen,
                 output=output,
-                no_rewrite=no_rewrite
+                no_rewrite=no_rewrite,
+                ftn_number=ftn_number
             )
         except Exception as e:
             click.echo(f"  ❌ Error generating Day {day_num}: {e}")
