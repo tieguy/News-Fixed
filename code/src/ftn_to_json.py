@@ -19,7 +19,8 @@ load_dotenv()
 if __name__ == '__main__':
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from parser import FTNParser
+# Use relative import to avoid conflict with built-in parser module
+from src.parser import FTNParser
 
 # Constants
 FTN_BASE_URL = "https://fixthenews.com"
