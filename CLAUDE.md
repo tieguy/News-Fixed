@@ -85,18 +85,21 @@ bd automatically syncs with git:
 
 ## Development Setup
 
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+This project uses [uv](https://docs.astral.sh/uv/) for fast, reliable Python dependency management.
 
-# Install dependencies
-pip install -r requirements.txt
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Sync dependencies (creates .venv automatically)
+uv sync
 
 # Set up environment variables
 cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY
 ```
+
+The `./news-fixed` script automatically uses `uv run` to execute commands in the managed environment, so you don't need to manually activate the virtual environment.
 
 ## Architecture
 

@@ -1,7 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 # SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
 #
 # SPDX-License-Identifier: BlueOak-1.0.0
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "click>=8.1.0",
+# ]
+# ///
 
 """
 News, Fixed - Unified wrapper for fetching FTN content and generating newspapers.
@@ -15,37 +21,15 @@ Usage:
 """
 
 import sys
-import os
 import subprocess
 from pathlib import Path
+import json
+from datetime import datetime
+import click
 
 # Get project root (where this script lives)
 PROJECT_ROOT = Path(__file__).parent.resolve()
 CODE_DIR = PROJECT_ROOT / "code"
-VENV_DIR = PROJECT_ROOT / "venv"
-VENV_PYTHON = VENV_DIR / "bin" / "python3"
-
-# Check if we're already in a venv
-def is_venv():
-    """Check if we're running inside a virtual environment."""
-    return (hasattr(sys, 'real_prefix') or
-            (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix))
-
-# If not in venv, re-exec with venv python
-if not is_venv():
-    if not VENV_PYTHON.exists():
-        print(f"❌ Error: Virtual environment not found at {VENV_DIR}")
-        print("   Run: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt")
-        sys.exit(1)
-
-    # Re-execute this script with the venv Python
-    # Note: os.execv replaces the current process, so this message won't show on re-entry
-    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON)] + sys.argv)
-
-# Now we're guaranteed to be in the venv
-import json
-from datetime import datetime
-import click
 
 # Standard paths (relative to project root)
 DATA_DIR = PROJECT_ROOT / "data"
@@ -165,8 +149,8 @@ def generate(json_file, day, generate_all, output, no_rewrite):
     if not output:
         output = OUTPUT_DIR
 
-    # Build command for code/src/main.py
-    cmd = [str(VENV_PYTHON), str(CODE_DIR / "src" / "main.py")]
+    # Build command for code/src/main.py using uv run
+    cmd = ['uv', 'run', 'python', str(CODE_DIR / "src" / "main.py")]
     cmd.extend(['--input', str(Path(json_file).resolve())])
     cmd.extend(['--output', str(Path(output).resolve())])
 
@@ -183,7 +167,7 @@ def generate(json_file, day, generate_all, output, no_rewrite):
 
     # Run the generator
     try:
-        result = subprocess.run(cmd, cwd=CODE_DIR, check=True)
+        result = subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
         click.echo(f"\n✅ PDFs generated in: {output}")
 
     except subprocess.CalledProcessError as e:
@@ -236,7 +220,7 @@ def run(url, force_login, no_rewrite):
     # Step 3: Generate
     click.echo(f"📰 Step 3/3: Generating PDFs")
 
-    cmd = [str(VENV_PYTHON), str(CODE_DIR / "src" / "main.py")]
+    cmd = ['uv', 'run', 'python', str(CODE_DIR / "src" / "main.py")]
     cmd.extend(['--input', str(Path(json_path).resolve())])
     cmd.extend(['--output', str(OUTPUT_DIR.resolve())])
     cmd.append('--all')  # Always generate all 4 days in run mode
@@ -245,7 +229,7 @@ def run(url, force_login, no_rewrite):
         cmd.append('--no-rewrite')
 
     try:
-        subprocess.run(cmd, cwd=CODE_DIR, check=True)
+        subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
         click.echo(f"\n✅ Complete! PDFs are in: {OUTPUT_DIR}")
 
     except subprocess.CalledProcessError as e:
@@ -258,11 +242,11 @@ def test():
     """Generate a test newspaper with sample data (no API calls)."""
     ensure_dirs()
 
-    cmd = [str(VENV_PYTHON), str(CODE_DIR / "src" / "main.py")]
+    cmd = ['uv', 'run', 'python', str(CODE_DIR / "src" / "main.py")]
     cmd.extend(['--test', '--output', str(OUTPUT_DIR)])
 
     try:
-        subprocess.run(cmd, cwd=CODE_DIR, check=True)
+        subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
 
     except subprocess.CalledProcessError as e:
         click.echo(f"❌ Error generating test: {e}")

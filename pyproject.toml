@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
+#
+# SPDX-License-Identifier: BlueOak-1.0.0
+
+[project]
+name = "news-fixed"
+version = "0.1.0"
+description = "Transform positive news content into a daily 2-page newspaper for children ages 10-14"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "BlueOak-1.0.0"}
+authors = [
+    {name = "Luis Villa", email = "luis@lu.is"}
+]
+
+dependencies = [
+    "anthropic>=0.40.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "weasyprint>=62.0",
+    "qrcode[pil]>=7.4.0",
+    "jinja2>=3.1.0",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "playwright>=1.40.0",
+    "icalendar>=6.3.0",
+    "pytz>=2025.2",
+]
+
+[project.scripts]
+news-fixed = "news_fixed:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["code/src"]

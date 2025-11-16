@@ -23,11 +23,10 @@ A daily 2-page newspaper for bright children (ages 10-14) that transforms positi
 git clone https://github.com/tieguy/News-Fixed.git
 cd News-Fixed
 
-# Install dependencies
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-playwright install firefox
+# Install dependencies using uv
+curl -LsSf https://astral.sh/uv/install.sh | sh  # Install uv if needed
+uv sync
+uv run playwright install firefox
 
 # Configure
 cp .env.example .env
@@ -41,7 +40,7 @@ cp .env.example .env
 
 ## Usage
 
-The `news-fixed` wrapper automatically activates the venv and provides a clean interface:
+The `news-fixed` wrapper automatically uses `uv run` to manage the Python environment:
 
 ### Complete Pipeline (Recommended)
 
@@ -123,7 +122,7 @@ News-Fixed/
 │   └── calendar/             # Family calendar events
 ├── output/                   # Generated PDFs
 ├── docs/                     # Detailed documentation
-└── venv/                     # Python virtual environment
+└── .venv/                    # Python virtual environment (managed by uv)
 ```
 
 ## Issue Tracking
