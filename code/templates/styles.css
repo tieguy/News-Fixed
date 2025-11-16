@@ -1,7 +1,6 @@
 /* News, Fixed - Print-Optimized Newspaper Styles */
 
 /* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Manufacturing+Consent:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 /* Page Setup */
@@ -57,9 +56,10 @@ p {
 }
 
 .title {
-    font-family: 'Manufacturing Consent', sans-serif;
+    font-family: 'Newsreader', 'Georgia', 'Times New Roman', serif;
     font-size: 42pt;
     font-weight: 900;
+    font-variant: small-caps;
     letter-spacing: 0.05em;
     margin-bottom: 0.03in;
 }
@@ -242,9 +242,10 @@ p {
 }
 
 .page-title {
-    font-family: 'Manufacturing Consent', sans-serif;
+    font-family: 'Newsreader', 'Georgia', 'Times New Roman', serif;
     font-size: 24pt;
     font-weight: 900;
+    font-variant: small-caps;
     letter-spacing: 0.05em;
 }
 
