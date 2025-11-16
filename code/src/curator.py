@@ -18,14 +18,16 @@ console = Console()
 class StoryCurator:
     """Manages interactive story curation workflow."""
 
-    def __init__(self, json_file: Path):
+    def __init__(self, json_file: Path, output_file: Path = None):
         """
         Load auto-categorized JSON from ftn_to_json.py.
 
         Args:
             json_file: Path to JSON file with day_1/day_2/day_3/day_4 structure
+            output_file: Path where curated JSON will be saved (for auto-save)
         """
         self.json_file = Path(json_file)
+        self.output_file = output_file
         self.original_data = self._load_json(self.json_file)
         self.working_data = copy.deepcopy(self.original_data)
         self.changes_made = []
@@ -45,6 +47,20 @@ class StoryCurator:
                 console.print(f"[yellow]Warning: {day_key} not found in JSON[/yellow]")
 
         return data
+
+    def _auto_save(self) -> None:
+        """Auto-save working data after each change (if output file is set)."""
+        if self.output_file is None:
+            return
+
+        # Create output data without unused category
+        output_data = {k: v for k, v in self.working_data.items() if k != 'unused'}
+
+        try:
+            with open(self.output_file, 'w', encoding='utf-8') as f:
+                json.dump(output_data, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            console.print(f"[dim][Auto-save failed: {e}][/dim]")
 
     def display_overview(self) -> None:
         """Show unused stories first, then all 4 days in rich tables."""
@@ -190,6 +206,9 @@ class StoryCurator:
         console.print(f"[green]✓[/green] {change_msg}")
         console.print(f"  New main: {new_main.get('title', 'Untitled')[:50]}...")
         console.print(f"  Demoted: {current_main.get('title', 'Untitled')[:50]}...")
+
+        # Auto-save after change
+        self._auto_save()
 
     def _handle_overflow(self, to_day: int, incoming_story: dict) -> Optional[dict]:
         """
@@ -350,6 +369,9 @@ class StoryCurator:
         console.print(f"[green]✓[/green] Moved: {story_title}")
         console.print(f"  From: Day {from_day} → To: Day {to_day} (mini)")
 
+        # Auto-save after change
+        self._auto_save()
+
         return True
 
     def move_to_unused(self, from_day: int, story_index: int) -> None:
@@ -403,6 +425,9 @@ class StoryCurator:
         console.print(f"[green]✓[/green] Moved to unused: {story_title}")
         console.print(f"  Story removed from newspaper")
 
+        # Auto-save after change
+        self._auto_save()
+
     def move_from_unused(self, story_index: int, to_day: int) -> None:
         """
         Move a story from unused to a day.
@@ -451,6 +476,9 @@ class StoryCurator:
         if new_count > 5:
             console.print(f"[yellow]⚠️  Day {to_day} now has {new_count} stories (over capacity)[/yellow]")
             console.print(f"[dim]   You'll need to remove {new_count - 5} during day review[/dim]")
+
+        # Auto-save after change
+        self._auto_save()
 
     def review_unused(self) -> str:
         """
@@ -610,7 +638,9 @@ class StoryCurator:
         console.print("  [S] Swap main/mini assignments")
         console.print("  [V] View story details")
         console.print(f"  [1-{max_index}] Quick move story # to another day")
-        if day_num > 1:
+        if day_num == 1:
+            console.print("  [B] Back to unused stories")
+        else:
             console.print("  [B] Back to previous day")
 
         choice = console.input("\n[cyan]Choice:[/cyan] ").strip().lower()
@@ -634,7 +664,7 @@ class StoryCurator:
             return 'swap'
         elif choice == 'v':
             return 'view'
-        elif choice == 'b' and day_num > 1:
+        elif choice == 'b':
             return 'back'
         else:
             console.print("[yellow]Invalid choice, treating as 'accept'[/yellow]")

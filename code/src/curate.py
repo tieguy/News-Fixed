@@ -63,7 +63,7 @@ def main(json_file, output, dry_run):
 
     # Load and display
     try:
-        curator = StoryCurator(Path(json_file))
+        curator = StoryCurator(Path(json_file), output_file=output)
         curator.display_overview()
 
         # Review unused stories FIRST
@@ -92,7 +92,22 @@ def main(json_file, output, dry_run):
             elif choice == 'view':
                 curator._handle_view_action(current_day)
             elif choice == 'back':
-                current_day = max(1, current_day - 1)
+                if current_day == 1:
+                    # Go back to unused review
+                    reviewing_unused = True
+                    while reviewing_unused:
+                        curator.display_overview()
+                        choice = curator.review_unused()
+
+                        if choice == 'accept':
+                            reviewing_unused = False
+                        elif choice == 'move':
+                            curator._handle_unused_move_action()
+                        elif choice == 'view':
+                            curator._handle_unused_view_action()
+                    # After returning from unused, stay on day 1
+                else:
+                    current_day -= 1
 
         # Show final summary
         click.echo("\n" + "=" * 60)
