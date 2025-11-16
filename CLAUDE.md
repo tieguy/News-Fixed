@@ -94,6 +94,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Sync dependencies (creates .venv automatically)
 uv sync
 
+# Install Firefox browser for Playwright (required for fetching FTN content)
+uv run playwright install firefox
+
 # Set up environment variables
 cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY

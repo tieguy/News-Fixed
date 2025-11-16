@@ -26,6 +26,8 @@ cd News-Fixed
 # Install dependencies using uv
 curl -LsSf https://astral.sh/uv/install.sh | sh  # Install uv if needed
 uv sync
+
+# Install Firefox browser for Playwright (required for fetching FTN content)
 uv run playwright install firefox
 
 # Configure
