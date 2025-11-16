@@ -375,42 +375,26 @@ p {
     font-weight: bold;
 }
 
-/* ============ DROP CAP STYLING ============ */
+/* ============ SMALL CAPS STYLING ============ */
 
-/* Day of week drop cap */
-.day-info::first-letter {
-    font-size: 200%;
-    font-weight: 900;
-    float: left;
-    line-height: 0.8;
-    margin-right: 2pt;
+/* Day of week small caps */
+.day-info {
+    font-variant: small-caps;
 }
 
-/* Feature box header drop cap */
-.feature-box h3::first-letter {
-    font-size: 180%;
-    font-weight: 900;
-    float: left;
-    line-height: 0.8;
-    margin-right: 2pt;
+/* Feature box header small caps */
+.feature-box h3 {
+    font-variant: small-caps;
 }
 
-/* Tomorrow teaser drop cap */
-.tomorrow-teaser h4::first-letter {
-    font-size: 180%;
-    font-weight: 900;
-    float: left;
-    line-height: 0.8;
-    margin-right: 2pt;
+/* Tomorrow teaser small caps */
+.tomorrow-teaser h4 {
+    font-variant: small-caps;
 }
 
-/* By The Numbers section title drop cap */
-.section-title::first-letter {
-    font-size: 180%;
-    font-weight: 900;
-    float: left;
-    line-height: 0.8;
-    margin-right: 2pt;
+/* By The Numbers section title small caps */
+.section-title {
+    font-variant: small-caps;
 }
 
 /* Print Optimization */
