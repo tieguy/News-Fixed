@@ -152,6 +152,15 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
 
         if not category_stories:
             print(f"\n⚠️  Warning: No stories found for day {day_num} ({category_key})")
+            # Still create the day structure (empty) so TUI can display it
+            four_days[f"day_{day_num}"] = {
+                "theme": get_theme_name(day_num),
+                "main_story": {},
+                "front_page_stories": [],
+                "mini_articles": [],
+                "statistics": [],
+                "tomorrow_teaser": ""
+            }
             continue
 
         # Select stories for front page and back page

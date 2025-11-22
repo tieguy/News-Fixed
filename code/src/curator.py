@@ -14,6 +14,19 @@ from rich.panel import Panel
 
 console = Console()
 
+# Theme names for each day
+_DAY_THEMES = {
+    1: "Health & Education",
+    2: "Environment & Conservation",
+    3: "Technology & Energy",
+    4: "Society & Youth Movements"
+}
+
+
+def _get_theme_name(day_num: int) -> str:
+    """Get theme name for a day number."""
+    return _DAY_THEMES.get(day_num, "General")
+
 
 class StoryCurator:
     """Manages interactive story curation workflow."""
@@ -445,12 +458,26 @@ class StoryCurator:
             console.print(f"[red]Error: Story {story_index} not found in unused[/red]")
             return
 
-        story = unused_stories.pop(story_index - 1)
+        # Validate target day before removing from unused
+        if to_day < 1 or to_day > 4:
+            console.print(f"[red]Error: Invalid day number {to_day}[/red]")
+            return
 
         to_key = f"day_{to_day}"
+
+        # Create target day if it doesn't exist
         if to_key not in self.working_data:
-            console.print(f"[red]Error: Day {to_day} not found[/red]")
-            return
+            self.working_data[to_key] = {
+                "theme": _get_theme_name(to_day),
+                "main_story": {},
+                "front_page_stories": [],
+                "mini_articles": [],
+                "statistics": [],
+                "tomorrow_teaser": ""
+            }
+
+        # Now safe to remove from unused
+        story = unused_stories.pop(story_index - 1)
 
         to_data = self.working_data[to_key]
 
