@@ -141,6 +141,9 @@
 
 {{STATISTICS}}
 
+// === XKCD COMIC ===
+{{XKCD_SECTION}}
+
 // === FOOTER PAGE 2 ===
 #place(
   bottom,
