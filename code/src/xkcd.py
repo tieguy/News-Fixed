@@ -382,3 +382,36 @@ class XkcdManager:
         if week_key in selected:
             return selected[week_key]["num"]
         return None
+
+    def download_comic_image(self, comic_num: int, dest_path: Path) -> Path:
+        """
+        Download a comic's image to a local file.
+
+        Args:
+            comic_num: Comic number
+            dest_path: Destination file path
+
+        Returns:
+            Path to the downloaded file
+        """
+        cache = self.load_cache()
+        comic_key = str(comic_num)
+
+        if comic_key not in cache:
+            # Fetch it first
+            self.fetch_comic(comic_num)
+            cache = self.load_cache()
+
+        comic = cache[comic_key]
+        image_url = comic["img"]
+
+        response = httpx.get(image_url, timeout=30)
+        response.raise_for_status()
+
+        dest_path = Path(dest_path)
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(dest_path, 'wb') as f:
+            f.write(response.content)
+
+        return dest_path

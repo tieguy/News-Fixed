@@ -296,3 +296,22 @@ def test_get_selected_for_current_week():
         # Now should return it
         selected = manager.get_selected_for_week()
         assert selected == 3170
+
+
+def test_download_comic_image():
+    """Can download comic image to a file."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        # Fetch a comic first
+        comic = manager.fetch_comic(1)
+
+        # Download its image
+        dest = Path(tmpdir) / "comic.png"
+        result_path = manager.download_comic_image(comic["num"], dest)
+
+        assert result_path == dest
+        assert dest.exists()
+        assert dest.stat().st_size > 0
