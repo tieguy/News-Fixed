@@ -338,3 +338,47 @@ class XkcdManager:
         candidates.sort(key=lambda c: c["num"], reverse=True)
 
         return candidates[:max_count]
+
+    def select_comic(self, comic_num: int, week_date: Optional[datetime] = None) -> None:
+        """
+        Mark a comic as selected for a given week.
+
+        Args:
+            comic_num: Comic number to select
+            week_date: Date within the target week. Defaults to today.
+        """
+        if week_date is None:
+            week_date = datetime.now()
+
+        # Get ISO week
+        iso_cal = week_date.date().isocalendar()
+        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
+
+        selected = self.load_selected()
+        selected[week_key] = {
+            "num": comic_num,
+            "selected_at": datetime.now().isoformat()
+        }
+        self.save_selected(selected)
+
+    def get_selected_for_week(self, week_date: Optional[datetime] = None) -> Optional[int]:
+        """
+        Get the comic selected for a given week.
+
+        Args:
+            week_date: Date within the target week. Defaults to today.
+
+        Returns:
+            Comic number if one is selected, None otherwise.
+        """
+        if week_date is None:
+            week_date = datetime.now()
+
+        iso_cal = week_date.date().isocalendar()
+        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
+
+        selected = self.load_selected()
+
+        if week_key in selected:
+            return selected[week_key]["num"]
+        return None

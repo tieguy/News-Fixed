@@ -259,3 +259,40 @@ def test_get_candidates_returns_top_3():
         candidates = manager.get_candidates()
 
         assert len(candidates) <= 3
+
+
+def test_select_comic_for_week():
+    """Can select a comic for the current week."""
+    from xkcd import XkcdManager
+    from datetime import date
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        manager.select_comic(3170)
+
+        selected = manager.load_selected()
+        # Should have an entry for current week
+        current_week = date.today().isocalendar()
+        week_key = f"{current_week.year}-W{current_week.week:02d}"
+
+        assert week_key in selected
+        assert selected[week_key]["num"] == 3170
+
+
+def test_get_selected_for_current_week():
+    """Can check if a comic is selected for current week."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        # Initially nothing selected
+        assert manager.get_selected_for_week() is None
+
+        # Select a comic
+        manager.select_comic(3170)
+
+        # Now should return it
+        selected = manager.get_selected_for_week()
+        assert selected == 3170
