@@ -43,3 +43,7 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["code/src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["code/src"]
+testpaths = ["code/src"]
