@@ -16,6 +16,7 @@ from generator import ContentGenerator
 from pdf_generator import NewspaperGenerator
 from utils import get_theme_name
 from sports_schedule import DukeBasketballSchedule
+from xkcd import XkcdManager
 
 
 def calculate_week_dates(base_date=None):
@@ -198,6 +199,15 @@ def generate_day_newspaper(
     if sports_feature:
         feature_box = sports_feature
 
+    # Load xkcd comic if selected for this week
+    xkcd_manager = XkcdManager()
+    xkcd_comic = None
+    selected_num = xkcd_manager.get_selected_for_week()
+    if selected_num:
+        cache = xkcd_manager.load_cache()
+        if str(selected_num) in cache:
+            xkcd_comic = cache[str(selected_num)]
+
     # Generate PDF
     click.echo("  📄 Generating PDF...")
     date_str_iso = date_info['date_obj'].strftime('%Y-%m-%d')
@@ -220,7 +230,8 @@ def generate_day_newspaper(
         date_str=date_info['formatted_date'],
         day_of_week=date_info['day_name'],
         feature_box=feature_box,
-        tomorrow_teaser=tomorrow_teaser
+        tomorrow_teaser=tomorrow_teaser,
+        xkcd_comic=xkcd_comic
     )
 
     click.echo(f"  ✅ Generated: {output_path}")
@@ -370,7 +381,8 @@ For anyone who cares about the environment, this is a powerful reminder: nature 
         date_str="Monday, October 20, 2025",
         day_of_week="Monday",
         feature_box=feature_box,
-        tomorrow_teaser=tomorrow_teaser
+        tomorrow_teaser=tomorrow_teaser,
+        xkcd_comic=None
     )
 
     click.echo(f"✅ Test newspaper generated: {output_path}")
