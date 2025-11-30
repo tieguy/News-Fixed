@@ -151,3 +151,111 @@ def test_analyze_comic_caches_result():
         cache = manager.load_cache()
         assert "analysis" in cache["1"]
         assert "panel_count" in cache["1"]["analysis"]
+
+
+def test_get_candidates_filters_rejected():
+    """Candidates exclude rejected comics."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        # Create some fake cached comics with analysis
+        cache = {
+            "100": {
+                "num": 100, "title": "Test 1", "alt": "Alt 1", "img": "http://x.png", "date": "2025-01-01",
+                "analysis": {"panel_count": 1, "age_appropriate": True, "requires_specialized_knowledge": False}
+            },
+            "101": {
+                "num": 101, "title": "Test 2", "alt": "Alt 2", "img": "http://x.png", "date": "2025-01-02",
+                "analysis": {"panel_count": 1, "age_appropriate": True, "requires_specialized_knowledge": False}
+            },
+            "102": {
+                "num": 102, "title": "Test 3", "alt": "Alt 3", "img": "http://x.png", "date": "2025-01-03",
+                "analysis": {"panel_count": 1, "age_appropriate": True, "requires_specialized_knowledge": False}
+            }
+        }
+        manager.save_cache(cache)
+
+        # Reject one
+        manager.reject_comic(101, "too_complex")
+
+        candidates = manager.get_candidates()
+
+        candidate_nums = [c["num"] for c in candidates]
+        assert 101 not in candidate_nums
+        assert 100 in candidate_nums
+        assert 102 in candidate_nums
+
+
+def test_get_candidates_filters_multi_panel():
+    """Candidates exclude multi-panel comics."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        cache = {
+            "100": {
+                "num": 100, "title": "Single", "alt": "Alt", "img": "http://x.png", "date": "2025-01-01",
+                "analysis": {"panel_count": 1, "age_appropriate": True, "requires_specialized_knowledge": False}
+            },
+            "101": {
+                "num": 101, "title": "Multi", "alt": "Alt", "img": "http://x.png", "date": "2025-01-02",
+                "analysis": {"panel_count": 4, "age_appropriate": True, "requires_specialized_knowledge": False}
+            }
+        }
+        manager.save_cache(cache)
+
+        candidates = manager.get_candidates()
+
+        candidate_nums = [c["num"] for c in candidates]
+        assert 100 in candidate_nums
+        assert 101 not in candidate_nums
+
+
+def test_get_candidates_filters_not_age_appropriate():
+    """Candidates exclude non-age-appropriate comics."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        cache = {
+            "100": {
+                "num": 100, "title": "Good", "alt": "Alt", "img": "http://x.png", "date": "2025-01-01",
+                "analysis": {"panel_count": 1, "age_appropriate": True, "requires_specialized_knowledge": False}
+            },
+            "101": {
+                "num": 101, "title": "Bad", "alt": "Alt", "img": "http://x.png", "date": "2025-01-02",
+                "analysis": {"panel_count": 1, "age_appropriate": False, "requires_specialized_knowledge": False}
+            }
+        }
+        manager.save_cache(cache)
+
+        candidates = manager.get_candidates()
+
+        candidate_nums = [c["num"] for c in candidates]
+        assert 100 in candidate_nums
+        assert 101 not in candidate_nums
+
+
+def test_get_candidates_returns_top_3():
+    """Candidates returns at most 3 comics."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        # Create 5 valid comics
+        cache = {}
+        for i in range(100, 105):
+            cache[str(i)] = {
+                "num": i, "title": f"Test {i}", "alt": "Alt", "img": "http://x.png", "date": f"2025-01-{i-99:02d}",
+                "analysis": {"panel_count": 1, "age_appropriate": True, "requires_specialized_knowledge": False}
+            }
+        manager.save_cache(cache)
+
+        candidates = manager.get_candidates()
+
+        assert len(candidates) <= 3

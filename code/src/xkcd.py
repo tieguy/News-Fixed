@@ -270,3 +270,71 @@ class XkcdManager:
         self.save_cache(cache)
 
         return analysis
+
+    def get_candidates(self, max_count: int = 3) -> list[Dict]:
+        """
+        Get candidate comics for selection.
+
+        Filters in order:
+        1. Not in rejected list
+        2. Not used in last 8 weeks
+        3. Single-panel (panel_count == 1)
+        4. Age-appropriate
+        5. Doesn't require specialized knowledge
+        6. Sorted by recency (newest first)
+        7. Return top N
+
+        Args:
+            max_count: Maximum candidates to return
+
+        Returns:
+            List of comic dicts (with analysis) that are valid candidates
+        """
+        cache = self.load_cache()
+        rejected = self.load_rejected()
+        selected = self.load_selected()
+
+        # Get recently used comic numbers (last 8 weeks)
+        recent_weeks = set()
+        for week_key, selection in selected.items():
+            # Parse week key like "2025-W48"
+            # For simplicity, just track last 8 entries
+            recent_weeks.add(str(selection.get("num", "")))
+        # Only keep last 8 selections
+        if len(recent_weeks) > 8:
+            recent_weeks = set(list(recent_weeks)[-8:])
+
+        candidates = []
+
+        for comic_num, comic in cache.items():
+            # Filter 1: Not rejected
+            if comic_num in rejected:
+                continue
+
+            # Filter 2: Not recently used
+            if comic_num in recent_weeks:
+                continue
+
+            # Must have analysis
+            analysis = comic.get("analysis", {})
+            if not analysis:
+                continue
+
+            # Filter 3: Single-panel
+            if analysis.get("panel_count", 0) != 1:
+                continue
+
+            # Filter 4: Age-appropriate
+            if not analysis.get("age_appropriate", False):
+                continue
+
+            # Filter 5: Doesn't require specialized knowledge
+            if analysis.get("requires_specialized_knowledge", True):
+                continue
+
+            candidates.append(comic)
+
+        # Sort by comic number descending (newer = higher number)
+        candidates.sort(key=lambda c: c["num"], reverse=True)
+
+        return candidates[:max_count]
