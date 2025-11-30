@@ -1,0 +1,19 @@
+Analyze this xkcd comic for use in a children's newspaper (ages 10-14).
+
+Comic title: {title}
+Alt text (hover text): {alt}
+
+Look at the image and return ONLY valid JSON (no markdown, no explanation):
+
+{{
+  "panel_count": <int - count distinct panels/frames in the comic>,
+  "age_appropriate": <bool - no adult themes, violence, or mature humor>,
+  "requires_specialized_knowledge": <bool - needs programming, advanced math, obscure science, or niche internet culture>,
+  "knowledge_domains": [<list of domains required, e.g. "programming", "physics", empty if none>],
+  "topic_tags": [<2-4 general topic tags like "science", "technology", "relationships">],
+  "brief_summary": "<1-2 sentences explaining what the comic is about and why it's funny>"
+}}
+
+Age-appropriate means: suitable for a 10-14 year old, no sexual content, extreme violence, or dark/morbid themes.
+
+Specialized knowledge means: the joke won't land without understanding specific technical concepts, obscure references, or internet culture that kids wouldn't know.

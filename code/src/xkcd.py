@@ -10,6 +10,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 import httpx
+import base64
+from anthropic import Anthropic
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 class XkcdManager:
@@ -157,3 +163,110 @@ class XkcdManager:
             comics.append(comic)
 
         return comics
+
+    def analyze_comic(self, comic: Dict, force: bool = False) -> Dict:
+        """
+        Analyze a comic using Claude vision API.
+
+        Args:
+            comic: Comic metadata dict (must have img, title, alt, num)
+            force: If True, re-analyze even if cached
+
+        Returns:
+            Analysis dict with panel_count, age_appropriate, etc.
+        """
+        comic_num = str(comic["num"])
+        cache = self.load_cache()
+
+        # Check if already analyzed
+        if not force and comic_num in cache and "analysis" in cache[comic_num]:
+            return cache[comic_num]["analysis"]
+
+        # Fetch and encode the image
+        image_url = comic["img"]
+        image_response = httpx.get(image_url, timeout=30)
+        image_response.raise_for_status()
+        image_data = base64.standard_b64encode(image_response.content).decode("utf-8")
+
+        # Determine media type
+        if image_url.endswith(".png"):
+            media_type = "image/png"
+        elif image_url.endswith(".jpg") or image_url.endswith(".jpeg"):
+            media_type = "image/jpeg"
+        else:
+            media_type = "image/png"  # Default assumption
+
+        # Load prompt template
+        prompt_path = Path(__file__).parent.parent / "prompts" / "xkcd_analysis.txt"
+        with open(prompt_path, 'r') as f:
+            prompt_template = f.read()
+
+        prompt = prompt_template.format(
+            title=comic["title"],
+            alt=comic["alt"]
+        )
+
+        # Call Claude vision API
+        client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+        message = client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=500,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": media_type,
+                                "data": image_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ]
+        )
+
+        response_text = message.content[0].text
+
+        # Parse JSON response
+        try:
+            # Handle potential markdown wrapping
+            if "```json" in response_text:
+                start = response_text.find("```json") + 7
+                end = response_text.find("```", start)
+                response_text = response_text[start:end].strip()
+            elif "```" in response_text:
+                start = response_text.find("```") + 3
+                end = response_text.find("```", start)
+                response_text = response_text[start:end].strip()
+
+            analysis = json.loads(response_text)
+        except json.JSONDecodeError as e:
+            # Return a failed analysis that marks comic as needing manual review
+            analysis = {
+                "panel_count": -1,
+                "age_appropriate": False,
+                "requires_specialized_knowledge": True,
+                "knowledge_domains": ["parse_error"],
+                "topic_tags": ["error"],
+                "brief_summary": f"Failed to parse analysis: {e}",
+                "parse_error": True
+            }
+
+        # Add timestamp
+        analysis["analyzed_at"] = datetime.now().isoformat()
+
+        # Cache the result
+        if comic_num not in cache:
+            cache[comic_num] = comic
+        cache[comic_num]["analysis"] = analysis
+        self.save_cache(cache)
+
+        return analysis

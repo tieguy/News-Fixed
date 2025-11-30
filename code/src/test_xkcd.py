@@ -106,3 +106,48 @@ def test_fetch_caches_results():
         cache = manager.load_cache()
         assert "1" in cache
         assert cache["1"]["num"] == 1
+
+
+def test_analyze_comic_returns_expected_fields():
+    """Analysis returns all expected fields."""
+    from xkcd import XkcdManager
+    import os
+
+    # Skip if no API key
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        # Use comic #1 - simple and known
+        comic = manager.fetch_comic(1)
+        analysis = manager.analyze_comic(comic)
+
+        assert "panel_count" in analysis
+        assert "age_appropriate" in analysis
+        assert "requires_specialized_knowledge" in analysis
+        assert "topic_tags" in analysis
+        assert "brief_summary" in analysis
+        assert isinstance(analysis["panel_count"], int)
+        assert isinstance(analysis["age_appropriate"], bool)
+
+
+def test_analyze_comic_caches_result():
+    """Analysis result is cached in comic data."""
+    from xkcd import XkcdManager
+    import os
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        comic = manager.fetch_comic(1)
+        manager.analyze_comic(comic)
+
+        # Reload cache and check analysis is there
+        cache = manager.load_cache()
+        assert "analysis" in cache["1"]
+        assert "panel_count" in cache["1"]["analysis"]
