@@ -39,7 +39,8 @@ class TypstNewspaperGenerator:
         day_of_week: str = "",
         theme: str = "",
         feature_box: Dict = None,
-        tomorrow_teaser: str = ""
+        tomorrow_teaser: str = "",
+        xkcd_comic: Dict = None
     ):
         """
         Generate a 2-page newspaper PDF using Typst.
@@ -96,6 +97,9 @@ class TypstNewspaperGenerator:
         # Footer message
         footer_message = f"Day {day_number} of 4 • {theme}"
 
+        # Build xkcd section
+        xkcd_section = self._build_xkcd_section(xkcd_comic, Path(output_path).parent) if xkcd_comic else ""
+
         # Load template
         with open(self.template_path, 'r') as f:
             template = f.read()
@@ -115,6 +119,7 @@ class TypstNewspaperGenerator:
         typst_content = typst_content.replace('{{MINI_ARTICLES}}', mini_articles_text)
         typst_content = typst_content.replace('{{STATISTICS}}', statistics_text)
         typst_content = typst_content.replace('{{FOOTER_MESSAGE}}', footer_message)
+        typst_content = typst_content.replace('{{XKCD_SECTION}}', xkcd_section)
 
         # Write temporary .typ file in code directory so paths work
         temp_typ = Path(__file__).parent.parent / "temp_newspaper.typ"
@@ -249,6 +254,54 @@ class TypstNewspaperGenerator:
                 parts.append("")
 
         return "\n".join(parts)
+
+    def _build_xkcd_section(self, comic: Dict, temp_dir: Path) -> str:
+        """Build Typst markup for xkcd comic section."""
+        if not comic:
+            return ""
+
+        # Download the image
+        from xkcd import XkcdManager
+        manager = XkcdManager()
+
+        image_url = comic.get("img", "")
+        if not image_url:
+            return ""
+
+        # Determine file extension
+        ext = ".png" if image_url.endswith(".png") else ".jpg"
+        image_path = temp_dir / f"xkcd_{comic['num']}{ext}"
+
+        manager.download_comic_image(comic["num"], image_path)
+
+        # Get relative path from code directory
+        code_dir = Path(__file__).parent.parent
+        try:
+            rel_path = image_path.relative_to(code_dir)
+        except ValueError:
+            rel_path = image_path
+
+        title = self._escape_typst(comic.get("title", ""))
+        alt = self._escape_typst(comic.get("alt", ""))
+
+        return f"""#v(10pt)
+#line(length: 100%, stroke: 1pt + black)
+#v(6pt)
+#grid(
+  columns: (2.2in, 1fr),
+  column-gutter: 12pt,
+  align: (center + horizon, left + top),
+  [#image("{rel_path}", width: 2in)],
+  [
+    #text(size: 10pt, weight: "bold")[xkcd: {title}]
+    #v(4pt)
+    #text(size: 8pt, style: "italic")[{alt}]
+    #v(4pt)
+    #text(size: 7pt)[xkcd.com/{comic['num']}]
+  ]
+)
+#v(8pt)
+"""
 
     def _escape_typst(self, text: str) -> str:
         """Escape special characters for Typst."""
