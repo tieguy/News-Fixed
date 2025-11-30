@@ -27,6 +27,7 @@ dependencies = [
     "playwright>=1.40.0",
     "icalendar>=6.3.0",
     "pytz>=2025.2",
+    "httpx>=0.28.1",
 ]
 
 [project.scripts]

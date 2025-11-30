@@ -9,6 +9,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
+import httpx
 
 
 class XkcdManager:
@@ -94,3 +95,65 @@ class XkcdManager:
             "rejected_at": datetime.now().strftime("%Y-%m-%d")
         }
         self.save_rejected(rejected)
+
+    def fetch_comic(self, comic_num: Optional[int] = None) -> Dict:
+        """
+        Fetch comic metadata from xkcd API.
+
+        Args:
+            comic_num: Comic number. If None, fetches latest.
+
+        Returns:
+            Comic metadata dict with keys: num, title, alt, img, date, etc.
+        """
+        if comic_num is None:
+            url = "https://xkcd.com/info.0.json"
+        else:
+            url = f"https://xkcd.com/{comic_num}/info.0.json"
+
+        response = httpx.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        # Normalize the data
+        comic = {
+            "num": data["num"],
+            "title": data["title"],
+            "safe_title": data.get("safe_title", data["title"]),
+            "alt": data["alt"],
+            "img": data["img"],
+            "date": f"{data['year']}-{data['month'].zfill(2)}-{data['day'].zfill(2)}",
+            "fetched_at": datetime.now().isoformat()
+        }
+
+        # Cache the result
+        cache = self.load_cache()
+        cache[str(comic["num"])] = comic
+        self.save_cache(cache)
+
+        return comic
+
+    def fetch_recent_comics(self, count: int = 10) -> list[Dict]:
+        """
+        Fetch the most recent comics.
+
+        Args:
+            count: Number of recent comics to fetch
+
+        Returns:
+            List of comic metadata dicts, newest first
+        """
+        # First get the latest to find current number
+        latest = self.fetch_comic()
+        latest_num = latest["num"]
+
+        comics = [latest]
+
+        # Fetch previous comics
+        for num in range(latest_num - 1, latest_num - count, -1):
+            if num < 1:
+                break
+            comic = self.fetch_comic(num)
+            comics.append(comic)
+
+        return comics
