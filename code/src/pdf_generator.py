@@ -178,7 +178,8 @@ class NewspaperGenerator:
         day_of_week: str = None,
         front_page_stories: List[Dict] = None,
         feature_box: Dict = None,
-        tomorrow_teaser: str = ""
+        tomorrow_teaser: str = "",
+        xkcd_comic: Dict = None  # Not implemented in WeasyPrint generator
     ) -> Path:
         """
         Generate a 2-page newspaper PDF.
