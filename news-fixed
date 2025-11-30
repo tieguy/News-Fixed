@@ -348,5 +348,171 @@ def test():
         sys.exit(1)
 
 
+@cli.group()
+def xkcd():
+    """Manage xkcd comics for the newspaper."""
+    pass
+
+
+@xkcd.command()
+@click.option('--count', '-n', default=10, help='Number of recent comics to fetch')
+def fetch(count):
+    """Fetch recent xkcd comics and analyze them."""
+    ensure_dirs()
+
+    sys.path.insert(0, str(CODE_DIR))
+    from src.xkcd import XkcdManager
+
+    manager = XkcdManager(data_dir=DATA_DIR)
+
+    click.echo(f"Fetching {count} recent xkcd comics...")
+    comics = manager.fetch_recent_comics(count=count)
+    click.echo(f"Fetched {len(comics)} comics")
+
+    # Analyze any that haven't been analyzed
+    rejected = manager.load_rejected()
+    analyzed_count = 0
+
+    for comic in comics:
+        comic_num = str(comic["num"])
+
+        # Skip rejected
+        if comic_num in rejected:
+            click.echo(f"  #{comic['num']}: {comic['title']} (rejected)")
+            continue
+
+        # Check if already analyzed
+        cache = manager.load_cache()
+        if comic_num in cache and "analysis" in cache[comic_num]:
+            click.echo(f"  #{comic['num']}: {comic['title']} (cached)")
+            continue
+
+        click.echo(f"  #{comic['num']}: {comic['title']} (analyzing...)")
+        try:
+            manager.analyze_comic(comic)
+            analyzed_count += 1
+        except Exception as e:
+            click.echo(f"    Error: {e}")
+
+    if analyzed_count > 0:
+        click.echo(f"\nAnalyzed {analyzed_count} new comics")
+
+    click.echo("\nRun './news-fixed xkcd candidates' to see recommendations")
+
+
+@xkcd.command()
+def candidates():
+    """Show candidate comics for this week."""
+    ensure_dirs()
+
+    sys.path.insert(0, str(CODE_DIR))
+    from src.xkcd import XkcdManager
+
+    manager = XkcdManager(data_dir=DATA_DIR)
+
+    # Check if already selected
+    selected = manager.get_selected_for_week()
+    if selected:
+        click.echo(f"Already selected for this week: #{selected}")
+        click.echo("Run './news-fixed xkcd select <num>' to change selection")
+        return
+
+    candidates = manager.get_candidates()
+
+    if not candidates:
+        click.echo("No candidates available. Run './news-fixed xkcd fetch' first.")
+        return
+
+    click.echo("Candidate comics for this week:\n")
+
+    for i, comic in enumerate(candidates, 1):
+        analysis = comic.get("analysis", {})
+        click.echo(f"{i}. #{comic['num']}: {comic['title']}")
+        click.echo(f"   Alt: {comic['alt'][:80]}..." if len(comic['alt']) > 80 else f"   Alt: {comic['alt']}")
+        click.echo(f"   Summary: {analysis.get('brief_summary', 'N/A')}")
+        click.echo(f"   Tags: {', '.join(analysis.get('topic_tags', []))}")
+        click.echo(f"   View: https://xkcd.com/{comic['num']}/")
+        click.echo()
+
+    click.echo("Select with: ./news-fixed xkcd select <number>")
+    click.echo("Reject with: ./news-fixed xkcd reject <number> <reason>")
+
+
+@xkcd.command()
+@click.argument('comic_num', type=int)
+def select(comic_num):
+    """Select a comic for this week's newspaper."""
+    ensure_dirs()
+
+    sys.path.insert(0, str(CODE_DIR))
+    from src.xkcd import XkcdManager
+
+    manager = XkcdManager(data_dir=DATA_DIR)
+    manager.select_comic(comic_num)
+
+    click.echo(f"Selected #{comic_num} for this week's newspaper")
+
+
+@xkcd.command()
+@click.argument('comic_num', type=int)
+@click.argument('reason', type=click.Choice([
+    'too_complex', 'adult_humor', 'too_dark',
+    'multi_panel', 'requires_context', 'other'
+]))
+def reject(comic_num, reason):
+    """Reject a comic (won't be shown as candidate again)."""
+    ensure_dirs()
+
+    sys.path.insert(0, str(CODE_DIR))
+    from src.xkcd import XkcdManager
+
+    manager = XkcdManager(data_dir=DATA_DIR)
+    manager.reject_comic(comic_num, reason)
+
+    click.echo(f"Rejected #{comic_num} ({reason})")
+
+
+@xkcd.command()
+@click.argument('comic_num', type=int)
+def show(comic_num):
+    """Show details for a specific comic."""
+    ensure_dirs()
+
+    sys.path.insert(0, str(CODE_DIR))
+    from src.xkcd import XkcdManager
+
+    manager = XkcdManager(data_dir=DATA_DIR)
+    cache = manager.load_cache()
+
+    comic_key = str(comic_num)
+    if comic_key not in cache:
+        click.echo(f"Comic #{comic_num} not in cache. Fetching...")
+        comic = manager.fetch_comic(comic_num)
+    else:
+        comic = cache[comic_key]
+
+    click.echo(f"\n#{comic['num']}: {comic['title']}")
+    click.echo(f"Date: {comic['date']}")
+    click.echo(f"Alt: {comic['alt']}")
+    click.echo(f"Image: {comic['img']}")
+    click.echo(f"URL: https://xkcd.com/{comic['num']}/")
+
+    analysis = comic.get("analysis")
+    if analysis:
+        click.echo(f"\nAnalysis:")
+        click.echo(f"  Panels: {analysis.get('panel_count', 'N/A')}")
+        click.echo(f"  Age-appropriate: {analysis.get('age_appropriate', 'N/A')}")
+        click.echo(f"  Specialized knowledge: {analysis.get('requires_specialized_knowledge', 'N/A')}")
+        click.echo(f"  Tags: {', '.join(analysis.get('topic_tags', []))}")
+        click.echo(f"  Summary: {analysis.get('brief_summary', 'N/A')}")
+    else:
+        click.echo("\n(Not yet analyzed. Run './news-fixed xkcd fetch' to analyze.)")
+
+    # Check if rejected
+    rejected = manager.load_rejected()
+    if comic_key in rejected:
+        click.echo(f"\nREJECTED: {rejected[comic_key]['reason']}")
+
+
 if __name__ == '__main__':
     cli()
