@@ -17,11 +17,13 @@ FTN_DOMAIN = 'fixthenews.com'
 class FTNStory:
     """Represents a single story from Fix The News."""
 
-    def __init__(self, title: str, content: str, source_url: Optional[str] = None, tui_headline: Optional[str] = None):
+    def __init__(self, title: str, content: str, source_url: Optional[str] = None,
+                 tui_headline: Optional[str] = None, all_urls: Optional[List[str]] = None):
         self.title = title.strip()
         self.content = content.strip()
         self.source_url = source_url
         self.tui_headline = tui_headline  # 40-50 char headline for TUI display
+        self.all_urls = all_urls if all_urls is not None else []
 
     def __repr__(self):
         return f"FTNStory(title='{self.title[:50]}...', url={self.source_url})"
