@@ -1,5 +1,6 @@
 """Tests for ftn_to_json module."""
 import json
+import os
 import pytest
 from unittest.mock import Mock, MagicMock
 
@@ -82,3 +83,34 @@ def test_parse_llm_json_with_retry_raises_after_failed_retry():
 
     with pytest.raises(json.JSONDecodeError):
         parse_llm_json_with_retry('invalid json', client)
+
+
+def test_analyze_story_returns_expected_fields():
+    """analyze_story returns all required fields."""
+    from ftn_to_json import analyze_story
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    from anthropic import Anthropic
+    client = Anthropic()
+
+    result = analyze_story(
+        title="Solar panels bring power to rural villages.",
+        content="A new initiative has installed solar panels in 50 villages across Kenya, providing electricity to over 10,000 households for the first time.",
+        all_urls=["https://nature.com/solar-study", "https://kenya.gov/energy"],
+        content_length=180,
+        client=client
+    )
+
+    assert "primary_theme" in result
+    assert result["primary_theme"] in ["health_education", "environment", "technology_energy", "society"]
+    assert "secondary_themes" in result
+    assert isinstance(result["secondary_themes"], list)
+    assert "age_appropriateness" in result
+    assert "story_strength" in result
+    assert "suggested_role" in result
+    assert result["suggested_role"] in ["main", "mini"]
+    assert "primary_source_url" in result
+    assert "tui_headline" in result
+    assert 30 <= len(result["tui_headline"]) <= 60  # Allow some flexibility

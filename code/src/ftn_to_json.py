@@ -93,6 +93,57 @@ Please return the corrected JSON only, no explanation or markdown."""
         return parse_llm_json(retry_text)  # Let it raise if still invalid
 
 
+def analyze_story(title: str, content: str, all_urls: list, content_length: int, client) -> dict:
+    """
+    Analyze a story using Claude API (Phase 1).
+
+    Extracts themes, selects primary URL, generates headline.
+
+    Args:
+        title: Story title
+        content: Story content
+        all_urls: List of all URLs found in story
+        content_length: Character count of content
+        client: Anthropic client
+
+    Returns:
+        Dict with analysis results
+    """
+    urls_str = "\n".join(f"- {url}" for url in all_urls) if all_urls else "None"
+
+    prompt = f"""You are helping categorize news stories for a children's newspaper (ages 10-14).
+
+Analyze this story and return JSON:
+
+STORY:
+Title: {title}
+Content: {content}
+URLs found:
+{urls_str}
+Length: {content_length} characters
+
+Return ONLY valid JSON (no markdown fences):
+{{
+  "primary_theme": "one of: health_education, environment, technology_energy, society",
+  "secondary_themes": ["other relevant themes as free-form tags"],
+  "age_appropriateness": "high, medium, or low - is this suitable for 10-14 year olds?",
+  "story_strength": "high, medium, or low - how compelling and well-sourced is this?",
+  "suggested_role": "main or mini - main needs 600+ chars and depth",
+  "primary_source_url": "the best URL for attribution from the list above, or null if none suitable",
+  "tui_headline": "40-50 character engaging headline for display"
+}}"""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=500,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return parse_llm_json_with_retry(response.content[0].text, client)
+
+
 def generate_tui_headline(story_title: str, story_content: str, anthropic_client: Anthropic) -> str:
     """
     Generate a concise 40-50 character headline for TUI display.
