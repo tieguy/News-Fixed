@@ -202,6 +202,112 @@ Return ONLY valid JSON (no markdown fences):
     return parse_llm_json_with_retry(response.content[0].text, client)
 
 
+def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list) -> dict:
+    """
+    Fallback grouping using simple length-based assignment.
+
+    Used when Phase 2 API call fails.
+    """
+    # Group by primary theme
+    theme_map = {
+        "health_education": "day_1",
+        "environment": "day_2",
+        "technology_energy": "day_3",
+        "society": "day_4"
+    }
+
+    days = {
+        "day_1": {"main": None, "minis": []},
+        "day_2": {"main": None, "minis": []},
+        "day_3": {"main": None, "minis": []},
+        "day_4": {"main": None, "minis": []},
+        "unused": blocklisted_ids.copy()
+    }
+
+    # Sort by length descending
+    sorted_stories = sorted(
+        [s for s in analyzed_stories if s["id"] not in blocklisted_ids],
+        key=lambda s: s["length"],
+        reverse=True
+    )
+
+    for story in sorted_stories:
+        day_key = theme_map.get(story["primary_theme"], "day_4")
+
+        if days[day_key]["main"] is None:
+            days[day_key]["main"] = story["id"]
+        elif len(days[day_key]["minis"]) < 4:
+            days[day_key]["minis"].append(story["id"])
+        else:
+            days["unused"].append(story["id"])
+
+    return days
+
+
+def _build_four_days_from_grouping(stories: list, grouping: dict) -> dict:
+    """
+    Build the final 4-day JSON structure from grouping results.
+    """
+    four_days = {}
+
+    # Add unused stories first
+    unused_ids = grouping.get("unused", [])
+    if unused_ids:
+        four_days["unused"] = {
+            "stories": [
+                {
+                    "title": stories[i].title,
+                    "content": stories[i].content,
+                    "source_url": stories[i].source_url or FTN_BASE_URL,
+                    "tui_headline": stories[i].tui_headline or stories[i].title[:47] + "..."
+                }
+                for i in unused_ids if i < len(stories)
+            ]
+        }
+
+    # Build each day
+    for day_num in range(1, 5):
+        day_key = f"day_{day_num}"
+        day_grouping = grouping.get(day_key, {"main": None, "minis": []})
+
+        main_id = day_grouping.get("main")
+        mini_ids = day_grouping.get("minis", [])
+
+        day_data = {
+            "theme": get_theme_name(day_num),
+            "main_story": {},
+            "front_page_stories": [],
+            "mini_articles": [],
+            "statistics": [],
+            "tomorrow_teaser": ""
+        }
+
+        # Add main story
+        if main_id is not None and main_id < len(stories):
+            story = stories[main_id]
+            day_data["main_story"] = {
+                "title": story.title,
+                "content": story.content,
+                "source_url": story.source_url or FTN_BASE_URL,
+                "tui_headline": story.tui_headline or story.title[:47] + "..."
+            }
+
+        # Add mini articles
+        for mini_id in mini_ids:
+            if mini_id < len(stories):
+                story = stories[mini_id]
+                day_data["mini_articles"].append({
+                    "title": story.title,
+                    "content": story.content,
+                    "source_url": story.source_url or FTN_BASE_URL,
+                    "tui_headline": story.tui_headline or story.title[:47] + "..."
+                })
+
+        four_days[day_key] = day_data
+
+    return four_days
+
+
 def generate_tui_headline(story_title: str, story_content: str, anthropic_client: Anthropic) -> str:
     """
     Generate a concise 40-50 character headline for TUI display.
@@ -268,124 +374,97 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
 
     print(f"   Found {len(stories)} stories")
 
-    # Initialize Anthropic client for headline generation
+    # Initialize Anthropic client
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
-        print("   ⚠️  Warning: ANTHROPIC_API_KEY not found - using truncated titles for TUI")
-        anthropic_client = None
-    else:
-        anthropic_client = Anthropic(api_key=api_key)
-        print(f"   Generating TUI headlines for {len(stories)} stories...")
+        print("❌ Error: ANTHROPIC_API_KEY not found")
+        print("   Set it in .env or environment to use LLM categorization")
+        sys.exit(1)
 
-    # Generate TUI headlines for each story
-    for i, story in enumerate(stories, 1):
-        if anthropic_client:
-            print(f"   [{i}/{len(stories)}] Generating headline...", end="\r")
-            story.tui_headline = generate_tui_headline(story.title, story.content, anthropic_client)
-        else:
-            # Fallback: use truncated title + content
-            full_text = f"{story.title} {story.content}".strip()
-            story.tui_headline = full_text[:47] + ("..." if len(full_text) > 47 else "")
+    anthropic_client = Anthropic(api_key=api_key)
 
-    if anthropic_client:
-        print(f"   ✓ Generated {len(stories)} headlines" + " " * 20)
+    # Load blocklist
+    blocklist = parser._load_blocklist()
 
-    # Categorize stories
-    categories = parser.categorize_stories(stories)
+    # Phase 1: Analyze each story
+    print(f"\n🔍 Phase 1: Analyzing {len(stories)} stories...")
+    analyzed_stories = []
+    blocklisted_ids = []
 
-    print("\n📊 Stories by category:")
-    for category, cat_stories in categories.items():
-        print(f"   {category}: {len(cat_stories)} stories")
+    for i, story in enumerate(stories):
+        print(f"   [{i+1}/{len(stories)}] Analyzing...", end="\r")
 
-    # Map categories to days
-    day_mapping = {
-        1: 'health_education',
-        2: 'environment',
-        3: 'technology_energy',
-        4: 'society'
-    }
-
-    # Build 4-day structure + unused
-    four_days = {}
-
-    # Add unused stories
-    unused_stories = categories.get('unused', [])
-    if unused_stories:
-        four_days['unused'] = {
-            "stories": [
-                {
-                    "title": story.title,
-                    "content": story.content,
-                    "source_url": story.source_url or FTN_BASE_URL,
-                    "tui_headline": story.tui_headline or story.content[:47] + "..."
-                }
-                for story in unused_stories
-            ]
-        }
-
-    for day_num, category_key in day_mapping.items():
-        category_stories = categories.get(category_key, [])
-
-        if not category_stories:
-            print(f"\n⚠️  Warning: No stories found for day {day_num} ({category_key})")
-            # Still create the day structure (empty) so TUI can display it
-            four_days[f"day_{day_num}"] = {
-                "theme": get_theme_name(day_num),
-                "main_story": {},
-                "front_page_stories": [],
-                "mini_articles": [],
-                "statistics": [],
-                "tomorrow_teaser": ""
-            }
+        # Check blocklist first
+        if parser._is_blocklisted(story, blocklist):
+            blocklisted_ids.append(i)
+            analyzed_stories.append({
+                "id": i,
+                "headline": story.title[:50],
+                "primary_theme": "unused",
+                "secondary_themes": [],
+                "story_strength": "low",
+                "length": len(story.content),
+                "blocklisted": True
+            })
             continue
 
-        # Select stories for front page and back page
-        # Sort by content length to get the most substantial stories
-        sorted_stories = sorted(category_stories, key=lambda s: len(s.content), reverse=True)
+        try:
+            analysis = analyze_story(
+                title=story.title,
+                content=story.content,
+                all_urls=story.all_urls,
+                content_length=len(story.content),
+                client=anthropic_client
+            )
 
-        # Front page: 1 lead story ONLY (to fit on 2 pages)
-        main_story = sorted_stories[0]
-        front_page_stories = []  # No secondary stories - they take too much space
+            # Store analysis results back on story object
+            story.tui_headline = analysis.get("tui_headline", story.title[:47] + "...")
+            story.source_url = analysis.get("primary_source_url") or story.source_url
 
-        # Back page: mini articles (max 4 for 2-page fit)
-        mini_stories = sorted_stories[1:5]  # Up to 4 mini articles for back page
+            analyzed_stories.append({
+                "id": i,
+                "headline": analysis.get("tui_headline", story.title[:50]),
+                "primary_theme": analysis.get("primary_theme", "society"),
+                "secondary_themes": analysis.get("secondary_themes", []),
+                "story_strength": analysis.get("story_strength", "medium"),
+                "length": len(story.content)
+            })
+        except Exception as e:
+            print(f"\n   ⚠️  Error analyzing story {i}: {e}")
+            story.tui_headline = story.title[:47] + ("..." if len(story.title) > 47 else "")
+            analyzed_stories.append({
+                "id": i,
+                "headline": story.title[:50],
+                "primary_theme": "society",
+                "secondary_themes": [],
+                "story_strength": "medium",
+                "length": len(story.content)
+            })
 
-        # Build day structure
-        day_data = {
-            "theme": get_theme_name(day_num),
-            "main_story": {
-                "title": main_story.title,
-                "content": main_story.content,
-                "source_url": main_story.source_url or FTN_BASE_URL,
-                "tui_headline": main_story.tui_headline or main_story.content[:47] + "..."
-            },
-            "front_page_stories": [
-                {
-                    "title": story.title,
-                    "content": story.content,
-                    "source_url": story.source_url or FTN_BASE_URL,
-                    "tui_headline": story.tui_headline or story.content[:47] + "..."
-                }
-                for story in front_page_stories
-            ],
-            "mini_articles": [
-                {
-                    "title": story.title,
-                    "content": story.content,
-                    "source_url": story.source_url or FTN_BASE_URL,
-                    "tui_headline": story.tui_headline or story.content[:47] + "..."
-                }
-                for story in mini_stories
-            ],
-            "statistics": [],  # Can be filled in manually or generated later
-            "tomorrow_teaser": ""  # Can be filled in manually
-        }
+    print(f"   ✓ Analyzed {len(stories)} stories" + " " * 20)
 
-        four_days[f"day_{day_num}"] = day_data
+    # Phase 2: Group stories into days
+    print(f"\n📊 Phase 2: Grouping stories into days...")
+
+    try:
+        grouping = group_stories_into_days(
+            stories=analyzed_stories,
+            blocklisted_ids=blocklisted_ids,
+            client=anthropic_client
+        )
+        print(f"   ✓ Grouped stories")
+        if grouping.get("reasoning"):
+            print(f"   Reasoning: {grouping['reasoning'][:100]}...")
+    except Exception as e:
+        print(f"   ⚠️  Error grouping stories: {e}")
+        print(f"   Falling back to length-based assignment...")
+        grouping = _fallback_grouping(analyzed_stories, blocklisted_ids)
+
+    # Build 4-day structure from grouping
+    four_days = _build_four_days_from_grouping(stories, grouping)
 
     # Determine output filename
     if output_file is None:
-        # Extract issue number from HTML filename
         html_path = Path(html_file)
         if 'FTN-' in html_path.name:
             issue = html_path.name.split('FTN-')[1].split('.')[0]
@@ -399,7 +478,19 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         json.dump(four_days, f, indent=2, ensure_ascii=False)
 
     print(f"\n✅ Created {output_path}")
-    print(f"   Contains {len(four_days)} days")
+
+    # Print summary
+    for day_num in range(1, 5):
+        day_key = f"day_{day_num}"
+        if day_key in four_days:
+            main = 1 if four_days[day_key].get("main_story") else 0
+            minis = len(four_days[day_key].get("mini_articles", []))
+            print(f"   Day {day_num}: {main} main + {minis} minis")
+
+    if "unused" in four_days:
+        unused_count = len(four_days["unused"].get("stories", []))
+        if unused_count:
+            print(f"   Unused: {unused_count} stories")
 
     return output_path
 
