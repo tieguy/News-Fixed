@@ -146,8 +146,17 @@ p {
 
 .secondary-stories {
     display: table-cell;
-    width: 65%;
     vertical-align: top;
+}
+
+/* When feature box is present, secondary stories take 65% */
+.secondary-stories:not(:only-child) {
+    width: 65%;
+}
+
+/* When no feature box, secondary stories take full width */
+.secondary-stories:only-child {
+    width: 100%;
 }
 
 .secondary-story {
@@ -350,6 +359,49 @@ p {
 .stat-description {
     font-size: 7.5pt;
     line-height: 1.2;
+}
+
+/* ============ XKCD COMIC ============ */
+
+.xkcd-section {
+    border-top: 1px solid #000;
+    padding-top: 8pt;
+    margin-top: 10pt;
+    margin-bottom: 0.1in;
+}
+
+.xkcd-layout {
+    display: flex;
+    gap: 12pt;
+    align-items: flex-start;
+}
+
+.xkcd-image {
+    max-width: 2in;
+    max-height: 1.5in;
+    object-fit: contain;
+}
+
+.xkcd-info {
+    flex: 1;
+}
+
+.xkcd-title {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+}
+
+.xkcd-alt {
+    font-size: 8pt;
+    font-style: italic;
+    line-height: 1.2;
+    margin-bottom: 4pt;
+}
+
+.xkcd-link {
+    font-size: 7pt;
+    color: #666;
 }
 
 /* ============ FOOTER ============ */
