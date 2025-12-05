@@ -63,9 +63,19 @@ def ensure_dirs():
 
 
 def get_issue_number_from_url(url: str) -> str:
-    """Extract issue number from FTN URL."""
+    """Extract issue number from FTN URL.
+
+    Handles URL formats like:
+    - https://fixthenews.com/p/322-shinga-ray-of-hope-...
+    - https://fixthenews.com/p/fix-the-news-319
+    """
     import re
-    match = re.search(r'fixthenews\.com/(\d+)', url)
+    # Try /p/NNN-slug format (current FTN format)
+    match = re.search(r'fixthenews\.com/p/(\d+)', url)
+    if match:
+        return match.group(1)
+    # Try fix-the-news-NNN format (older format)
+    match = re.search(r'fix-the-news-(\d+)', url)
     if match:
         return match.group(1)
     # Fallback: use timestamp
@@ -413,8 +423,15 @@ def candidates():
     # Check if already selected
     selected = manager.get_selected_for_week()
     if selected:
-        click.echo(f"Already selected for this week: #{selected}")
-        click.echo("Run './news-fixed xkcd select <num>' to change selection")
+        # Get which day it's selected for
+        selected_data = manager.load_selected()
+        from datetime import datetime
+        iso_cal = datetime.now().date().isocalendar()
+        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
+        day = selected_data.get(week_key, {}).get("day", 1)
+        day_names = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday'}
+        click.echo(f"Already selected for this week: #{selected} on {day_names[day]}")
+        click.echo("Run './news-fixed xkcd select <num> --day <1-4>' to change selection")
         return
 
     candidates = manager.get_candidates()
@@ -434,23 +451,26 @@ def candidates():
         click.echo(f"   View: https://xkcd.com/{comic['num']}/")
         click.echo()
 
-    click.echo("Select with: ./news-fixed xkcd select <number>")
+    click.echo("Select with: ./news-fixed xkcd select <number> --day <1-4>")
     click.echo("Reject with: ./news-fixed xkcd reject <number> <reason>")
 
 
 @xkcd.command()
 @click.argument('comic_num', type=int)
-def select(comic_num):
+@click.option('--day', '-d', type=click.IntRange(1, 4), default=1,
+              help='Day to show comic (1=Mon, 2=Tue, 3=Wed, 4=Thu)')
+def select(comic_num, day):
     """Select a comic for this week's newspaper."""
     ensure_dirs()
 
     sys.path.insert(0, str(CODE_DIR))
     from src.xkcd import XkcdManager
 
+    day_names = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday'}
     manager = XkcdManager(data_dir=DATA_DIR)
-    manager.select_comic(comic_num)
+    manager.select_comic(comic_num, day=day)
 
-    click.echo(f"Selected #{comic_num} for this week's newspaper")
+    click.echo(f"Selected #{comic_num} for {day_names[day]}'s newspaper")
 
 
 @xkcd.command()
