@@ -332,60 +332,6 @@ class FTNParser:
         text = (story.title + ' ' + story.content).lower()
         return any(keyword in text for keyword in blocklist)
 
-    def categorize_stories(self, stories: List[FTNStory]) -> Dict[str, List[FTNStory]]:
-        """
-        Categorize stories by theme.
-
-        Args:
-            stories: List of FTNStory objects
-
-        Returns:
-            Dict mapping theme names to story lists (includes 'unused' category)
-        """
-        categories = {
-            'health_education': [],
-            'environment': [],
-            'technology_energy': [],
-            'society': [],
-            'unused': []
-        }
-
-        # Load blocklist
-        blocklist = self._load_blocklist()
-
-        # Keywords for each category
-        keywords = {
-            'health_education': ['health', 'education', 'school', 'student', 'vaccine', 'hospital', 'literacy', 'teaching'],
-            'environment': ['climate', 'environment', 'conservation', 'wildlife', 'species', 'ocean', 'forest', 'pollution'],
-            'technology_energy': ['solar', 'battery', 'energy', 'technology', 'renewable', 'power', 'data', 'AI'],
-            'society': ['democracy', 'rights', 'community', 'social', 'poverty', 'inequality', 'justice']
-        }
-
-        for story in stories:
-            # Check blocklist first
-            if self._is_blocklisted(story, blocklist):
-                categories['unused'].append(story)
-                continue
-
-            text = (story.title + ' ' + story.content).lower()
-            scores = {}
-
-            for category, terms in keywords.items():
-                if category == 'unused':
-                    continue
-                score = sum(1 for term in terms if term in text)
-                scores[category] = score
-
-            # Assign to category with highest score
-            if scores:
-                best_category = max(scores, key=scores.get)
-                if scores[best_category] > 0:
-                    categories[best_category].append(story)
-                else:
-                    # No clear match - move to unused
-                    categories['unused'].append(story)
-
-        return categories
 
 
 def main():
@@ -410,18 +356,9 @@ def main():
         print(f"{i}. {story.title}")
         print(f"   URL: {story.source_url}")
         print(f"   Content length: {len(story.content)} chars")
+        if story.all_urls:
+            print(f"   Additional URLs: {len(story.all_urls)}")
         print()
-
-    # Categorize
-    print("\n" + "=" * 80)
-    print("CATEGORIZED BY THEME")
-    print("=" * 80)
-
-    categories = parser.categorize_stories(stories)
-    for theme, theme_stories in categories.items():
-        print(f"\n{theme.upper()}: {len(theme_stories)} stories")
-        for story in theme_stories[:3]:  # Show first 3 in each category
-            print(f"  - {story.title[:80]}...")
 
 
 if __name__ == '__main__':
