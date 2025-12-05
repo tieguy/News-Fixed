@@ -54,6 +54,45 @@ def parse_llm_json(response_text: str) -> dict:
     return json.loads(text)
 
 
+def parse_llm_json_with_retry(response_text: str, client) -> dict:
+    """
+    Parse JSON from LLM response, retrying with error context on failure.
+
+    Args:
+        response_text: Raw response text from LLM
+        client: Anthropic client for retry request
+
+    Returns:
+        Parsed JSON as dict
+
+    Raises:
+        json.JSONDecodeError: If JSON is invalid after retry
+    """
+    try:
+        return parse_llm_json(response_text)
+    except json.JSONDecodeError as e:
+        # Retry with error context
+        retry_prompt = f"""Your previous response was not valid JSON.
+
+Your response:
+{response_text}
+
+Parse error: {e}
+
+Please return the corrected JSON only, no explanation or markdown."""
+
+        retry_response = client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=2000,
+            messages=[
+                {"role": "user", "content": retry_prompt}
+            ]
+        )
+
+        retry_text = retry_response.content[0].text
+        return parse_llm_json(retry_text)  # Let it raise if still invalid
+
+
 def generate_tui_headline(story_title: str, story_content: str, anthropic_client: Anthropic) -> str:
     """
     Generate a concise 40-50 character headline for TUI display.
