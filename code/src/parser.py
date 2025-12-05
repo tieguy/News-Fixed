@@ -239,18 +239,21 @@ class FTNParser:
             title = full_content[:100].strip()
             content = full_content
 
-        # Get source URL (first non-FTN, non-Substack URL)
-        source_url = None
-        for url in urls:
-            if FTN_DOMAIN not in url and 'substackcdn' not in url and 'tinyurl' not in url:
-                source_url = url
-                break
+        # Filter URLs - remove FTN, Substack CDN, and tinyurl
+        filtered_urls = [
+            url for url in urls
+            if FTN_DOMAIN not in url and 'substackcdn' not in url and 'tinyurl' not in url
+        ]
 
-        # If no direct URL, take any URL
-        if not source_url and urls:
-            source_url = urls[0]
+        # Get source URL (first filtered URL, or first URL if none pass filter)
+        source_url = filtered_urls[0] if filtered_urls else (urls[0] if urls else None)
 
-        return FTNStory(title=title, content=content, source_url=source_url)
+        return FTNStory(
+            title=title,
+            content=content,
+            source_url=source_url,
+            all_urls=filtered_urls
+        )
 
     def _create_story(self, lines: List[str], urls: List[str]) -> Optional[FTNStory]:
         """
@@ -284,18 +287,16 @@ class FTNParser:
         # Clean title
         title = title.replace('*', '').strip()
 
-        # Get source URL (first non-FTN URL)
-        source_url = None
-        for url in urls:
-            if FTN_DOMAIN not in url and 'substackcdn' not in url and 'tinyurl' not in url:
-                source_url = url
-                break
+        # Filter URLs - remove FTN, Substack CDN, and tinyurl
+        filtered_urls = [
+            url for url in urls
+            if FTN_DOMAIN not in url and 'substackcdn' not in url and 'tinyurl' not in url
+        ]
 
-        # If no direct URL, take any URL
-        if not source_url and urls:
-            source_url = urls[0]
+        # Get source URL (first filtered URL, or first URL if none pass filter)
+        source_url = filtered_urls[0] if filtered_urls else (urls[0] if urls else None)
 
-        return FTNStory(title=title, content=content, source_url=source_url)
+        return FTNStory(title=title, content=content, source_url=source_url, all_urls=filtered_urls)
 
     def _load_blocklist(self) -> List[str]:
         """
