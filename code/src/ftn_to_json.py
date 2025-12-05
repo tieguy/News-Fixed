@@ -26,6 +26,34 @@ from src.parser import FTNParser
 FTN_BASE_URL = "https://fixthenews.com"
 
 
+def parse_llm_json(response_text: str) -> dict:
+    """
+    Parse JSON from LLM response, handling common formatting issues.
+
+    Args:
+        response_text: Raw response text from LLM
+
+    Returns:
+        Parsed JSON as dict
+
+    Raises:
+        json.JSONDecodeError: If JSON is invalid after cleanup
+    """
+    text = response_text.strip()
+
+    # Strip markdown code fences if present
+    if text.startswith("```"):
+        lines = text.split("\n")
+        # Remove first line (```json or ```)
+        lines = lines[1:]
+        # Remove last line if it's closing fence
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines)
+
+    return json.loads(text)
+
+
 def generate_tui_headline(story_title: str, story_content: str, anthropic_client: Anthropic) -> str:
     """
     Generate a concise 40-50 character headline for TUI display.
