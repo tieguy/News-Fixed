@@ -1,23 +1,30 @@
-Extract or create 6 impactful statistics for the "By The Numbers" section of today's News, Fixed newspaper.
+Extract exactly 3 statistics for the "By The Numbers" section.
 
 TODAY'S STORIES:
 {stories_summary}
 
 THEME: {theme}
 
-Your task: Create 6 compelling statistics that support today's positive news theme.
+CRITICAL: Stats must ADD VALUE, not repeat headlines.
 
-Guidelines:
-- Use real numbers from the stories when possible
-- Make them concrete and specific (e.g., "2.5 million" not "millions")
-- Keep descriptions brief (under 10 words)
-- Focus on progress, improvement, or positive trends
-- Make them relevant to 10-14 year olds
-- Ensure they're inspiring but factual
+BAD (restates the article):
+- Article: "Nigeria launches campaign to vaccinate 106M children"
+- Stat: "106M - children to be vaccinated" ← REDUNDANT
 
-Format: Return as a JSON array:
+GOOD (adds context the article didn't emphasize):
+- Article: "Nigeria launches campaign to vaccinate 106M children"
+- Stat: "4 diseases - targeted in single campaign" ← NEW INFO
+
+RULES:
+1. Extract numbers that SUPPORT the stories but weren't the headline
+2. Prefer: percentages, timeframes, comparisons, scale/context
+3. Include timeframe when known ("since 2020", "annually")
+4. Each stat from a DIFFERENT story
+5. Keep descriptions under 10 words
+
+Return exactly 3 as JSON:
 [
-  {{"number": "2.5M", "description": "students got free lunches"}},
-  {{"number": "47%", "description": "reduction in ocean plastic"}},
-  ...
+  {{"number": "95%", "description": "HPV vaccine coverage in Mozambique"}},
+  {{"number": "69th", "description": "country to ban corporal punishment"}},
+  {{"number": "4", "description": "diseases in Nigeria's combined campaign"}}
 ]

@@ -172,7 +172,7 @@ class ContentGenerator:
             # Return dummy stats as fallback
             return [
                 {"number": "N/A", "description": "Data processing error"}
-                for _ in range(6)
+                for _ in range(3)
             ]
 
     def generate_teaser(self, tomorrow_theme: str) -> str:
