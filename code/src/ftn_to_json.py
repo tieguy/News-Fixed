@@ -144,6 +144,64 @@ Return ONLY valid JSON (no markdown fences):
     return parse_llm_json_with_retry(response.content[0].text, client)
 
 
+def group_stories_into_days(stories: list, blocklisted_ids: list, client) -> dict:
+    """
+    Group analyzed stories into 4 days using Claude API (Phase 2).
+
+    Args:
+        stories: List of analyzed story dicts with id, headline, themes, strength, length
+        blocklisted_ids: List of story IDs to exclude
+        client: Anthropic client
+
+    Returns:
+        Dict with day assignments: {day_1: {main: id, minis: [ids]}, ...}
+    """
+    stories_str = json.dumps(stories, indent=2)
+    blocklist_str = json.dumps(blocklisted_ids) if blocklisted_ids else "[]"
+
+    prompt = f"""You are organizing stories for a 4-day children's newspaper (ages 10-14).
+
+STORIES:
+{stories_str}
+
+BLOCKLISTED STORY IDs (exclude these):
+{blocklist_str}
+
+DAY THEMES:
+- Day 1: Health & Education
+- Day 2: Environment & Conservation
+- Day 3: Technology & Energy
+- Day 4: Society & Youth Movements
+
+RULES:
+- Each day needs 1 main story (longest/strongest fit) + up to 4 minis
+- Balance story count across days (aim for 4-5 per day)
+- Main stories should be 600+ characters when possible
+- Consider both primary and secondary themes for placement
+- Stories can fit multiple days - pick best overall balance
+- Blocklisted stories go in "unused"
+
+Return ONLY valid JSON (no markdown fences):
+{{
+  "day_1": {{"main": <story_id or null>, "minis": [<story_ids>]}},
+  "day_2": {{"main": <story_id or null>, "minis": [<story_ids>]}},
+  "day_3": {{"main": <story_id or null>, "minis": [<story_ids>]}},
+  "day_4": {{"main": <story_id or null>, "minis": [<story_ids>]}},
+  "unused": [<story_ids>],
+  "reasoning": "brief explanation of key placement decisions"
+}}"""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1000,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return parse_llm_json_with_retry(response.content[0].text, client)
+
+
 def generate_tui_headline(story_title: str, story_content: str, anthropic_client: Anthropic) -> str:
     """
     Generate a concise 40-50 character headline for TUI display.

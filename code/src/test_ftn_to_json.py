@@ -114,3 +114,43 @@ def test_analyze_story_returns_expected_fields():
     assert "primary_source_url" in result
     assert "tui_headline" in result
     assert 30 <= len(result["tui_headline"]) <= 60  # Allow some flexibility
+
+
+def test_group_stories_into_days_returns_expected_structure():
+    """group_stories_into_days returns proper day assignments."""
+    from ftn_to_json import group_stories_into_days
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    from anthropic import Anthropic
+    client = Anthropic()
+
+    # Create mock analyzed stories
+    stories = [
+        {"id": 0, "headline": "Solar farms expand", "primary_theme": "technology_energy", "secondary_themes": ["africa"], "story_strength": "high", "length": 800},
+        {"id": 1, "headline": "New literacy program", "primary_theme": "health_education", "secondary_themes": ["youth"], "story_strength": "medium", "length": 400},
+        {"id": 2, "headline": "Ocean cleanup success", "primary_theme": "environment", "secondary_themes": ["technology"], "story_strength": "high", "length": 600},
+        {"id": 3, "headline": "Youth voting rights", "primary_theme": "society", "secondary_themes": ["democracy"], "story_strength": "medium", "length": 350},
+    ]
+
+    result = group_stories_into_days(stories, blocklisted_ids=[], client=client)
+
+    # Check structure
+    assert "day_1" in result
+    assert "day_2" in result
+    assert "day_3" in result
+    assert "day_4" in result
+    assert "main" in result["day_1"]
+    assert "minis" in result["day_1"]
+    assert isinstance(result["day_1"]["minis"], list)
+
+    # Check all story IDs are accounted for
+    all_assigned = set()
+    for day_key in ["day_1", "day_2", "day_3", "day_4"]:
+        if result[day_key]["main"] is not None:
+            all_assigned.add(result[day_key]["main"])
+        all_assigned.update(result[day_key]["minis"])
+    all_assigned.update(result.get("unused", []))
+
+    assert all_assigned == {0, 1, 2, 3}
