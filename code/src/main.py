@@ -17,6 +17,7 @@ from pdf_generator import NewspaperGenerator
 from utils import get_theme_name
 from sports_schedule import DukeBasketballSchedule
 from xkcd import XkcdManager
+from readwise_fetcher import ReadwiseFetcher
 
 
 def calculate_week_dates(base_date=None):
@@ -148,6 +149,47 @@ def use_content_from_json(day_data: dict) -> tuple:
     return main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser
 
 
+def fetch_local_story(content_gen, date_str: str) -> dict | None:
+    """Fetch and generate a local SF story from Readwise Reader.
+
+    Args:
+        content_gen: ContentGenerator instance for rewriting
+        date_str: Date string for marking article as used
+
+    Returns:
+        Dict with 'title', 'content', 'source_url' or None if no articles
+    """
+    try:
+        fetcher = ReadwiseFetcher(tag="sf-good")
+    except ValueError as e:
+        click.echo(f"  ⚠️  Readwise not configured: {e}")
+        return None
+
+    # Get next unused article with content
+    article = fetcher.get_next_article(mark_used=False, with_content=True)
+    if not article:
+        click.echo("  ℹ️  No unused local articles available")
+        return None
+
+    click.echo(f"  🏠 Generating local story: {article['title'][:50]}...")
+
+    # Generate the local story
+    local_story = content_gen.generate_local_story(
+        original_content=article.get('html_content') or article.get('summary', ''),
+        source_url=article['source_url'],
+        original_title=article['title']
+    )
+    local_story['source_url'] = article['source_url']
+
+    # Mark as used with the newspaper date
+    # We need to get the raw article to mark it
+    raw_articles = fetcher.get_unused_articles(limit=1, with_content=False)
+    if raw_articles:
+        fetcher.mark_as_used(raw_articles[0], date_str)
+
+    return local_story
+
+
 def check_for_sports_games(date_info: dict) -> dict | None:
     """Check for Duke basketball games and return feature box if found."""
     sports_schedule = DukeBasketballSchedule()
@@ -194,15 +236,21 @@ def generate_day_newspaper(
             generate_content_with_ai(content_gen, day_data, day_num)
         feature_box = None
 
-    # Check for sports games (always takes priority)
+    # Check for sports games (always takes priority for feature box)
     sports_feature = check_for_sports_games(date_info)
     if sports_feature:
         feature_box = sports_feature
 
-    # Load xkcd comic if selected for this week
+    # Fetch local SF story if available (add to front page stories)
+    if content_gen:
+        local_story = fetch_local_story(content_gen, date_info['date_obj'].strftime('%Y-%m-%d'))
+        if local_story:
+            front_page_stories = [local_story] + list(front_page_stories or [])
+
+    # Load xkcd comic if selected for the newspaper's week
     xkcd_manager = XkcdManager()
     xkcd_comic = None
-    selected_num = xkcd_manager.get_selected_for_week()
+    selected_num = xkcd_manager.get_selected_for_week(date_info['date_obj'])
     if selected_num:
         cache = xkcd_manager.load_cache()
         if str(selected_num) in cache:

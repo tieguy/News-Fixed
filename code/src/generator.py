@@ -136,6 +136,45 @@ class ContentGenerator:
             "content": content
         }
 
+    def generate_local_story(
+        self,
+        original_content: str,
+        source_url: str,
+        original_title: str = ""
+    ) -> Dict[str, str]:
+        """
+        Generate a local news story (120-140 words) for front page.
+
+        Args:
+            original_content: Original news story text (can be HTML)
+            source_url: Source URL
+            original_title: Original story title
+
+        Returns:
+            Dict with 'title' and 'content' keys
+        """
+        # Strip HTML if present
+        import re
+        clean_content = re.sub(r'<[^>]+>', ' ', original_content)
+        clean_content = re.sub(r'\s+', ' ', clean_content).strip()
+
+        # Combine title and content for full context
+        full_text = f"{original_title}\n\n{clean_content}".strip() if original_title else clean_content
+
+        template = self._load_prompt("local_story")
+        prompt = template.format(
+            original_content=full_text,
+            source_url=source_url
+        )
+
+        content = self._call_claude(prompt, max_tokens=500)
+        title = self.generate_headline(content)
+
+        return {
+            "title": title,
+            "content": content
+        }
+
     def generate_statistics(
         self,
         stories_summary: str,

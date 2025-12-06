@@ -84,9 +84,21 @@ p {
     text-transform: uppercase;
 }
 
+/* Section Headers */
+.section-header {
+    font-size: 11pt;
+    font-weight: bold;
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid #000;
+    padding-bottom: 2pt;
+    margin-bottom: 0.08in;
+    margin-top: 0.1in;
+}
+
 /* Lead Story */
 .lead-story {
-    margin-bottom: 0.15in;
+    margin-bottom: 0.12in;
 }
 
 .lead-headline {
@@ -107,7 +119,6 @@ p {
 
 .lead-content {
     display: table-cell;
-    width: 6.38in;  /* Total: 7.5in - 1in QR - 0.12in gap */
     column-count: 2;
     column-gap: 0.12in;
     font-size: 9.5pt;
@@ -118,21 +129,61 @@ p {
 
 .lead-qr {
     display: table-cell;
-    width: 1in;
+    width: 0.7in;
     text-align: center;
     vertical-align: top;
 }
 
-.qr-code {
-    width: 1in;
-    height: 1in;
-    border: 2px solid #000;
+.qr-code-medium {
+    width: 0.6in;
+    height: 0.6in;
+    border: 1px solid #000;
 }
 
 .qr-label {
-    font-size: 7pt;
-    margin-top: 4pt;
-    line-height: 1.2;
+    font-size: 6pt;
+    margin-top: 2pt;
+    line-height: 1.1;
+}
+
+/* Local Stories Section */
+.local-stories {
+    margin-bottom: 0.12in;
+}
+
+.local-story {
+    margin-bottom: 0.08in;
+}
+
+.local-headline {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-bottom: 0.06in;
+    line-height: 1.15;
+    border-bottom: 2px solid #000;
+    padding-bottom: 3pt;
+}
+
+.local-layout {
+    display: table;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.1in 0;
+}
+
+.local-content {
+    display: table-cell;
+    font-size: 9pt;
+    line-height: 1.3;
+    text-align: justify;
+    vertical-align: top;
+}
+
+.local-qr {
+    display: table-cell;
+    width: 0.7in;
+    text-align: center;
+    vertical-align: top;
 }
 
 /* Front Page Lower Section */

@@ -1,0 +1,20 @@
+You are writing a local news story for "News, Fixed," a daily newspaper for bright 10-14 year olds. This story is about something happening in our city (San Francisco Bay Area).
+
+ORIGINAL STORY:
+{original_content}
+
+SOURCE: {source_url}
+
+Your task: Write a 120-140 word local story for the front page. This must reliably fill the space allocated.
+
+Guidelines:
+- Write for bright 10-14 year olds: accessible but not condescending
+- Emphasize that this is happening in OUR city/region
+- Use "our" not "your" - we're a family reading this together
+- Explain WHY this local news matters
+- Include specific numbers, places, or names when available
+- Make connections to places or things readers might recognize
+- Show how local action creates positive change
+- Use active voice and vivid language
+
+Format: Return ONLY the story text in 2-3 short paragraphs. No title/headline (that will be generated separately).

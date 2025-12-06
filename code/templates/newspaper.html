@@ -22,7 +22,8 @@
             <span class="theme">{{ theme }}</span>
         </div>
 
-        <!-- Lead Story -->
+        <!-- World News Section -->
+        <div class="section-header">WORLD</div>
         <article class="lead-story">
             <h2 class="lead-headline">{{ main_story.title }}</h2>
             <div class="lead-layout">
@@ -30,32 +31,40 @@
                     {{ main_story.content }}
                 </div>
                 <div class="lead-qr">
-                    <img src="{{ main_story.qr_code }}" alt="QR Code" class="qr-code">
-                    <p class="qr-label">Scan for {{ main_story.source_name }}</p>
+                    <img src="{{ main_story.qr_code }}" alt="QR Code" class="qr-code-medium">
+                    <p class="qr-label">{{ main_story.source_name }}</p>
                 </div>
             </div>
         </article>
 
-        <!-- Secondary Stories and Feature Box -->
-        <div class="front-lower">
-            <div class="secondary-stories">
-                {% for article in front_page_stories %}
-                <article class="secondary-story">
-                    <h3 class="secondary-headline">{{ article.title }}</h3>
-                    <p class="secondary-content">{{ article.content }}</p>
-                    <p class="secondary-source"><img src="{{ article.qr_code }}" alt="QR" class="qr-code-tiny"> {{ article.source_name }}</p>
-                </article>
-                {% endfor %}
-            </div>
-
-            <!-- Feature Box (only shown when content provided, e.g., sports games) -->
-            {% if feature_box %}
-            <aside class="feature-box">
-                <h3>{{ feature_box.title }}</h3>
-                <p>{{ feature_box.content | safe }}</p>
-            </aside>
-            {% endif %}
+        <!-- Local News Section -->
+        {% if front_page_stories %}
+        <div class="section-header">SAN FRANCISCO</div>
+        <div class="local-stories">
+            {% for article in front_page_stories %}
+            <article class="local-story">
+                <h3 class="local-headline">{{ article.title }}</h3>
+                <div class="local-layout">
+                    <div class="local-content">
+                        {{ article.content }}
+                    </div>
+                    <div class="local-qr">
+                        <img src="{{ article.qr_code }}" alt="QR Code" class="qr-code-medium">
+                        <p class="qr-label">{{ article.source_name }}</p>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
         </div>
+        {% endif %}
+
+        <!-- Feature Box (only shown when content provided, e.g., sports games) -->
+        {% if feature_box %}
+        <aside class="feature-box">
+            <h3>{{ feature_box.title }}</h3>
+            <p>{{ feature_box.content | safe }}</p>
+        </aside>
+        {% endif %}
 
         <!-- Tomorrow Teaser -->
         {% if tomorrow_teaser %}
