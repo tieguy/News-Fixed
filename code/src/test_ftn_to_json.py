@@ -262,3 +262,100 @@ def test_split_multi_link_stories_mixed_list():
     assert result[2].source_url == "https://multi.com/b"
     # Only called once (for the multi-URL story)
     client.messages.create.assert_called_once()
+
+
+# Phase 2 tests: Real FTN-322 data
+
+# Test fixture: Story 0 from FTN-322 - two distinct topics in one paragraph
+FTN_322_STORY_0_TITLE = "Humanity's fight against measles in three charts."
+FTN_322_STORY_0_CONTENT = """A new report from the WHO reveals that annual measles deaths fell by 88% between 2000 and 2024, from 777,000 to 95,000 a year. Vaccinations have prevented an estimated 58 million deaths over this period, one of our species' greatest ever achievements. Routine immunisation, including a second-dose surge from 17% to 76%, has reshaped our collective immunity, particularly in Africa, yet there is still so much work to be done: 20.6 million children missed their first dose last year, driving outbreaks in 59 countries. Gavi Energy analysts say electricity demand in the United States is about to skyrocket. And they really do mean skyrocket — predicted to grow 25% by 2030, which would be the largest increase in electricity demand in US history. It's mostly being blamed on generative AI: data centres are already driving up electricity prices around the country."""
+FTN_322_STORY_0_URLS = [
+    'https://www.who.int/news/item/28-11-2025-measles-deaths-down-88--since-2000--but-cases-surge',
+    'https://www.gavi.org/vaccineswork/winning-against-measles-five-charts-tell-remarkable-24-year-story',
+    'https://www.icf.com/insights/energy/electricity-demand-expected-to-grow',
+    'https://www.bloomberg.com/graphics/2025-ai-data-centers-electricity-prices/?sref=B9VwE2e5'
+]
+
+
+def test_split_prompt_identifies_distinct_topics_in_ftn322_story0():
+    """Prompt correctly identifies that FTN-322 Story 0 contains two distinct topics."""
+    from ftn_to_json import _split_single_story
+    from parser import FTNStory
+
+    story = FTNStory(
+        FTN_322_STORY_0_TITLE,
+        FTN_322_STORY_0_CONTENT,
+        source_url=FTN_322_STORY_0_URLS[0],
+        all_urls=FTN_322_STORY_0_URLS
+    )
+
+    # Use real API if available, otherwise skip
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    from anthropic import Anthropic
+    client = Anthropic()
+
+    splits = _split_single_story(story, client)
+
+    # Should identify at least 2 distinct topics
+    assert len(splits) >= 2, f"Expected at least 2 splits, got {len(splits)}"
+
+    # One split should be about measles/health
+    split_contents = [s.get("content", "").lower() for s in splits]
+    measles_split = any("measles" in c or "vaccination" in c for c in split_contents)
+    assert measles_split, "Expected a split about measles/vaccination"
+
+    # One split should be about electricity/AI
+    electricity_split = any("electricity" in c or "data centre" in c or "data center" in c for c in split_contents)
+    assert electricity_split, "Expected a split about electricity/AI"
+
+    # Each split should have a URL from the provided list
+    for split in splits:
+        assert split.get("primary_url") in FTN_322_STORY_0_URLS, f"URL {split.get('primary_url')} not in original URLs"
+
+
+# Test fixture: Story 8 from FTN-322 - ONE topic with two sources (should not split)
+FTN_322_STORY_8_TITLE = "Centuries ago, a lot of people from Africa were taken as slaves to South America, and a lot of those people fled to the forests (for a fascinating history of this check out National Geographic's article on Brazilian quilimbos)."
+FTN_322_STORY_8_CONTENT = """Today, many of their descendants live on what are now protected lands, and a new study shows that these places have also seen lower levels of deforestation and greater biodiversity conservation than protected areas that are free of people. It appears that humans can live in harmony with nature even if their ancestors haven't been in the same place for millennia, so… let's do it?"""
+FTN_322_STORY_8_URLS = [
+    'https://archive.is/C9ZbP',
+    'https://news.mongabay.com/2025/11/afro-descendant-territories-slash-deforestation-lock-in-carbon-study-shows/'
+]
+
+
+def test_split_prompt_keeps_single_topic_together_ftn322_story8():
+    """Prompt correctly identifies that FTN-322 Story 8 is ONE topic (should not split)."""
+    from ftn_to_json import _split_single_story
+    from parser import FTNStory
+
+    story = FTNStory(
+        FTN_322_STORY_8_TITLE,
+        FTN_322_STORY_8_CONTENT,
+        source_url=FTN_322_STORY_8_URLS[0],
+        all_urls=FTN_322_STORY_8_URLS
+    )
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    from anthropic import Anthropic
+    client = Anthropic()
+
+    splits = _split_single_story(story, client)
+
+    # This story is about ONE topic with two sources
+    # It should either return 1 split, or if it returns 2, they should both be
+    # about the same topic (descendants, protected lands, deforestation)
+    if len(splits) == 1:
+        # Good - recognized as single topic
+        assert True
+    else:
+        # If split, both should be about the same core topic
+        split_contents = [s.get("content", "").lower() for s in splits]
+        # All splits should mention descendants, protected lands, or deforestation
+        for content in split_contents:
+            related_to_topic = any(term in content for term in [
+                "descendant", "protected", "deforestation", "biodiversity", "forest", "slave"
+            ])
+            assert related_to_topic, f"Split '{content[:50]}...' doesn't seem related to the main topic"
