@@ -6,82 +6,90 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **News, Fixed** is a Python application that transforms positive news content from Fix The News (https://fixthe.news) into a daily 2-page newspaper for children ages 10-14. The goal is to counter ambient negative news with evidence of human progress, formatted as a traditional black-and-white newspaper optimized for home printing.
 
-## Issue Tracking with bd (beads)
+## Issue Tracking with Chainlink
 
-**IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
+**IMPORTANT**: This project uses **chainlink** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
 
-### Why bd?
+### Why Chainlink?
 
+- Local-first: SQLite storage in `.chainlink/issues.db`, no external dependencies
+- Session management: Preserves context across AI coding sessions with handoff notes
 - Dependency-aware: Track blockers and relationships between issues
-- Git-friendly: Auto-syncs to JSONL for version control
-- Agent-optimized: JSON output, ready work detection, discovered-from links
-- Prevents duplicate tracking systems and confusion
+- Smart recommendations: `chainlink next` suggests prioritized work based on blockers
+- Hierarchical: Support for subissues, milestones, and related issue linking
 
 ### Quick Start
 
 **Check for ready work:**
 ```bash
-bd ready --json
+chainlink ready      # Show unblocked issues
+chainlink next       # Get recommended next task
 ```
 
 **Create new issues:**
 ```bash
-bd create "Issue title" -t bug|feature|task -p 0-4 --json
-bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
+chainlink create "Issue title" -p high|medium|low
+chainlink create "Issue title" -p high -d "Description here"
 ```
 
-**Claim and update:**
+**Manage issues:**
 ```bash
-bd update bd-42 --status in_progress --json
-bd update bd-42 --priority 1 --json
+chainlink show <id>       # View issue details
+chainlink list            # List all open issues
+chainlink close <id>      # Mark complete
+chainlink update <id> -p medium  # Change priority
 ```
 
-**Complete work:**
+**Dependencies:**
 ```bash
-bd close bd-42 --reason "Completed" --json
+chainlink block <id> <blocker_id>  # Mark as blocked by another issue
+chainlink blocked                   # Show all blocked issues
 ```
 
-### Issue Types
+### Session Workflow (AI Agent Handoffs)
 
-- `bug` - Something broken
-- `feature` - New functionality
-- `task` - Work item (tests, docs, refactoring)
-- `epic` - Large feature with subtasks
-- `chore` - Maintenance (dependencies, tooling)
+```bash
+chainlink session start          # Begin work, shows prior handoff notes
+chainlink session work <id>      # Set current focus
+chainlink session end --notes "Progress made, next steps..."
+```
 
 ### Priorities
 
-- `0` - Critical (security, data loss, broken builds)
-- `1` - High (major features, important bugs)
-- `2` - Medium (default, nice-to-have)
-- `3` - Low (polish, optimization)
-- `4` - Backlog (future ideas)
+- `critical` - Security, data loss, broken builds
+- `high` - Major features, important bugs
+- `medium` - Default, nice-to-have
+- `low` - Polish, optimization, backlog
 
 ### Workflow for AI Agents
 
-1. **Check ready work**: `bd ready` shows unblocked issues
-2. **Claim your task**: `bd update <id> --status in_progress`
-3. **Work on it**: Implement, test, document
-4. **Discover new work?** Create linked issue:
-   - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
-5. **Complete**: `bd close <id> --reason "Done"`
+1. **Start session**: `chainlink session start` to see prior context
+2. **Find work**: `chainlink next` or `chainlink ready`
+3. **Focus**: `chainlink session work <id>`
+4. **Work on it**: Implement, test, document
+5. **Discover new work?** Create linked issue:
+   - `chainlink create "Found bug" -p high`
+   - `chainlink block <new_id> <parent_id>` (if blocked)
+6. **Complete**: `chainlink close <id>`
+7. **End session**: `chainlink session end --notes "Summary of progress"`
 
-### Auto-Sync
+### Organization Features
 
-bd automatically syncs with git:
-- Exports to `.beads/issues.jsonl` after changes (5s debounce)
-- Imports from JSONL when newer (e.g., after `git pull`)
-- No manual export/import needed!
+```bash
+chainlink subissue <parent_id> "Subtask title"  # Create child issue
+chainlink label <id> <label>                     # Add labels
+chainlink relate <id1> <id2>                     # Link related issues
+chainlink tree                                   # Visualize hierarchy
+```
 
 ### Important Rules
 
-- ✅ Use bd for ALL task tracking
-- ✅ Always use `--json` flag for programmatic use
-- ✅ Link discovered work with `discovered-from` dependencies
-- ✅ Check `bd ready` before asking "what should I work on?"
-- ❌ Do NOT create markdown TODO lists
-- ❌ Do NOT use external issue trackers
-- ❌ Do NOT duplicate tracking systems
+- Use chainlink for ALL task tracking
+- Start/end sessions with handoff notes for AI continuity
+- Check `chainlink next` before asking "what should I work on?"
+- Do NOT create markdown TODO lists
+- Do NOT use external issue trackers
+- Do NOT duplicate tracking systems
 
 ## Development Setup
 
@@ -212,7 +220,7 @@ Cache files are JSON format and ignored by git.
 
 ## Future Enhancements
 
-(Tracked in beads, not implemented yet)
+(Tracked in chainlink, not implemented yet)
 - Family calendar integration
 - Rotating single-panel cartoons
 - "Dinner Table Question" section

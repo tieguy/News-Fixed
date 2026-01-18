@@ -53,8 +53,8 @@ ftn-*.json
 # Git worktrees
 .worktrees/
 
-# Beads socket file
-.beads/bd.sock
+# Chainlink local database
+.chainlink/issues.db
 
 # Keep directory structure
 !output/.gitkeep
