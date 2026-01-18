@@ -26,6 +26,14 @@ from src.parser import FTNParser, FTNStory
 # Constants
 FTN_BASE_URL = "https://fixthenews.com"
 
+# Default themes mapped to days and their internal keys
+DEFAULT_THEMES = {
+    1: {"name": "Health & Education", "key": "health_education"},
+    2: {"name": "Environment & Conservation", "key": "environment"},
+    3: {"name": "Technology & Energy", "key": "technology_energy"},
+    4: {"name": "Society & Youth Movements", "key": "society"},
+}
+
 
 def parse_llm_json(response_text: str) -> dict:
     """
@@ -201,6 +209,146 @@ Return ONLY valid JSON (no markdown fences):
     )
 
     return parse_llm_json_with_retry(response.content[0].text, client)
+
+
+def analyze_themes(analyzed_stories: list, client) -> dict:
+    """
+    Analyze all stories collectively to assess theme health and propose themes (Phase 1.5).
+
+    Examines story distribution across default themes. If themes are weak (< 2 stories
+    or no high-strength stories) or overloaded (> 6 stories with 2+ high-strength),
+    proposes substitute or split themes.
+
+    Args:
+        analyzed_stories: List of dicts from analyze_story(), each with:
+            - id: story index
+            - primary_theme: one of health_education, environment, technology_energy, society
+            - secondary_themes: list of tags
+            - story_strength: high, medium, or low
+            - headline: display headline
+        client: Anthropic client
+
+    Returns:
+        Dict with:
+            - proposed_themes: dict mapping day (1-4) to theme info:
+                - name: display name (e.g., "Health & Education")
+                - key: internal key for grouping (e.g., "health_education")
+                - source: "default", "generated", or "split_from_<theme>"
+            - theme_health: dict mapping day (1-4) to health info:
+                - status: "weak", "healthy", or "overloaded"
+                - story_count: number of stories
+                - high_strength_count: number of high-strength stories
+            - reasoning: explanation of theme choices
+    """
+    # Count stories per default theme
+    theme_counts = {key: {"total": 0, "high": 0} for key in ["health_education", "environment", "technology_energy", "society"]}
+
+    for story in analyzed_stories:
+        theme = story.get("primary_theme")
+        if theme in theme_counts:
+            theme_counts[theme]["total"] += 1
+            if story.get("story_strength") == "high":
+                theme_counts[theme]["high"] += 1
+
+    # Assess health of each default theme
+    theme_health = {}
+    weak_themes = []
+    overloaded_themes = []
+
+    for day, theme_info in DEFAULT_THEMES.items():
+        key = theme_info["key"]
+        counts = theme_counts.get(key, {"total": 0, "high": 0})
+
+        if counts["total"] < 2 or counts["high"] == 0:
+            status = "weak"
+            weak_themes.append(day)
+        elif counts["total"] > 6 and counts["high"] >= 2:
+            status = "overloaded"
+            overloaded_themes.append(day)
+        else:
+            status = "healthy"
+
+        theme_health[day] = {
+            "status": status,
+            "story_count": counts["total"],
+            "high_strength_count": counts["high"]
+        }
+
+    # If all themes are healthy, use defaults
+    if not weak_themes and not overloaded_themes:
+        return {
+            "proposed_themes": {
+                day: {"name": info["name"], "key": info["key"], "source": "default"}
+                for day, info in DEFAULT_THEMES.items()
+            },
+            "theme_health": theme_health,
+            "reasoning": "All default themes have healthy story counts."
+        }
+
+    # Need LLM to propose substitutes/splits
+    stories_summary = []
+    for story in analyzed_stories:
+        stories_summary.append({
+            "id": story.get("id"),
+            "headline": story.get("headline") or story.get("tui_headline", "")[:50],
+            "primary_theme": story.get("primary_theme"),
+            "secondary_themes": story.get("secondary_themes", []),
+            "strength": story.get("story_strength")
+        })
+
+    prompt = f"""You are helping organize a children's newspaper (ages 10-14).
+
+We have {len(analyzed_stories)} stories that need to be organized into 4 daily themes.
+
+CURRENT THEME ASSESSMENT:
+{json.dumps(theme_health, indent=2)}
+
+WEAK THEMES (need substitutes): {[DEFAULT_THEMES[d]["name"] for d in weak_themes] if weak_themes else "None"}
+OVERLOADED THEMES (candidates for splitting): {[DEFAULT_THEMES[d]["name"] for d in overloaded_themes] if overloaded_themes else "None"}
+
+STORIES:
+{json.dumps(stories_summary, indent=2)}
+
+Based on the stories' secondary_themes and content, propose 4 themes for the newspaper.
+
+Rules:
+1. Keep healthy default themes unchanged
+2. Replace weak themes with generated themes based on story clusters
+3. Split overloaded themes into two related sub-themes
+4. Every theme needs a clear, kid-friendly name
+5. Generate a unique key for non-default themes (lowercase, underscores)
+
+Return ONLY valid JSON (no markdown fences):
+{{
+  "proposed_themes": {{
+    "1": {{"name": "Theme Name", "key": "theme_key", "source": "default|generated|split_from_X"}},
+    "2": {{"name": "Theme Name", "key": "theme_key", "source": "default|generated|split_from_X"}},
+    "3": {{"name": "Theme Name", "key": "theme_key", "source": "default|generated|split_from_X"}},
+    "4": {{"name": "Theme Name", "key": "theme_key", "source": "default|generated|split_from_X"}}
+  }},
+  "reasoning": "Brief explanation of theme choices"
+}}"""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1000,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    result = parse_llm_json_with_retry(response.content[0].text, client)
+
+    # Convert string keys to int and add theme_health
+    proposed = {}
+    for day_str, theme_info in result.get("proposed_themes", {}).items():
+        proposed[int(day_str)] = theme_info
+
+    return {
+        "proposed_themes": proposed,
+        "theme_health": theme_health,
+        "reasoning": result.get("reasoning", "")
+    }
 
 
 def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list) -> dict:
@@ -628,13 +776,8 @@ def _convert_splits_to_stories(splits: list, original_story) -> list:
 
 def get_theme_name(day_number: int) -> str:
     """Get theme name for a day number."""
-    themes = {
-        1: "Health & Education",
-        2: "Environment & Conservation",
-        3: "Technology & Energy",
-        4: "Society & Youth Movements"
-    }
-    return themes.get(day_number, "General")
+    theme = DEFAULT_THEMES.get(day_number)
+    return theme["name"] if theme else "General"
 
 
 def main():

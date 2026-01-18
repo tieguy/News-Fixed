@@ -482,3 +482,106 @@ def test_split_multi_link_stories_filters_empty_splits():
     # Should only have the non-empty split
     assert len(result) == 1
     assert result[0].content == "Valid content here."
+
+
+# Phase 5 tests: Theme analysis
+
+
+def test_analyze_themes_healthy_returns_defaults():
+    """analyze_themes returns default themes when all are healthy."""
+    from ftn_to_json import analyze_themes
+
+    # Create stories with healthy distribution (2-6 per theme, at least 1 high)
+    stories = [
+        {"id": 1, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Health Story 1"},
+        {"id": 2, "primary_theme": "health_education", "story_strength": "medium", "tui_headline": "Health Story 2"},
+        {"id": 3, "primary_theme": "environment", "story_strength": "high", "tui_headline": "Environment Story 1"},
+        {"id": 4, "primary_theme": "environment", "story_strength": "medium", "tui_headline": "Environment Story 2"},
+        {"id": 5, "primary_theme": "technology_energy", "story_strength": "high", "tui_headline": "Tech Story 1"},
+        {"id": 6, "primary_theme": "technology_energy", "story_strength": "low", "tui_headline": "Tech Story 2"},
+        {"id": 7, "primary_theme": "society", "story_strength": "high", "tui_headline": "Society Story 1"},
+        {"id": 8, "primary_theme": "society", "story_strength": "medium", "tui_headline": "Society Story 2"},
+    ]
+
+    # Mock client - should NOT be called for healthy themes
+    mock_client = MagicMock()
+
+    result = analyze_themes(stories, mock_client)
+
+    # Should return defaults without calling API
+    mock_client.messages.create.assert_not_called()
+    assert result["proposed_themes"][1]["source"] == "default"
+    assert result["proposed_themes"][1]["name"] == "Health & Education"
+    assert result["theme_health"][1]["status"] == "healthy"
+    assert "healthy" in result["reasoning"].lower()
+
+
+def test_analyze_themes_detects_weak_themes():
+    """analyze_themes detects weak themes (< 2 stories or no high-strength)."""
+    from ftn_to_json import analyze_themes
+
+    # Create stories with one weak theme (society has only 1 story)
+    stories = [
+        {"id": 1, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Health 1"},
+        {"id": 2, "primary_theme": "health_education", "story_strength": "medium", "tui_headline": "Health 2"},
+        {"id": 3, "primary_theme": "environment", "story_strength": "high", "tui_headline": "Env 1"},
+        {"id": 4, "primary_theme": "environment", "story_strength": "medium", "tui_headline": "Env 2"},
+        {"id": 5, "primary_theme": "technology_energy", "story_strength": "high", "tui_headline": "Tech 1"},
+        {"id": 6, "primary_theme": "technology_energy", "story_strength": "low", "tui_headline": "Tech 2"},
+        {"id": 7, "primary_theme": "society", "story_strength": "medium", "tui_headline": "Society 1"},  # Only 1, no high
+    ]
+
+    # Mock LLM response for theme proposal
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text='''{
+        "proposed_themes": {
+            "1": {"name": "Health & Education", "key": "health_education", "source": "default"},
+            "2": {"name": "Environment & Conservation", "key": "environment", "source": "default"},
+            "3": {"name": "Technology & Energy", "key": "technology_energy", "source": "default"},
+            "4": {"name": "Youth Leadership", "key": "youth_leadership", "source": "generated"}
+        },
+        "reasoning": "Society theme was weak, replaced with Youth Leadership based on story clusters."
+    }''')]
+
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    result = analyze_themes(stories, mock_client)
+
+    # Should call API for theme proposals
+    mock_client.messages.create.assert_called_once()
+    assert result["theme_health"][4]["status"] == "weak"
+    assert result["proposed_themes"][4]["source"] == "generated"
+
+
+def test_analyze_themes_integration():
+    """Integration test for analyze_themes with real API."""
+    from ftn_to_json import analyze_themes
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    from anthropic import Anthropic
+    client = Anthropic()
+
+    # Stories with intentionally weak society theme
+    stories = [
+        {"id": 1, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Medical breakthrough", "secondary_themes": ["science"]},
+        {"id": 2, "primary_theme": "health_education", "story_strength": "medium", "tui_headline": "School program", "secondary_themes": ["education"]},
+        {"id": 3, "primary_theme": "environment", "story_strength": "high", "tui_headline": "Ocean cleanup", "secondary_themes": ["conservation"]},
+        {"id": 4, "primary_theme": "environment", "story_strength": "medium", "tui_headline": "Forest growth", "secondary_themes": ["nature"]},
+        {"id": 5, "primary_theme": "technology_energy", "story_strength": "high", "tui_headline": "Solar power", "secondary_themes": ["renewable"]},
+        {"id": 6, "primary_theme": "technology_energy", "story_strength": "medium", "tui_headline": "AI helps", "secondary_themes": ["ai"]},
+        {"id": 7, "primary_theme": "society", "story_strength": "low", "tui_headline": "Community event", "secondary_themes": ["local"]},
+    ]
+
+    result = analyze_themes(stories, client)
+
+    # Verify structure
+    assert "proposed_themes" in result
+    assert "theme_health" in result
+    assert "reasoning" in result
+    assert len(result["proposed_themes"]) == 4
+
+    # Society should be marked weak
+    assert result["theme_health"][4]["status"] == "weak"
