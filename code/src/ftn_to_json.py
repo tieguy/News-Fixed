@@ -158,20 +158,33 @@ Return ONLY valid JSON (no markdown fences):
     return parse_llm_json_with_retry(response.content[0].text, client)
 
 
-def group_stories_into_days(stories: list, blocklisted_ids: list, client) -> dict:
+def group_stories_into_days(stories: list, blocklisted_ids: list, themes: dict, client) -> dict:
     """
     Group analyzed stories into 4 days using Claude API (Phase 2).
 
     Args:
         stories: List of analyzed story dicts with id, headline, themes, strength, length
         blocklisted_ids: List of story IDs to exclude
+        themes: Dict mapping day (1-4) to theme info with keys:
+            - name: display name (e.g., "Health & Education")
+            - key: internal key (e.g., "health_education")
+            - source: "default", "generated", or "split_from_<theme>"
         client: Anthropic client
 
     Returns:
-        Dict with day assignments: {day_1: {main: id, minis: [ids]}, ...}
+        Dict with day_1 through day_4, each containing:
+            - main: ID of main story or None
+            - minis: list of mini story IDs
+        Plus unused: list of story IDs not assigned
     """
     stories_str = json.dumps(stories, indent=2)
     blocklist_str = json.dumps(blocklisted_ids) if blocklisted_ids else "[]"
+
+    # Build dynamic theme list for prompt
+    theme_lines = "\n".join(
+        f"- Day {day}: {themes[day]['name']}"
+        for day in sorted(themes.keys())
+    )
 
     prompt = f"""You are organizing stories for a 4-day children's newspaper (ages 10-14).
 
@@ -182,10 +195,7 @@ BLOCKLISTED STORY IDs (exclude these):
 {blocklist_str}
 
 DAY THEMES:
-- Day 1: Health & Education
-- Day 2: Environment & Conservation
-- Day 3: Technology & Energy
-- Day 4: Society & Youth Movements
+{theme_lines}
 
 RULES:
 - Each day needs 1 main story (longest/strongest fit) + up to 4 minis
@@ -213,7 +223,10 @@ Return ONLY valid JSON (no markdown fences):
         ]
     )
 
-    return parse_llm_json_with_retry(response.content[0].text, client)
+    try:
+        return parse_llm_json_with_retry(response.content[0].text, client)
+    except Exception as e:
+        return _fallback_grouping(stories, blocklisted_ids, themes)
 
 
 def analyze_themes(analyzed_stories: list, client: Anthropic) -> dict:
@@ -356,18 +369,21 @@ Return ONLY valid JSON (no markdown fences):
     }
 
 
-def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list) -> dict:
+def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: dict) -> dict:
     """
     Fallback grouping using simple length-based assignment.
 
     Used when Phase 2 API call fails.
+
+    Args:
+        analyzed_stories: List of analyzed story dicts
+        blocklisted_ids: List of story IDs to exclude
+        themes: Dict mapping day (1-4) to theme info with key field
     """
-    # Group by primary theme
+    # Build theme_map from passed themes
     theme_map = {
-        "health_education": "day_1",
-        "environment": "day_2",
-        "technology_energy": "day_3",
-        "society": "day_4"
+        themes[day]["key"]: f"day_{day}"
+        for day in themes.keys()
     }
 
     days = {
@@ -608,10 +624,18 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
     # Phase 2: Group stories into days
     print(f"\n📊 Phase 2: Grouping stories into days...")
 
+    # Prepare themes for grouping (using defaults for now)
+    # In Phase 3, this will be replaced with dynamic theme analysis
+    themes = {
+        day: {"name": info["name"], "key": info["key"], "source": "default"}
+        for day, info in DEFAULT_THEMES.items()
+    }
+
     try:
         grouping = group_stories_into_days(
             stories=analyzed_stories,
             blocklisted_ids=blocklisted_ids,
+            themes=themes,
             client=anthropic_client
         )
         print(f"   ✓ Grouped stories")
@@ -620,7 +644,7 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
     except Exception as e:
         print(f"   ⚠️  Error grouping stories: {e}")
         print(f"   Falling back to length-based assignment...")
-        grouping = _fallback_grouping(analyzed_stories, blocklisted_ids)
+        grouping = _fallback_grouping(analyzed_stories, blocklisted_ids, themes)
 
     # Build 4-day structure from grouping
     four_days = _build_four_days_from_grouping(stories, grouping)
