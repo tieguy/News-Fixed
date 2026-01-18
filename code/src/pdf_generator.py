@@ -84,6 +84,31 @@ class NewspaperGenerator:
             "source_name": extract_source_name(article["source_url"])
         }
 
+    def _prepare_xkcd(self, xkcd_comic: Dict) -> Dict:
+        """Prepare xkcd comic for template, downloading image if needed."""
+        from xkcd import XkcdManager
+
+        manager = XkcdManager()
+        image_url = xkcd_comic.get("img", "")
+        if not image_url:
+            return None
+
+        # Download to cache directory
+        cache_dir = self.templates_dir.parent / "cache" / "xkcd"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+
+        ext = ".png" if image_url.endswith(".png") else ".jpg"
+        image_path = cache_dir / f"xkcd_{xkcd_comic['num']}{ext}"
+
+        manager.download_comic_image(xkcd_comic["num"], image_path)
+
+        return {
+            "num": xkcd_comic.get("num"),
+            "title": xkcd_comic.get("title", ""),
+            "alt": xkcd_comic.get("alt", ""),
+            "image_path": str(image_path)
+        }
+
     def _prepare_context(
         self,
         day_number: int,
@@ -94,7 +119,8 @@ class NewspaperGenerator:
         mini_articles: List[Dict],
         statistics: List[Dict],
         feature_box: Dict,
-        tomorrow_teaser: str
+        tomorrow_teaser: str,
+        xkcd_comic: Dict = None
     ) -> Dict:
         """Prepare the template context with all article data and QR codes."""
         theme = get_theme_name(day_number)
@@ -120,6 +146,11 @@ class NewspaperGenerator:
             for article in mini_articles
         ]
 
+        # Process xkcd comic if provided
+        xkcd_context = None
+        if xkcd_comic:
+            xkcd_context = self._prepare_xkcd(xkcd_comic)
+
         return {
             "day_number": day_number,
             "day_of_week": day_of_week,
@@ -131,7 +162,8 @@ class NewspaperGenerator:
             "statistics": statistics,
             "feature_box": feature_box,
             "tomorrow_teaser": tomorrow_teaser,
-            "footer_message": "Good news exists, but it travels slowly."
+            "footer_message": "Good news exists, but it travels slowly.",
+            "xkcd_comic": xkcd_context
         }
 
     def _render_and_write_pdf(self, template, context: Dict, output_path: str) -> Path:
@@ -179,7 +211,7 @@ class NewspaperGenerator:
         front_page_stories: List[Dict] = None,
         feature_box: Dict = None,
         tomorrow_teaser: str = "",
-        xkcd_comic: Dict = None  # Not implemented in WeasyPrint generator
+        xkcd_comic: Dict = None
     ) -> Path:
         """
         Generate a 2-page newspaper PDF.
@@ -195,6 +227,7 @@ class NewspaperGenerator:
             front_page_stories: List of 2-3 secondary stories for front page
             feature_box: Optional feature box dict with 'title' and 'content'
             tomorrow_teaser: Tomorrow teaser text
+            xkcd_comic: Optional xkcd comic dict with 'num', 'title', 'alt', 'img'
 
         Returns:
             Path to generated PDF
@@ -203,7 +236,7 @@ class NewspaperGenerator:
         context = self._prepare_context(
             day_number, day_of_week, date_str, main_story,
             front_page_stories, mini_articles, statistics,
-            feature_box, tomorrow_teaser
+            feature_box, tomorrow_teaser, xkcd_comic
         )
 
         template = self.env.get_template("newspaper.html")

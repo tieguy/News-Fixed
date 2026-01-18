@@ -109,6 +109,10 @@ def main(json_file, output, dry_run):
                 else:
                     current_day -= 1
 
+        # xkcd selection step
+        click.echo("\n" + "=" * 60)
+        curator.review_xkcd()
+
         # Show final summary
         click.echo("\n" + "=" * 60)
         click.echo("✅ Curation complete!\n")

@@ -298,6 +298,45 @@ def test_get_selected_for_current_week():
         assert selected == 3170
 
 
+def test_select_comic_with_day():
+    """Can select a comic for a specific day."""
+    from xkcd import XkcdManager
+    from datetime import date
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        manager.select_comic(3170, day=3)
+
+        selected = manager.load_selected()
+        current_week = date.today().isocalendar()
+        week_key = f"{current_week.year}-W{current_week.week:02d}"
+
+        assert week_key in selected
+        assert selected[week_key]["num"] == 3170
+        assert selected[week_key]["day"] == 3
+
+
+def test_get_selected_for_day():
+    """Can get comic for a specific day only."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        # Select comic for day 2
+        manager.select_comic(3170, day=2)
+
+        # Should not return for day 1
+        assert manager.get_selected_for_day(1) is None
+
+        # Should return for day 2
+        assert manager.get_selected_for_day(2) == 3170
+
+        # Should not return for day 3
+        assert manager.get_selected_for_day(3) is None
+
+
 def test_download_comic_image():
     """Can download comic image to a file."""
     from xkcd import XkcdManager

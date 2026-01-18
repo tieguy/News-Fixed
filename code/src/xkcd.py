@@ -339,16 +339,25 @@ class XkcdManager:
 
         return candidates[:max_count]
 
-    def select_comic(self, comic_num: int, week_date: Optional[datetime] = None) -> None:
+    def select_comic(
+        self,
+        comic_num: int,
+        day: int = 1,
+        week_date: Optional[datetime] = None
+    ) -> None:
         """
-        Mark a comic as selected for a given week.
+        Mark a comic as selected for a given week and day.
 
         Args:
             comic_num: Comic number to select
+            day: Day number (1-4) to show the comic. Defaults to 1 (Monday).
             week_date: Date within the target week. Defaults to today.
         """
         if week_date is None:
             week_date = datetime.now()
+
+        if day < 1 or day > 4:
+            raise ValueError("Day must be between 1 and 4")
 
         # Get ISO week
         iso_cal = week_date.date().isocalendar()
@@ -357,6 +366,7 @@ class XkcdManager:
         selected = self.load_selected()
         selected[week_key] = {
             "num": comic_num,
+            "day": day,
             "selected_at": datetime.now().isoformat()
         }
         self.save_selected(selected)
@@ -381,6 +391,38 @@ class XkcdManager:
 
         if week_key in selected:
             return selected[week_key]["num"]
+        return None
+
+    def get_selected_for_day(
+        self,
+        day: int,
+        week_date: Optional[datetime] = None
+    ) -> Optional[int]:
+        """
+        Get the comic selected for a specific day of a given week.
+
+        Args:
+            day: Day number (1-4)
+            week_date: Date within the target week. Defaults to today.
+
+        Returns:
+            Comic number if selected for this day, None otherwise.
+        """
+        if week_date is None:
+            week_date = datetime.now()
+
+        iso_cal = week_date.date().isocalendar()
+        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
+
+        selected = self.load_selected()
+
+        if week_key in selected:
+            selection = selected[week_key]
+            # Check if this selection is for the requested day
+            # Default to day 1 for backwards compatibility with old selections
+            selected_day = selection.get("day", 1)
+            if selected_day == day:
+                return selection["num"]
         return None
 
     def download_comic_image(self, comic_num: int, dest_path: Path) -> Path:

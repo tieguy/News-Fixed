@@ -11,6 +11,7 @@ from typing import Dict, List, Optional
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from xkcd import XkcdManager
 
 console = Console()
 
@@ -864,3 +865,185 @@ class StoryCurator:
             unused_count = len(self.working_data['unused'].get('stories', []))
             if unused_count > 0:
                 console.print(f"[dim]  ({unused_count} unused stories excluded from newspaper)[/dim]")
+
+    def review_xkcd(self) -> None:
+        """
+        Interactive xkcd comic selection for the newspaper.
+
+        Shows article counts per day to help user decide placement,
+        then allows selecting from available candidates.
+        """
+        console.print("\n[bold cyan]xkcd Comic Selection[/bold cyan]\n")
+
+        xkcd_manager = XkcdManager()
+
+        # Check if already selected for this week
+        selected = xkcd_manager.get_selected_for_week()
+        if selected:
+            # Get which day it's selected for
+            selected_data = xkcd_manager.load_selected()
+            from datetime import datetime
+            iso_cal = datetime.now().date().isocalendar()
+            week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
+            day = selected_data.get(week_key, {}).get("day", 1)
+
+            cache = xkcd_manager.load_cache()
+            comic = cache.get(str(selected), {})
+            title = comic.get("title", "Unknown")
+
+            console.print(f"[green]Already selected:[/green] #{selected} \"{title}\" for Day {day} ({_get_theme_name(day)})")
+            console.print()
+
+            choice = console.input("Keep current selection? [Y/n/change day]: ").strip().lower()
+            if choice in ['', 'y', 'yes']:
+                console.print("[dim]Keeping current selection[/dim]")
+                return
+            elif choice.isdigit() and 1 <= int(choice) <= 4:
+                # Quick day change
+                new_day = int(choice)
+                xkcd_manager.select_comic(selected, day=new_day)
+                console.print(f"[green]✓[/green] Moved xkcd to Day {new_day} ({_get_theme_name(new_day)})")
+                self.changes_made.append(f"xkcd #{selected} moved to Day {new_day}")
+                return
+            # Otherwise, fall through to full selection
+
+        # Show article counts per day to help with placement decision
+        console.print("[bold]Article counts per day:[/bold]")
+        for day_num in range(1, 5):
+            day_key = f"day_{day_num}"
+            if day_key in self.working_data:
+                day_data = self.working_data[day_key]
+                main = 1 if day_data.get('main_story') else 0
+                minis = len(day_data.get('mini_articles', []))
+                total = main + minis
+                theme = _get_theme_name(day_num)
+                # Highlight days with fewer articles as good candidates
+                if total <= 3:
+                    console.print(f"  Day {day_num} ({theme}): {total} articles [green](light)[/green]")
+                elif total >= 5:
+                    console.print(f"  Day {day_num} ({theme}): {total} articles [yellow](full)[/yellow]")
+                else:
+                    console.print(f"  Day {day_num} ({theme}): {total} articles")
+        console.print()
+
+        # Get candidates
+        candidates = xkcd_manager.get_candidates()
+
+        if not candidates:
+            console.print("[yellow]No xkcd candidates available.[/yellow]")
+            console.print("[dim]Run './news-fixed xkcd fetch' to fetch and analyze recent comics.[/dim]")
+            return
+
+        # Display candidates
+        console.print(f"[bold]Available comics ({len(candidates)} candidates):[/bold]\n")
+
+        for i, comic in enumerate(candidates, 1):
+            analysis = comic.get("analysis", {})
+            title = comic.get("title", "Untitled")
+            alt = comic.get("alt", "")
+            summary = analysis.get("brief_summary", "")
+            tags = ", ".join(analysis.get("topic_tags", []))
+
+            console.print(f"  [{i}] #{comic['num']}: {title}")
+            if summary:
+                console.print(f"      [dim]{summary}[/dim]")
+            if tags:
+                console.print(f"      [dim]Tags: {tags}[/dim]")
+            console.print(f"      [dim]https://xkcd.com/{comic['num']}/[/dim]")
+            console.print()
+
+        console.print("  [S] Skip (no xkcd this week)")
+        console.print("  [R] Reject a comic")
+        console.print()
+
+        choice = console.input("Select comic (1-3, S to skip, R to reject): ").strip().lower()
+
+        if choice == 's':
+            console.print("[dim]Skipping xkcd for this week[/dim]")
+            return
+
+        if choice == 'r':
+            self._handle_xkcd_reject(xkcd_manager, candidates)
+            # Recurse to show updated candidates
+            self.review_xkcd()
+            return
+
+        try:
+            idx = int(choice) - 1
+            if idx < 0 or idx >= len(candidates):
+                console.print("[yellow]Invalid choice, skipping xkcd[/yellow]")
+                return
+
+            selected_comic = candidates[idx]
+
+            # Ask which day
+            console.print(f"\nWhich day should show #{selected_comic['num']} \"{selected_comic['title']}\"?")
+            console.print("  [1] Monday (Health & Education)")
+            console.print("  [2] Tuesday (Environment & Conservation)")
+            console.print("  [3] Wednesday (Technology & Energy)")
+            console.print("  [4] Thursday (Society & Youth Movements)")
+
+            day_choice = console.input("\nDay (1-4): ").strip()
+
+            try:
+                day = int(day_choice)
+                if day < 1 or day > 4:
+                    console.print("[yellow]Invalid day, defaulting to Day 1[/yellow]")
+                    day = 1
+            except ValueError:
+                console.print("[yellow]Invalid input, defaulting to Day 1[/yellow]")
+                day = 1
+
+            xkcd_manager.select_comic(selected_comic['num'], day=day)
+            console.print(f"\n[green]✓[/green] Selected #{selected_comic['num']} for Day {day} ({_get_theme_name(day)})")
+            self.changes_made.append(f"xkcd #{selected_comic['num']} selected for Day {day}")
+
+        except ValueError:
+            console.print("[yellow]Invalid choice, skipping xkcd[/yellow]")
+
+    def _handle_xkcd_reject(self, xkcd_manager: XkcdManager, candidates: list) -> None:
+        """Handle rejecting an xkcd comic."""
+        console.print("\nWhich comic to reject?")
+        for i, comic in enumerate(candidates, 1):
+            console.print(f"  [{i}] #{comic['num']}: {comic.get('title', 'Untitled')}")
+
+        choice = console.input("\nChoice (or 'back'): ").strip()
+
+        if choice == 'back':
+            return
+
+        try:
+            idx = int(choice) - 1
+            if idx < 0 or idx >= len(candidates):
+                console.print("[red]Invalid choice[/red]")
+                return
+
+            comic = candidates[idx]
+
+            console.print("\nRejection reason:")
+            console.print("  [1] too_complex")
+            console.print("  [2] adult_humor")
+            console.print("  [3] too_dark")
+            console.print("  [4] multi_panel")
+            console.print("  [5] requires_context")
+            console.print("  [6] other")
+
+            reason_choice = console.input("\nReason (1-6): ").strip()
+
+            reasons = ["too_complex", "adult_humor", "too_dark", "multi_panel", "requires_context", "other"]
+            try:
+                reason_idx = int(reason_choice) - 1
+                if reason_idx < 0 or reason_idx >= len(reasons):
+                    console.print("[red]Invalid reason[/red]")
+                    return
+                reason = reasons[reason_idx]
+            except ValueError:
+                console.print("[red]Invalid input[/red]")
+                return
+
+            xkcd_manager.reject_comic(comic['num'], reason)
+            console.print(f"[green]✓[/green] Rejected #{comic['num']} ({reason})")
+            self.changes_made.append(f"xkcd #{comic['num']} rejected ({reason})")
+
+        except ValueError:
+            console.print("[red]Invalid choice[/red]")

@@ -250,7 +250,7 @@ def generate_day_newspaper(
     # Load xkcd comic if selected for the newspaper's week
     xkcd_manager = XkcdManager()
     xkcd_comic = None
-    selected_num = xkcd_manager.get_selected_for_week(date_info['date_obj'])
+    selected_num = xkcd_manager.get_selected_for_day(day_num, date_info['date_obj'])
     if selected_num:
         cache = xkcd_manager.load_cache()
         if str(selected_num) in cache:
