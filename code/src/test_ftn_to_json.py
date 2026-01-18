@@ -119,13 +119,19 @@ def test_analyze_story_returns_expected_fields():
 
 def test_group_stories_into_days_returns_expected_structure():
     """group_stories_into_days returns proper day assignments."""
-    from ftn_to_json import group_stories_into_days
+    from ftn_to_json import group_stories_into_days, DEFAULT_THEMES
 
     if not os.getenv("ANTHROPIC_API_KEY"):
         pytest.skip("ANTHROPIC_API_KEY not set")
 
     from anthropic import Anthropic
     client = Anthropic()
+
+    # Convert DEFAULT_THEMES to the expected format
+    themes = {
+        day: {"name": info["name"], "key": info["key"], "source": "default"}
+        for day, info in DEFAULT_THEMES.items()
+    }
 
     # Create mock analyzed stories
     stories = [
@@ -135,7 +141,7 @@ def test_group_stories_into_days_returns_expected_structure():
         {"id": 3, "headline": "Youth voting rights", "primary_theme": "society", "secondary_themes": ["democracy"], "story_strength": "medium", "length": 350},
     ]
 
-    result = group_stories_into_days(stories, blocklisted_ids=[], client=client)
+    result = group_stories_into_days(stories, blocklisted_ids=[], themes=themes, client=client)
 
     # Check structure
     assert "day_1" in result
@@ -155,6 +161,77 @@ def test_group_stories_into_days_returns_expected_structure():
     all_assigned.update(result.get("unused", []))
 
     assert all_assigned == {0, 1, 2, 3}
+
+
+def test_group_stories_with_custom_themes():
+    """group_stories_into_days works with custom (non-default) themes."""
+    from ftn_to_json import group_stories_into_days
+
+    stories = [
+        {"id": 0, "headline": "AI discovery", "primary_theme": "ai_robotics", "secondary_themes": [], "story_strength": "high", "length": 800},
+        {"id": 1, "headline": "Clean energy win", "primary_theme": "clean_energy", "secondary_themes": [], "story_strength": "medium", "length": 400},
+    ]
+
+    # Custom themes (simulating generated/split themes)
+    custom_themes = {
+        1: {"name": "AI & Robotics", "key": "ai_robotics", "source": "split_from_technology_energy"},
+        2: {"name": "Environment & Conservation", "key": "environment", "source": "default"},
+        3: {"name": "Clean Energy", "key": "clean_energy", "source": "split_from_technology_energy"},
+        4: {"name": "Society & Youth Movements", "key": "society", "source": "default"},
+    }
+
+    # Mock LLM response
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text='''{
+        "day_1": {"main": 0, "minis": []},
+        "day_2": {"main": null, "minis": []},
+        "day_3": {"main": 1, "minis": []},
+        "day_4": {"main": null, "minis": []},
+        "unused": []
+    }''')]
+
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    result = group_stories_into_days(stories, blocklisted_ids=[], themes=custom_themes, client=mock_client)
+
+    # Verify custom theme names appear in prompt
+    call_args = mock_client.messages.create.call_args
+    prompt = call_args.kwargs["messages"][0]["content"]
+    assert "AI & Robotics" in prompt
+    assert "Clean Energy" in prompt
+
+    # Verify structure
+    assert result["day_1"]["main"] == 0
+    assert result["day_3"]["main"] == 1
+
+
+def test_fallback_grouping_with_custom_themes():
+    """_fallback_grouping works with custom themes."""
+    from ftn_to_json import _fallback_grouping
+
+    stories = [
+        {"id": 0, "primary_theme": "ai_robotics", "story_strength": "high", "length": 800},
+        {"id": 1, "primary_theme": "clean_energy", "story_strength": "medium", "length": 400},
+        {"id": 2, "primary_theme": "environment", "story_strength": "high", "length": 600},
+    ]
+
+    custom_themes = {
+        1: {"name": "AI & Robotics", "key": "ai_robotics", "source": "generated"},
+        2: {"name": "Environment & Conservation", "key": "environment", "source": "default"},
+        3: {"name": "Clean Energy", "key": "clean_energy", "source": "generated"},
+        4: {"name": "Society & Youth Movements", "key": "society", "source": "default"},
+    }
+
+    result = _fallback_grouping(stories, blocklisted_ids=[], themes=custom_themes)
+
+    # Story 0 (ai_robotics) should go to day_1
+    # Story 1 (clean_energy) should go to day_3
+    # Story 2 (environment) should go to day_2
+    assert "day_1" in result
+    assert "day_2" in result
+    assert "day_3" in result
+    assert "day_4" in result
 
 
 # Tests for split_multi_link_stories
