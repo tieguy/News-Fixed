@@ -415,9 +415,20 @@ def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: di
     return days
 
 
-def _build_four_days_from_grouping(stories: list, grouping: dict) -> dict:
+def _build_four_days_from_grouping(stories: list, grouping: dict, themes: dict) -> dict:
     """
-    Build the final 4-day JSON structure from grouping results.
+    Build final 4-day JSON structure from grouped stories.
+
+    Args:
+        stories: List of analyzed story dicts
+        grouping: Day assignments from group_stories_into_days
+        themes: Dict mapping day (1-4) to theme info with:
+            - name: display name
+            - key: internal key
+            - source: "default", "generated", or "split_from_<theme>"
+
+    Returns:
+        Dict with day_1-day_4 structures, theme_metadata, and unused stories
     """
     four_days = {}
 
@@ -445,7 +456,7 @@ def _build_four_days_from_grouping(stories: list, grouping: dict) -> dict:
         mini_ids = day_grouping.get("minis", [])
 
         day_data = {
-            "theme": get_theme_name(day_num),
+            "theme": themes[day_num]["name"],
             "main_story": {},
             "front_page_stories": [],
             "mini_articles": [],
@@ -475,6 +486,19 @@ def _build_four_days_from_grouping(stories: list, grouping: dict) -> dict:
                 })
 
         four_days[day_key] = day_data
+
+    # Add theme metadata (includes health info if available)
+    four_days["theme_metadata"] = {
+        day: {
+            "name": themes[day]["name"],
+            "key": themes[day]["key"],
+            "source": themes[day]["source"],
+            "status": themes[day].get("status", "unknown"),
+            "story_count": themes[day].get("story_count", 0),
+            "high_strength_count": themes[day].get("high_strength_count", 0)
+        }
+        for day in themes.keys()
+    }
 
     return four_days
 
@@ -648,7 +672,7 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         grouping = _fallback_grouping(analyzed_stories, blocklisted_ids, themes)
 
     # Build 4-day structure from grouping
-    four_days = _build_four_days_from_grouping(stories, grouping)
+    four_days = _build_four_days_from_grouping(stories, grouping, themes)
 
     # Determine output filename
     if output_file is None:

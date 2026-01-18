@@ -711,3 +711,48 @@ def test_analyze_themes_detects_overloaded_themes():
     assert result["theme_health"][1]["status"] == "overloaded"
     assert result["theme_health"][1]["story_count"] == 7
     assert result["theme_health"][1]["high_strength_count"] == 3
+
+
+def test_build_four_days_includes_theme_metadata():
+    """_build_four_days_from_grouping includes theme_metadata in output."""
+    from ftn_to_json import _build_four_days_from_grouping
+    from parser import FTNStory
+
+    stories = [
+        FTNStory("Story 1", "Content 1", source_url="https://example.com/1"),
+        FTNStory("Story 2", "Content 2", source_url="https://example.com/2"),
+    ]
+
+    # Add tui_headline to stories
+    stories[0].tui_headline = "Headline 1"
+    stories[1].tui_headline = "Headline 2"
+
+    grouping = {
+        "day_1": {"main": 0, "minis": []},
+        "day_2": {"main": 1, "minis": []},
+        "day_3": {"main": None, "minis": []},
+        "day_4": {"main": None, "minis": []},
+        "unused": []
+    }
+
+    themes = {
+        1: {"name": "Health & Education", "key": "health_education", "source": "default"},
+        2: {"name": "AI & Robotics", "key": "ai_robotics", "source": "generated"},
+        3: {"name": "Environment & Conservation", "key": "environment", "source": "default"},
+        4: {"name": "Society & Youth Movements", "key": "society", "source": "default"},
+    }
+
+    result = _build_four_days_from_grouping(stories, grouping, themes)
+
+    # Verify theme_metadata exists
+    assert "theme_metadata" in result
+    assert len(result["theme_metadata"]) == 4
+
+    # Verify day themes match
+    assert result["day_1"]["theme"] == "Health & Education"
+    assert result["day_2"]["theme"] == "AI & Robotics"
+
+    # Verify metadata structure
+    assert result["theme_metadata"][1]["source"] == "default"
+    assert result["theme_metadata"][2]["source"] == "generated"
+    assert result["theme_metadata"][2]["key"] == "ai_robotics"
