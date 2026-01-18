@@ -384,6 +384,14 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
 
     anthropic_client = Anthropic(api_key=api_key)
 
+    # Split multi-link stories into separate topics
+    original_count = len(stories)
+    multi_link_count = sum(1 for s in stories if len(s.all_urls) >= 2)
+    if multi_link_count > 0:
+        print(f"\n✂️  Splitting {multi_link_count} multi-link stories...")
+        stories = split_multi_link_stories(stories, anthropic_client)
+        print(f"   ✓ Expanded {original_count} → {len(stories)} stories")
+
     # Load blocklist
     blocklist = parser._load_blocklist()
 

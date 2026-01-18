@@ -359,3 +359,42 @@ def test_split_prompt_keeps_single_topic_together_ftn322_story8():
                 "descendant", "protected", "deforestation", "biodiversity", "forest", "slave"
             ])
             assert related_to_topic, f"Split '{content[:50]}...' doesn't seem related to the main topic"
+
+
+# Phase 3 tests: Pipeline integration
+
+def test_pipeline_expands_multi_link_stories():
+    """Pipeline integration: split_multi_link_stories is called and expands story count."""
+    from ftn_to_json import split_multi_link_stories
+    from parser import FTNParser
+    from pathlib import Path
+
+    # Parse FTN-322 raw (without splitting)
+    test_file = Path(__file__).parent.parent.parent / 'data' / 'raw' / 'FTN-322.html'
+    parser = FTNParser(str(test_file))
+    raw_stories = parser.extract_stories()
+    raw_count = len(raw_stories)
+
+    # Count how many have 2+ URLs (candidates for splitting)
+    multi_link_count = sum(1 for s in raw_stories if len(s.all_urls) >= 2)
+
+    # Now run through splitter with mock that always splits multi-URL stories into 2
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=json.dumps({
+        "splits": [
+            {"content": "First topic.", "primary_url": "https://example.com/a", "relationship": "standalone"},
+            {"content": "Second topic.", "primary_url": "https://example.com/b", "relationship": "standalone"}
+        ],
+        "reasoning": "Split into two"
+    }))]
+
+    client = MagicMock()
+    client.messages.create.return_value = mock_response
+
+    expanded_stories = split_multi_link_stories(raw_stories, client)
+
+    # Should have more stories after splitting
+    # Each multi-link story becomes 2, so: raw_count - multi_link_count + (multi_link_count * 2)
+    expected_count = raw_count - multi_link_count + (multi_link_count * 2)
+    assert len(expanded_stories) == expected_count
+    assert len(expanded_stories) > raw_count
