@@ -154,3 +154,111 @@ def test_group_stories_into_days_returns_expected_structure():
     all_assigned.update(result.get("unused", []))
 
     assert all_assigned == {0, 1, 2, 3}
+
+
+# Tests for split_multi_link_stories
+
+def test_split_multi_link_stories_passes_through_single_url_stories():
+    """Stories with 0-1 URLs pass through unchanged."""
+    from ftn_to_json import split_multi_link_stories
+    from parser import FTNStory
+
+    stories = [
+        FTNStory("Title one.", "Content one.", source_url="https://example.com/1", all_urls=["https://example.com/1"]),
+        FTNStory("Title two.", "Content two.", source_url=None, all_urls=[]),
+    ]
+
+    client = Mock()  # Should not be called
+
+    result = split_multi_link_stories(stories, client)
+
+    assert len(result) == 2
+    assert result[0].title == "Title one."
+    assert result[1].title == "Title two."
+    client.messages.create.assert_not_called()
+
+
+def test_split_multi_link_stories_splits_multi_url_story():
+    """Stories with 2+ URLs are sent to Claude and split."""
+    from ftn_to_json import split_multi_link_stories
+    from parser import FTNStory
+
+    # Multi-URL story (2 URLs)
+    multi_url_story = FTNStory(
+        "Intro sentence.",
+        "Topic A is great. Topic B is also great.",
+        source_url="https://example.com/a",
+        all_urls=["https://example.com/a", "https://example.com/b"]
+    )
+
+    # Mock Claude response with splits
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=json.dumps({
+        "splits": [
+            {"content": "Topic A is great.", "primary_url": "https://example.com/a", "relationship": "standalone"},
+            {"content": "Topic B is also great.", "primary_url": "https://example.com/b", "relationship": "standalone"}
+        ],
+        "reasoning": "Two distinct topics"
+    }))]
+
+    client = MagicMock()
+    client.messages.create.return_value = mock_response
+
+    result = split_multi_link_stories([multi_url_story], client)
+
+    # Should have 2 stories instead of 1
+    assert len(result) == 2
+    client.messages.create.assert_called_once()
+    # Check split stories have correct content
+    assert result[0].content == "Topic A is great."
+    assert result[0].source_url == "https://example.com/a"
+    assert result[1].content == "Topic B is also great."
+    assert result[1].source_url == "https://example.com/b"
+
+
+def test_split_multi_link_stories_mixed_list():
+    """Mixed list: single-URL stories pass through, multi-URL stories split."""
+    from ftn_to_json import split_multi_link_stories
+    from parser import FTNStory
+
+    # Single-URL story (should pass through)
+    single_story = FTNStory(
+        "Single topic.",
+        "Just one thing here.",
+        source_url="https://single.com",
+        all_urls=["https://single.com"]
+    )
+
+    # Multi-URL story (should split into 2)
+    multi_story = FTNStory(
+        "Intro.",
+        "First topic. Second topic.",
+        source_url="https://multi.com/a",
+        all_urls=["https://multi.com/a", "https://multi.com/b"]
+    )
+
+    # Mock Claude response
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=json.dumps({
+        "splits": [
+            {"content": "First topic.", "primary_url": "https://multi.com/a", "relationship": "standalone"},
+            {"content": "Second topic.", "primary_url": "https://multi.com/b", "relationship": "standalone"}
+        ],
+        "reasoning": "Two topics"
+    }))]
+
+    client = MagicMock()
+    client.messages.create.return_value = mock_response
+
+    result = split_multi_link_stories([single_story, multi_story], client)
+
+    # Should have 3 stories: 1 passthrough + 2 splits
+    assert len(result) == 3
+    # First is unchanged passthrough
+    assert result[0].title == "Single topic."
+    assert result[0].content == "Just one thing here."
+    # Second and third are splits
+    assert result[1].source_url == "https://multi.com/a"
+    assert result[2].source_url == "https://multi.com/b"
+    # Only called once (for the multi-URL story)
+    client.messages.create.assert_called_once()

@@ -8,6 +8,7 @@
 import sys
 import json
 import os
+import re
 from pathlib import Path
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Use relative import to avoid conflict with built-in parser module
-from src.parser import FTNParser
+from src.parser import FTNParser, FTNStory
 
 # Constants
 FTN_BASE_URL = "https://fixthenews.com"
@@ -493,6 +494,116 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
             print(f"   Unused: {unused_count} stories")
 
     return output_path
+
+
+def split_multi_link_stories(stories: list, client) -> list:
+    """
+    Split stories with multiple URLs into separate stories.
+
+    Stories with 0-1 URLs pass through unchanged.
+    Stories with 2+ URLs are sent to Claude for splitting.
+
+    Args:
+        stories: List of FTNStory objects
+        client: Anthropic client
+
+    Returns:
+        List of FTNStory objects (potentially expanded)
+    """
+    result = []
+    for story in stories:
+        if len(story.all_urls) < 2:
+            result.append(story)
+        else:
+            splits = _split_single_story(story, client)
+            result.extend(_convert_splits_to_stories(splits, story))
+    return result
+
+
+def _split_single_story(story, client) -> list:
+    """
+    Call Claude API to split a multi-URL story into separate topics.
+
+    Args:
+        story: FTNStory with 2+ URLs
+        client: Anthropic client
+
+    Returns:
+        List of split dicts with content, primary_url, relationship
+    """
+    urls_str = "\n".join(f"- {url}" for url in story.all_urls)
+    full_content = f"{story.title} {story.content}".strip()
+
+    prompt = f"""You are splitting a news paragraph that contains multiple distinct topics into separate stories.
+
+PARAGRAPH:
+{full_content}
+
+URLS in paragraph:
+{urls_str}
+
+Identify distinct topics in this paragraph. Each topic typically has its own source URL.
+
+Return ONLY valid JSON (no markdown fences):
+{{
+  "splits": [
+    {{
+      "content": "The sentence(s) about this specific topic",
+      "primary_url": "the URL most relevant to this topic from the list above",
+      "relationship": "standalone or elaboration"
+    }}
+  ],
+  "reasoning": "Brief explanation of how you split the paragraph"
+}}
+
+Rules:
+- Each split should have content and a primary_url from the provided list
+- "standalone" means the content makes sense on its own
+- "elaboration" means it depends on intro context
+- Include all URLs - don't drop any topics"""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    parsed = parse_llm_json(response.content[0].text)
+    return parsed.get("splits", [])
+
+
+def _convert_splits_to_stories(splits: list, original_story) -> list:
+    """
+    Convert split dicts into FTNStory objects.
+
+    Args:
+        splits: List of split dicts from Claude
+        original_story: Original FTNStory for fallback values
+
+    Returns:
+        List of FTNStory objects
+    """
+    result = []
+    for split in splits:
+        content = split.get("content", "")
+        primary_url = split.get("primary_url", original_story.source_url)
+
+        # Extract title (first sentence) from content
+        title_match = re.match(r'^([^.!?]+[.!?])', content)
+        if title_match:
+            title = title_match.group(1).strip()
+            remaining_content = content[len(title_match.group(1)):].strip()
+        else:
+            title = content[:100].strip()
+            remaining_content = content
+
+        result.append(FTNStory(
+            title=title,
+            content=remaining_content if remaining_content else content,
+            source_url=primary_url,
+            all_urls=[primary_url] if primary_url else []
+        ))
+    return result
 
 
 def get_theme_name(day_number: int) -> str:
