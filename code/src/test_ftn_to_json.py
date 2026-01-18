@@ -398,3 +398,87 @@ def test_pipeline_expands_multi_link_stories():
     expected_count = raw_count - multi_link_count + (multi_link_count * 2)
     assert len(expanded_stories) == expected_count
     assert len(expanded_stories) > raw_count
+
+
+# Phase 4 tests: Error handling and fallbacks
+
+def test_split_multi_link_stories_keeps_original_on_api_failure():
+    """When API call fails, keep the original story instead of crashing."""
+    from ftn_to_json import split_multi_link_stories
+    from parser import FTNStory
+
+    multi_url_story = FTNStory(
+        "Title.",
+        "Content about multiple topics.",
+        source_url="https://example.com/a",
+        all_urls=["https://example.com/a", "https://example.com/b"]
+    )
+
+    # Mock client that raises an exception
+    client = MagicMock()
+    client.messages.create.side_effect = Exception("API error")
+
+    result = split_multi_link_stories([multi_url_story], client)
+
+    # Should return original story, not crash
+    assert len(result) == 1
+    assert result[0].title == "Title."
+    assert result[0].source_url == "https://example.com/a"
+
+
+def test_split_multi_link_stories_keeps_original_on_invalid_json():
+    """When API returns invalid JSON after retry, keep original story."""
+    from ftn_to_json import split_multi_link_stories
+    from parser import FTNStory
+
+    multi_url_story = FTNStory(
+        "Title.",
+        "Content about multiple topics.",
+        source_url="https://example.com/a",
+        all_urls=["https://example.com/a", "https://example.com/b"]
+    )
+
+    # Mock client that returns invalid JSON both times
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text="not valid json at all")]
+
+    client = MagicMock()
+    client.messages.create.return_value = mock_response
+
+    result = split_multi_link_stories([multi_url_story], client)
+
+    # Should return original story after JSON parse fails
+    assert len(result) == 1
+    assert result[0].title == "Title."
+
+
+def test_split_multi_link_stories_filters_empty_splits():
+    """Splits with empty content should be filtered out."""
+    from ftn_to_json import split_multi_link_stories
+    from parser import FTNStory
+
+    multi_url_story = FTNStory(
+        "Title.",
+        "Content about multiple topics.",
+        source_url="https://example.com/a",
+        all_urls=["https://example.com/a", "https://example.com/b"]
+    )
+
+    # Mock response where one split has empty content
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=json.dumps({
+        "splits": [
+            {"content": "Valid content here.", "primary_url": "https://example.com/a", "relationship": "standalone"},
+            {"content": "", "primary_url": "https://example.com/b", "relationship": "standalone"}  # Empty
+        ],
+        "reasoning": "Split"
+    }))]
+
+    client = MagicMock()
+    client.messages.create.return_value = mock_response
+
+    result = split_multi_link_stories([multi_url_story], client)
+
+    # Should only have the non-empty split
+    assert len(result) == 1
+    assert result[0].content == "Valid content here."

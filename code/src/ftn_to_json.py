@@ -523,8 +523,17 @@ def split_multi_link_stories(stories: list, client) -> list:
         if len(story.all_urls) < 2:
             result.append(story)
         else:
-            splits = _split_single_story(story, client)
-            result.extend(_convert_splits_to_stories(splits, story))
+            try:
+                splits = _split_single_story(story, client)
+                if splits:
+                    result.extend(_convert_splits_to_stories(splits, story))
+                else:
+                    # Empty splits - keep original
+                    result.append(story)
+            except Exception as e:
+                # API or parsing error - keep original story
+                print(f"   ⚠️  Split failed for '{story.title[:40]}...': {e}")
+                result.append(story)
     return result
 
 
@@ -593,7 +602,10 @@ def _convert_splits_to_stories(splits: list, original_story) -> list:
     """
     result = []
     for split in splits:
-        content = split.get("content", "")
+        content = split.get("content", "").strip()
+        if not content:
+            # Skip empty splits
+            continue
         primary_url = split.get("primary_url", original_story.source_url)
 
         # Extract title (first sentence) from content
