@@ -38,9 +38,15 @@ ENV/
 
 # Project specific
 output/*.pdf
+output/*.png
 data/raw/
 data/processed/
 data/sports/*.ics
+
+# Cache files
+code/cache/
+data/xkcd_cache.json
+data/xkcd_selected.json
 
 # FTN source material (anywhere in project)
 FTN-*.html
