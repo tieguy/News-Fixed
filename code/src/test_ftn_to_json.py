@@ -756,3 +756,8 @@ def test_build_four_days_includes_theme_metadata():
     assert result["theme_metadata"][1]["source"] == "default"
     assert result["theme_metadata"][2]["source"] == "generated"
     assert result["theme_metadata"][2]["key"] == "ai_robotics"
+
+    # Verify default values for optional fields
+    assert result["theme_metadata"][1]["status"] == "unknown"
+    assert result["theme_metadata"][1]["story_count"] == 0
+    assert result["theme_metadata"][1]["high_strength_count"] == 0

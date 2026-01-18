@@ -10,6 +10,7 @@ import json
 import os
 import re
 from pathlib import Path
+from typing import Any
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
@@ -415,7 +416,7 @@ def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: di
     return days
 
 
-def _build_four_days_from_grouping(stories: list, grouping: dict, themes: dict) -> dict:
+def _build_four_days_from_grouping(stories: list, grouping: dict, themes: dict[int, dict[str, Any]]) -> dict:
     """
     Build final 4-day JSON structure from grouped stories.
 
