@@ -41,6 +41,21 @@ MAX_HEALTHY_STORY_COUNT = 6
 MIN_OVERLOADED_HIGH_STRENGTH = 2
 
 
+def _default_theme_proposal() -> dict:
+    """Return default themes in the proposal format for fallback."""
+    return {
+        "proposed_themes": {
+            day: {"name": info["name"], "key": info["key"], "source": "default"}
+            for day, info in DEFAULT_THEMES.items()
+        },
+        "theme_health": {
+            day: {"status": "unknown", "story_count": 0, "high_strength_count": 0}
+            for day in DEFAULT_THEMES.keys()
+        },
+        "reasoning": "Using default themes (fallback)."
+    }
+
+
 def parse_llm_json(response_text: str) -> dict:
     """
     Parse JSON from LLM response, handling common formatting issues.
@@ -647,15 +662,49 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
 
     print(f"   ✓ Analyzed {len(stories)} stories" + " " * 20)
 
+    # Phase 1.5: Analyze themes
+    print(f"\n🎯 Phase 1.5: Analyzing themes...")
+    try:
+        theme_proposal = analyze_themes(
+            analyzed_stories=analyzed_stories,
+            client=anthropic_client
+        )
+        themes = theme_proposal["proposed_themes"]
+        theme_health = theme_proposal.get("theme_health", {})
+
+        # Merge health data into themes for downstream use
+        for day in themes:
+            if day in theme_health:
+                themes[day]["status"] = theme_health[day].get("status", "unknown")
+                themes[day]["story_count"] = theme_health[day].get("story_count", 0)
+                themes[day]["high_strength_count"] = theme_health[day].get("high_strength_count", 0)
+
+        print(f"   ✓ Theme analysis complete")
+
+        # Show theme health summary
+        for day, health in theme_health.items():
+            status = health.get("status", "unknown")
+            count = health.get("story_count", 0)
+            emoji = "✅" if status == "healthy" else "⚠️" if status == "weak" else "📊"
+            print(f"   {emoji} Day {day}: {themes[day]['name']} ({status}, {count} stories)")
+
+        if theme_proposal.get("reasoning"):
+            print(f"   💡 {theme_proposal['reasoning'][:100]}...")
+    except Exception as e:
+        print(f"   ⚠️  Error analyzing themes: {e}")
+        print(f"   Falling back to default themes...")
+        theme_proposal = _default_theme_proposal()
+        themes = theme_proposal["proposed_themes"]
+        # Merge health data for defaults too
+        theme_health = theme_proposal.get("theme_health", {})
+        for day in themes:
+            if day in theme_health:
+                themes[day]["status"] = theme_health[day].get("status", "unknown")
+                themes[day]["story_count"] = theme_health[day].get("story_count", 0)
+                themes[day]["high_strength_count"] = theme_health[day].get("high_strength_count", 0)
+
     # Phase 2: Group stories into days
     print(f"\n📊 Phase 2: Grouping stories into days...")
-
-    # Prepare themes for grouping (using defaults for now)
-    # In Phase 3, this will be replaced with dynamic theme analysis
-    themes = {
-        day: {"name": info["name"], "key": info["key"], "source": "default"}
-        for day, info in DEFAULT_THEMES.items()
-    }
 
     try:
         grouping = group_stories_into_days(

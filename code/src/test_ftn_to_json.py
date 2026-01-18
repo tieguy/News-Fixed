@@ -761,3 +761,39 @@ def test_build_four_days_includes_theme_metadata():
     assert result["theme_metadata"][1]["status"] == "unknown"
     assert result["theme_metadata"][1]["story_count"] == 0
     assert result["theme_metadata"][1]["high_strength_count"] == 0
+
+
+def test_create_json_includes_theme_metadata():
+    """Full pipeline produces JSON with theme_metadata."""
+    import tempfile
+    from pathlib import Path
+    from ftn_to_json import create_json_from_ftn
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
+
+    # Use existing test fixture FTN-322.html if available
+    test_html = Path(__file__).parent.parent.parent / "cache" / "FTN-322.html"
+    if not test_html.exists():
+        pytest.skip("Test fixture FTN-322.html not found")
+
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+        output_file = f.name
+
+    try:
+        create_json_from_ftn(str(test_html), output_file)
+
+        with open(output_file) as f:
+            result = json.load(f)
+
+        # Verify theme_metadata exists
+        assert "theme_metadata" in result
+        assert len(result["theme_metadata"]) == 4
+
+        # Verify each day has a theme
+        for day_key in ["day_1", "day_2", "day_3", "day_4"]:
+            assert "theme" in result[day_key]
+            assert result[day_key]["theme"]  # Not empty
+    finally:
+        if os.path.exists(output_file):
+            os.unlink(output_file)
