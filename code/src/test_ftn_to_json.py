@@ -225,13 +225,24 @@ def test_fallback_grouping_with_custom_themes():
 
     result = _fallback_grouping(stories, blocklisted_ids=[], themes=custom_themes)
 
-    # Story 0 (ai_robotics) should go to day_1
-    # Story 1 (clean_energy) should go to day_3
-    # Story 2 (environment) should go to day_2
+    # Verify all days exist
     assert "day_1" in result
     assert "day_2" in result
     assert "day_3" in result
     assert "day_4" in result
+
+    # Story 0 (ai_robotics) should go to day_1
+    assert result["day_1"]["main"] == 0, "Story 0 (ai_robotics) should be main story in day_1"
+
+    # Story 2 (environment) should go to day_2
+    assert result["day_2"]["main"] == 2, "Story 2 (environment) should be main story in day_2"
+
+    # Story 1 (clean_energy) should go to day_3
+    assert result["day_3"]["main"] == 1, "Story 1 (clean_energy) should be main story in day_3"
+
+    # Day 4 (society) should have no stories assigned (no matching primary_theme)
+    assert result["day_4"]["main"] is None, "Day 4 (society) should have no main story"
+    assert result["day_4"]["minis"] == [], "Day 4 (society) should have no mini stories"
 
 
 # Tests for split_multi_link_stories

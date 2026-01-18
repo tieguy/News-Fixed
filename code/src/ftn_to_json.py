@@ -158,7 +158,7 @@ Return ONLY valid JSON (no markdown fences):
     return parse_llm_json_with_retry(response.content[0].text, client)
 
 
-def group_stories_into_days(stories: list, blocklisted_ids: list, themes: dict, client) -> dict:
+def group_stories_into_days(stories: list, blocklisted_ids: list, themes: dict[int, dict[str, str]], client) -> dict:
     """
     Group analyzed stories into 4 days using Claude API (Phase 2).
 
@@ -226,6 +226,7 @@ Return ONLY valid JSON (no markdown fences):
     try:
         return parse_llm_json_with_retry(response.content[0].text, client)
     except Exception as e:
+        print(f"Warning: JSON parsing failed ({e}), using fallback grouping")
         return _fallback_grouping(stories, blocklisted_ids, themes)
 
 
@@ -369,7 +370,7 @@ Return ONLY valid JSON (no markdown fences):
     }
 
 
-def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: dict) -> dict:
+def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: dict[int, dict[str, str]]) -> dict:
     """
     Fallback grouping using simple length-based assignment.
 
