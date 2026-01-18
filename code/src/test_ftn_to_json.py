@@ -3,6 +3,7 @@ import json
 import os
 import pytest
 from unittest.mock import Mock, MagicMock
+from ftn_to_json import analyze_themes
 
 
 def test_parse_llm_json_valid():
@@ -484,13 +485,11 @@ def test_split_multi_link_stories_filters_empty_splits():
     assert result[0].content == "Valid content here."
 
 
-# Phase 5 tests: Theme analysis
+# Phase 1 tests: Theme analysis (dynamic theme suggestions)
 
 
 def test_analyze_themes_healthy_returns_defaults():
     """analyze_themes returns default themes when all are healthy."""
-    from ftn_to_json import analyze_themes
-
     # Create stories with healthy distribution (2-6 per theme, at least 1 high)
     stories = [
         {"id": 1, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Health Story 1"},
@@ -518,8 +517,6 @@ def test_analyze_themes_healthy_returns_defaults():
 
 def test_analyze_themes_detects_weak_themes():
     """analyze_themes detects weak themes (< 2 stories or no high-strength)."""
-    from ftn_to_json import analyze_themes
-
     # Create stories with one weak theme (society has only 1 story)
     stories = [
         {"id": 1, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Health 1"},
@@ -556,8 +553,6 @@ def test_analyze_themes_detects_weak_themes():
 
 def test_analyze_themes_integration():
     """Integration test for analyze_themes with real API."""
-    from ftn_to_json import analyze_themes
-
     if not os.getenv("ANTHROPIC_API_KEY"):
         pytest.skip("ANTHROPIC_API_KEY not set")
 
@@ -585,3 +580,46 @@ def test_analyze_themes_integration():
 
     # Society should be marked weak
     assert result["theme_health"][4]["status"] == "weak"
+
+
+def test_analyze_themes_detects_overloaded_themes():
+    """analyze_themes detects overloaded themes (> 6 stories with 2+ high-strength)."""
+    # Create stories with one overloaded theme (health_education has 7 stories with 3 high-strength)
+    stories = [
+        {"id": 1, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Health 1"},
+        {"id": 2, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Health 2"},
+        {"id": 3, "primary_theme": "health_education", "story_strength": "high", "tui_headline": "Health 3"},
+        {"id": 4, "primary_theme": "health_education", "story_strength": "medium", "tui_headline": "Health 4"},
+        {"id": 5, "primary_theme": "health_education", "story_strength": "medium", "tui_headline": "Health 5"},
+        {"id": 6, "primary_theme": "health_education", "story_strength": "low", "tui_headline": "Health 6"},
+        {"id": 7, "primary_theme": "health_education", "story_strength": "low", "tui_headline": "Health 7"},
+        {"id": 8, "primary_theme": "environment", "story_strength": "high", "tui_headline": "Env 1"},
+        {"id": 9, "primary_theme": "environment", "story_strength": "medium", "tui_headline": "Env 2"},
+        {"id": 10, "primary_theme": "technology_energy", "story_strength": "high", "tui_headline": "Tech 1"},
+        {"id": 11, "primary_theme": "technology_energy", "story_strength": "medium", "tui_headline": "Tech 2"},
+        {"id": 12, "primary_theme": "society", "story_strength": "high", "tui_headline": "Society 1"},
+        {"id": 13, "primary_theme": "society", "story_strength": "medium", "tui_headline": "Society 2"},
+    ]
+
+    # Mock LLM response for theme split proposal
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text='''{
+        "proposed_themes": {
+            "1": {"name": "Health & Education", "key": "health_education", "source": "default"},
+            "2": {"name": "Environment & Conservation", "key": "environment", "source": "default"},
+            "3": {"name": "Technology & Energy", "key": "technology_energy", "source": "default"},
+            "4": {"name": "Health Policy", "key": "health_policy", "source": "split_from_health_education"}
+        },
+        "reasoning": "Health theme was overloaded with 7 stories and 3 high-strength. Split into Health & Education and Health Policy."
+    }''')]
+
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    result = analyze_themes(stories, mock_client)
+
+    # Should call API for theme split proposal
+    mock_client.messages.create.assert_called_once()
+    assert result["theme_health"][1]["status"] == "overloaded"
+    assert result["theme_health"][1]["story_count"] == 7
+    assert result["theme_health"][1]["high_strength_count"] == 3

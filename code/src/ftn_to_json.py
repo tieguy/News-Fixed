@@ -34,6 +34,11 @@ DEFAULT_THEMES = {
     4: {"name": "Society & Youth Movements", "key": "society"},
 }
 
+# Theme health assessment thresholds
+MIN_HEALTHY_STORY_COUNT = 2
+MAX_HEALTHY_STORY_COUNT = 6
+MIN_OVERLOADED_HIGH_STRENGTH = 2
+
 
 def parse_llm_json(response_text: str) -> dict:
     """
@@ -211,7 +216,7 @@ Return ONLY valid JSON (no markdown fences):
     return parse_llm_json_with_retry(response.content[0].text, client)
 
 
-def analyze_themes(analyzed_stories: list, client) -> dict:
+def analyze_themes(analyzed_stories: list, client: Anthropic) -> dict:
     """
     Analyze all stories collectively to assess theme health and propose themes (Phase 1.5).
 
@@ -259,10 +264,10 @@ def analyze_themes(analyzed_stories: list, client) -> dict:
         key = theme_info["key"]
         counts = theme_counts.get(key, {"total": 0, "high": 0})
 
-        if counts["total"] < 2 or counts["high"] == 0:
+        if counts["total"] < MIN_HEALTHY_STORY_COUNT or counts["high"] == 0:
             status = "weak"
             weak_themes.append(day)
-        elif counts["total"] > 6 and counts["high"] >= 2:
+        elif counts["total"] > MAX_HEALTHY_STORY_COUNT and counts["high"] >= MIN_OVERLOADED_HIGH_STRENGTH:
             status = "overloaded"
             overloaded_themes.append(day)
         else:
