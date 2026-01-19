@@ -197,7 +197,7 @@ def fetch_local_story(content_gen, date_str: str) -> dict | None:
 
     Args:
         content_gen: ContentGenerator instance for rewriting
-        date_str: Date string for marking article as used
+        date_str: Date string for the edition (YYYY-MM-DD format)
 
     Returns:
         Dict with 'title', 'content', 'source_url' or None if no articles
@@ -208,8 +208,8 @@ def fetch_local_story(content_gen, date_str: str) -> dict | None:
         click.echo(f"  ⚠️  Readwise not configured: {e}")
         return None
 
-    # Get next unused article with content
-    article = fetcher.get_next_article(mark_used=False, with_content=True)
+    # Get article for this date (reuses if already assigned, else picks next unused)
+    article = fetcher.get_article_for_date(date_str, with_content=True)
     if not article:
         click.echo("  ℹ️  No unused local articles available")
         return None
@@ -223,12 +223,6 @@ def fetch_local_story(content_gen, date_str: str) -> dict | None:
         original_title=article['title']
     )
     local_story['source_url'] = article['source_url']
-
-    # Mark as used with the newspaper date
-    # We need to get the raw article to mark it
-    raw_articles = fetcher.get_unused_articles(limit=1, with_content=False)
-    if raw_articles:
-        fetcher.mark_as_used(raw_articles[0], date_str)
 
     return local_story
 

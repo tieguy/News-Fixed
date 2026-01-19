@@ -142,6 +142,36 @@ class ReadwiseFetcher:
 
         return self.format_for_newspaper(article)
 
+    def get_article_for_date(self, date_str: str, with_content: bool = True) -> Optional[dict]:
+        """Get article for a specific date, reusing if already assigned.
+
+        If an article was already used for this date, fetch and return it.
+        Otherwise, get the next unused article and mark it for this date.
+
+        This enables regenerating the same edition without consuming new articles.
+        """
+        # Check if we already have an article for this date
+        for url, info in self.used_articles.items():
+            if info.get("used_date") == date_str:
+                # Found one - fetch it fresh from Readwise to get content
+                all_articles = self.fetch_all_tagged(with_content=with_content)
+                for article in all_articles:
+                    article_url = article.get("source_url", article.get("url"))
+                    if article_url == url:
+                        return self.format_for_newspaper(article)
+                # Article was in our records but not in Readwise anymore
+                # Fall through to get a new one
+                break
+
+        # No article for this date yet - get next unused and mark it
+        unused = self.get_unused_articles(limit=1, with_content=with_content)
+        if not unused:
+            return None
+
+        article = unused[0]
+        self.mark_as_used(article, date_str)
+        return self.format_for_newspaper(article)
+
 
 def main():
     """Test the Readwise fetcher."""
