@@ -66,6 +66,12 @@ def main(json_file, output, dry_run):
         curator = StoryCurator(Path(json_file), output_file=output)
         curator.display_overview()
 
+        # Theme review step
+        theme_choice = curator.review_themes()
+        if theme_choice == 'revert':
+            curator.revert_to_default_themes()
+            curator.display_overview()  # Re-display with default themes
+
         # Review unused stories FIRST
         reviewing_unused = True
         while reviewing_unused:

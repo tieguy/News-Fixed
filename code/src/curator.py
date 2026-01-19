@@ -135,6 +135,126 @@ class StoryCurator:
             console.print(table)
             console.print()  # Blank line between tables
 
+    def review_themes(self) -> str:
+        """
+        Display and review proposed themes.
+
+        Returns:
+            'accept' to proceed with current themes
+            'revert' to switch to default themes
+        """
+        console = Console()
+
+        # Get theme_metadata from working data
+        theme_metadata = self.working_data.get("theme_metadata", {})
+
+        if not theme_metadata:
+            console.print("\n[yellow]No theme metadata found. Using default themes.[/yellow]")
+            return 'accept'
+
+        console.print("\n[bold]🎯 Theme Review[/bold]\n")
+
+        # Create theme summary table
+        table = Table(title="Proposed Daily Themes")
+        table.add_column("Day", style="dim", width=4)
+        table.add_column("Theme", style="cyan")
+        table.add_column("Source", style="magenta", width=20)
+        table.add_column("Status", width=12)
+        table.add_column("Stories", justify="right", width=8)
+
+        for day in sorted(theme_metadata.keys(), key=lambda x: int(x) if isinstance(x, str) else x):
+            day_int = int(day) if isinstance(day, str) else day
+            meta = theme_metadata[day]
+
+            # Get theme health if available
+            status = meta.get("status", "unknown")
+            story_count = meta.get("story_count", "?")
+            high_count = meta.get("high_strength_count", "?")
+
+            # Format status with color
+            if status == "healthy":
+                status_display = "[green]✓ Healthy[/green]"
+            elif status == "weak":
+                status_display = "[yellow]⚠️ Weak[/yellow]"
+            elif status == "overloaded":
+                status_display = "[red]⚠️ Overloaded[/red]"
+            else:
+                status_display = "[dim]Unknown[/dim]"
+
+            # Format source
+            source = meta.get("source", "unknown")
+            if source == "default":
+                source_display = "[dim]default[/dim]"
+            elif source == "generated":
+                source_display = "[cyan]generated[/cyan]"
+            elif source.startswith("split_from_"):
+                source_display = f"[magenta]split[/magenta]"
+            else:
+                source_display = source
+
+            table.add_row(
+                str(day_int),
+                meta.get("name", "Unknown"),
+                source_display,
+                status_display,
+                f"{story_count} ({high_count} high)"
+            )
+
+        console.print(table)
+
+        # Show any non-default themes prominently
+        non_defaults = [
+            (day, meta) for day, meta in theme_metadata.items()
+            if meta.get("source") != "default"
+        ]
+
+        if non_defaults:
+            console.print("\n[bold yellow]Note:[/bold yellow] Some themes were dynamically generated:")
+            for day, meta in non_defaults:
+                day_int = int(day) if isinstance(day, str) else day
+                console.print(f"  • Day {day_int}: [cyan]{meta.get('name')}[/cyan] ({meta.get('source')})")
+
+        # Show action menu
+        console.print("\n[bold]Actions:[/bold]")
+        console.print("  [A] Accept themes and continue")
+        console.print("  [R] Revert to default themes")
+        console.print()
+
+        while True:
+            choice = console.input("[bold]Choose action: [/bold]").strip().lower()
+
+            if choice == 'a':
+                return 'accept'
+            elif choice == 'r':
+                return 'revert'
+            else:
+                console.print("[red]Invalid choice. Use A or R.[/red]")
+
+    def revert_to_default_themes(self):
+        """Revert working_data to use default themes."""
+        from ftn_to_json import DEFAULT_THEMES
+
+        # Update theme_metadata to defaults
+        self.working_data["theme_metadata"] = {
+            day: {
+                "name": info["name"],
+                "key": info["key"],
+                "source": "default",
+                "status": "unknown",
+                "story_count": 0,
+                "high_strength_count": 0
+            }
+            for day, info in DEFAULT_THEMES.items()
+        }
+
+        # Update day themes
+        for day_num in range(1, 5):
+            day_key = f"day_{day_num}"
+            if day_key in self.working_data:
+                self.working_data[day_key]["theme"] = DEFAULT_THEMES[day_num]["name"]
+
+        Console().print("[green]✓ Reverted to default themes[/green]")
+
     def view_story(self, day_num: int, story_index: int) -> None:
         """
         Display full story details.
