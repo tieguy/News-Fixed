@@ -217,6 +217,7 @@ class StoryCurator:
         # Show action menu
         console.print("\n[bold]Actions:[/bold]")
         console.print("  [A] Accept themes and continue")
+        console.print("  [E] Edit theme names")
         console.print("  [R] Revert to default themes")
         console.print()
 
@@ -225,10 +226,12 @@ class StoryCurator:
 
             if choice == 'a':
                 return 'accept'
+            elif choice == 'e':
+                return 'edit'
             elif choice == 'r':
                 return 'revert'
             else:
-                console.print("[red]Invalid choice. Use A or R.[/red]")
+                console.print("[red]Invalid choice. Use A, E, or R.[/red]")
 
     def revert_to_default_themes(self):
         """Revert working_data to use default themes."""
@@ -254,6 +257,159 @@ class StoryCurator:
                 self.working_data[day_key]["theme"] = DEFAULT_THEMES[day_num]["name"]
 
         Console().print("[green]✓ Reverted to default themes[/green]")
+
+    def edit_themes(self) -> dict:
+        """
+        Allow user to edit individual theme names.
+
+        Returns:
+            Updated themes dict mapping day (1-4) to theme info
+        """
+        console = Console()
+        theme_metadata = self.working_data.get("theme_metadata", {})
+
+        if not theme_metadata:
+            console.print("[yellow]No theme metadata to edit.[/yellow]")
+            return None
+
+        console.print("\n[bold]Edit Theme Names[/bold]")
+        console.print("[dim]Press Enter to keep current name, or type new name[/dim]\n")
+
+        updated_themes = {}
+        for day in sorted(theme_metadata.keys(), key=lambda x: int(x) if isinstance(x, str) else x):
+            day_int = int(day) if isinstance(day, str) else day
+            meta = theme_metadata[day]
+            current_name = meta.get("name", "Unknown")
+
+            new_name = console.input(f"Day {day_int} [{current_name}]: ").strip()
+
+            if new_name:
+                updated_themes[day_int] = {
+                    "name": new_name,
+                    "key": new_name.lower().replace(" ", "_").replace("&", "and"),
+                    "source": "edited"
+                }
+            else:
+                updated_themes[day_int] = {
+                    "name": current_name,
+                    "key": meta.get("key", current_name.lower().replace(" ", "_")),
+                    "source": meta.get("source", "default")
+                }
+
+        return updated_themes
+
+    def regroup_with_themes(self, themes: dict) -> bool:
+        """
+        Re-group stories using new theme assignments.
+
+        Args:
+            themes: Dict mapping day (1-4) to theme info with name, key, source
+
+        Returns:
+            True if regrouping succeeded, False otherwise
+        """
+        import os
+        from anthropic import Anthropic
+        from ftn_to_json import group_stories_into_days, _build_four_days_from_grouping
+
+        console = Console()
+
+        # Check for API key
+        if not os.getenv("ANTHROPIC_API_KEY"):
+            console.print("[red]Error: ANTHROPIC_API_KEY not set. Cannot regroup.[/red]")
+            return False
+
+        console.print("\n[dim]Regrouping stories with new themes...[/dim]")
+
+        try:
+            client = Anthropic()
+
+            # Collect all stories from current working_data
+            all_stories = []
+            story_id = 0
+            for day_num in range(1, 5):
+                day_key = f"day_{day_num}"
+                day_data = self.working_data.get(day_key, {})
+
+                # Main story
+                main = day_data.get("main_story")
+                if main and main.get("title"):
+                    all_stories.append({
+                        "id": story_id,
+                        "headline": main.get("tui_headline") or main.get("title", "")[:50],
+                        "primary_theme": themes[day_num]["key"],
+                        "secondary_themes": [],
+                        "story_strength": "medium",
+                        "length": len(main.get("content", "")),
+                        "_story_data": main
+                    })
+                    story_id += 1
+
+                # Mini articles
+                for mini in day_data.get("mini_articles", []):
+                    if mini and mini.get("title"):
+                        all_stories.append({
+                            "id": story_id,
+                            "headline": mini.get("tui_headline") or mini.get("title", "")[:50],
+                            "primary_theme": themes[day_num]["key"],
+                            "secondary_themes": [],
+                            "story_strength": "medium",
+                            "length": len(mini.get("content", "")),
+                            "_story_data": mini
+                        })
+                        story_id += 1
+
+            # Add unused stories
+            unused = self.working_data.get("unused", {}).get("stories", [])
+            for story in unused:
+                if story and story.get("title"):
+                    all_stories.append({
+                        "id": story_id,
+                        "headline": story.get("tui_headline") or story.get("title", "")[:50],
+                        "primary_theme": "society",  # Default
+                        "secondary_themes": [],
+                        "story_strength": "low",
+                        "length": len(story.get("content", "")),
+                        "_story_data": story
+                    })
+                    story_id += 1
+
+            if not all_stories:
+                console.print("[yellow]No stories to regroup.[/yellow]")
+                return False
+
+            # Call grouping function
+            grouping = group_stories_into_days(
+                stories=all_stories,
+                blocklisted_ids=[],
+                themes=themes,
+                client=client
+            )
+
+            # Build new structure
+            story_list = [s["_story_data"] for s in sorted(all_stories, key=lambda x: x["id"])]
+            new_data = _build_four_days_from_grouping(
+                stories=story_list,
+                grouping=grouping,
+                themes=themes
+            )
+
+            # Update working_data
+            for day_key in ["day_1", "day_2", "day_3", "day_4"]:
+                if day_key in new_data:
+                    self.working_data[day_key] = new_data[day_key]
+            if "unused" in new_data:
+                self.working_data["unused"] = new_data["unused"]
+            if "theme_metadata" in new_data:
+                self.working_data["theme_metadata"] = new_data["theme_metadata"]
+
+            console.print("[green]✓ Stories regrouped successfully[/green]")
+            return True
+
+        except Exception as e:
+            console.print(f"[red]Error regrouping: {e}[/red]")
+            console.print("[yellow]Keeping current assignments.[/yellow]")
+            return False
 
     def view_story(self, day_num: int, story_index: int) -> None:
         """

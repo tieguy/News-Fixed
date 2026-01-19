@@ -67,10 +67,43 @@ def main(json_file, output, dry_run):
         curator.display_overview()
 
         # Theme review step
-        theme_choice = curator.review_themes()
-        if theme_choice == 'revert':
-            curator.revert_to_default_themes()
-            curator.display_overview()  # Re-display with default themes
+        reviewing_themes = True
+        while reviewing_themes:
+            theme_choice = curator.review_themes()
+
+            if theme_choice == 'accept':
+                reviewing_themes = False
+            elif theme_choice == 'revert':
+                curator.revert_to_default_themes()
+                curator.display_overview()
+                reviewing_themes = False
+            elif theme_choice == 'edit':
+                new_themes = curator.edit_themes()
+                if new_themes:
+                    # Ask if they want to regroup
+                    from rich.console import Console
+                    console = Console()
+                    console.print("\n[bold]Regroup stories with new themes?[/bold]")
+                    console.print("This will call Claude API to reassign stories.")
+                    console.print("  [Y] Yes, regroup stories")
+                    console.print("  [N] No, just update theme names")
+
+                    regroup_choice = console.input("[bold]Choice: [/bold]").strip().lower()
+                    if regroup_choice == 'y':
+                        if curator.regroup_with_themes(new_themes):
+                            curator.display_overview()
+                    else:
+                        # Just update theme names without regrouping
+                        curator.working_data["theme_metadata"] = {
+                            day: {**new_themes[day], "status": "unknown", "story_count": 0, "high_strength_count": 0}
+                            for day in new_themes
+                        }
+                        for day_num in range(1, 5):
+                            day_key = f"day_{day_num}"
+                            if day_key in curator.working_data:
+                                curator.working_data[day_key]["theme"] = new_themes[day_num]["name"]
+                        console.print("[green]✓ Theme names updated[/green]")
+                        curator.display_overview()
 
         # Review unused stories FIRST
         reviewing_unused = True
