@@ -15,6 +15,10 @@ GOOD (adds context the article didn't emphasize):
 - Article: "Nigeria launches campaign to vaccinate 106M children"
 - Stat: "4 diseases - targeted in single campaign" ← NEW INFO
 
+NUMBER FORMAT - must be concrete and punchy:
+✓ GOOD: 97, 1.5 billion, 17.5%, 1973, $1 billion, 1 per 100,000
+✗ BAD: "2 decades", "several years", "about 100", "nearly half", "multiple"
+
 RULES:
 1. Extract numbers that SUPPORT the stories but weren't the headline
 2. Prefer: percentages, timeframes, comparisons, scale/context
