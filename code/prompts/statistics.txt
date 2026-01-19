@@ -24,11 +24,20 @@ RULES:
 2. Prefer: percentages, timeframes, comparisons, scale/context
 3. Include timeframe when known ("since 2020", "annually")
 4. Each stat from a DIFFERENT story
-5. Keep descriptions under 10 words
+5. Description MUST include the subject (who/what/where) - reader should understand without seeing the article
+6. Keep descriptions under 12 words
+
+BAD descriptions (missing context):
+- "homicide rate, lowest on record" ← WHERE?
+- "budget cut rejected" ← WHAT budget?
+
+GOOD descriptions (self-contained):
+- "London's homicide rate, lowest on record"
+- "National Park Service budget cut rejected by Senate"
 
 Return exactly 3 as JSON:
 [
-  {{"number": "95%", "description": "HPV vaccine coverage in Mozambique"}},
-  {{"number": "69th", "description": "country to ban corporal punishment"}},
-  {{"number": "4", "description": "diseases in Nigeria's combined campaign"}}
+  {{"number": "95%", "description": "HPV vaccine coverage rate in Mozambique"}},
+  {{"number": "69th", "description": "South Africa becomes 69th country to ban corporal punishment"}},
+  {{"number": "4", "description": "diseases targeted in Nigeria's vaccination campaign"}}
 ]
