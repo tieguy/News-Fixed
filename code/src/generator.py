@@ -214,18 +214,32 @@ class ContentGenerator:
                 for _ in range(3)
             ]
 
-    def generate_teaser(self, tomorrow_theme: str) -> str:
+    def generate_teaser(
+        self,
+        tomorrow_theme: str,
+        main_title: str = None,
+        secondary_title: str = None
+    ) -> str:
         """
         Generate tomorrow teaser text.
 
         Args:
             tomorrow_theme: Tomorrow's theme name
+            main_title: Optional main story title for specific teaser
+            secondary_title: Optional secondary story title
 
         Returns:
             Teaser text
         """
         template = self._load_prompt("teaser")
-        prompt = template.format(tomorrow_theme=tomorrow_theme)
+
+        # Format with all placeholders - use empty strings if not provided
+        prompt = template.format(
+            tomorrow_theme=tomorrow_theme,
+            main_title=main_title or "(not specified)",
+            secondary_title=secondary_title or "(not specified)"
+        )
+
         return self._call_claude(prompt, max_tokens=150).strip()
 
 

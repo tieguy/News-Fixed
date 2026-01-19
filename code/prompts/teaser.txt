@@ -1,12 +1,17 @@
-Create a "Tomorrow Teaser" for News, Fixed - a 1-2 sentence preview of tomorrow's theme.
+Create a "Tomorrow Teaser" for News, Fixed - a 1-2 sentence preview of tomorrow's edition.
 
 TOMORROW'S THEME: {tomorrow_theme}
+MAIN STORY: {main_title}
+SECONDARY STORY: {secondary_title}
 
 Guidelines:
 - Keep it brief (1-2 sentences, under 30 words)
-- Make it intriguing but not clickbaity
-- Mention the theme area
+- Reference both stories with intriguing hooks
+- Don't just repeat titles verbatim - make them sound exciting
 - Build anticipation
 - Keep the positive tone
+
+Example output:
+"Tomorrow: How sea otters became unlikely ecosystem heroes, plus a breakthrough that could change solar panel recycling forever."
 
 Format: Return ONLY the teaser text, no quotes or formatting.

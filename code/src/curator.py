@@ -12,6 +12,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from xkcd import XkcdManager
+from generator import ContentGenerator
 
 console = Console()
 
@@ -27,6 +28,66 @@ _DAY_THEMES = {
 def _get_theme_name(day_num: int) -> str:
     """Get theme name for a day number."""
     return _DAY_THEMES.get(day_num, "General")
+
+
+def _get_secondary_story_title(day_data: Dict) -> Optional[str]:
+    """Get a secondary story title from front_page_stories or mini_articles."""
+    # Try front_page_stories first
+    front_page = day_data.get("front_page_stories", [])
+    if front_page and front_page[0].get("title"):
+        return front_page[0]["title"]
+
+    # Fall back to mini_articles
+    mini = day_data.get("mini_articles", [])
+    if mini and mini[0].get("title"):
+        return mini[0]["title"]
+
+    return None
+
+
+def generate_teasers_for_curated_data(curated_data: Dict) -> Dict:
+    """
+    Generate tomorrow teasers for days 1-3 based on next day's content.
+
+    Args:
+        curated_data: Dict with day_1 through day_4 keys
+
+    Returns:
+        Modified curated_data with populated tomorrow_teaser fields
+    """
+    generator = ContentGenerator()
+
+    for day_num in [1, 2, 3]:
+        current_day = f"day_{day_num}"
+        tomorrow_day = f"day_{day_num + 1}"
+
+        # Skip if current day doesn't exist
+        if current_day not in curated_data:
+            continue
+
+        # Skip if tomorrow doesn't exist or has no main story
+        tomorrow = curated_data.get(tomorrow_day, {})
+        main_story = tomorrow.get("main_story", {})
+        if not main_story.get("title") and not main_story.get("tui_headline"):
+            continue
+
+        # Get story titles from tomorrow
+        main_title = main_story.get("tui_headline") or main_story.get("title")
+        secondary_title = _get_secondary_story_title(tomorrow)
+
+        # Generate teaser
+        try:
+            teaser = generator.generate_teaser(
+                tomorrow_theme=tomorrow.get("theme", _get_theme_name(day_num + 1)),
+                main_title=main_title,
+                secondary_title=secondary_title
+            )
+            curated_data[current_day]["tomorrow_teaser"] = teaser
+        except Exception as e:
+            console.print(f"[yellow]Warning: Failed to generate teaser for day {day_num}: {e}[/yellow]")
+            # Leave teaser empty on failure
+
+    return curated_data
 
 
 class StoryCurator:
@@ -1121,15 +1182,30 @@ class StoryCurator:
 
         return valid
 
-    def save_curated(self, output_file: Path) -> None:
+    def save_curated(self, output_file: Path, generate_teasers: bool = True) -> None:
         """
         Save working_data to new JSON file (excluding unused stories).
 
         Args:
             output_file: Path to save curated JSON
+            generate_teasers: Whether to generate tomorrow teasers (default True)
         """
         # Create output data without unused category
         output_data = {k: v for k, v in self.working_data.items() if k != 'unused'}
+
+        # Generate teasers for days 1-3 using tomorrow's content
+        if generate_teasers:
+            console.print("\n[cyan]Generating tomorrow teasers...[/cyan]")
+            try:
+                output_data = generate_teasers_for_curated_data(output_data)
+                for day_num in [1, 2, 3]:
+                    day_key = f"day_{day_num}"
+                    if day_key in output_data and output_data[day_key].get("tomorrow_teaser"):
+                        console.print(f"  [green]✨[/green] Day {day_num}: teaser generated")
+                    else:
+                        console.print(f"  [dim]⏭️  Day {day_num}: skipped (no tomorrow content)[/dim]")
+            except Exception as e:
+                console.print(f"  [yellow]⚠️  Teaser generation failed: {e}[/yellow]")
 
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, indent=2, ensure_ascii=False)

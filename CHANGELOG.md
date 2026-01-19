@@ -11,4 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Changed
+- Generate tomorrow teaser content automatically (#7)
+- news-fixed run doesn't prompt to refresh stale xkcd cache (#15)
+- Allow LLM to suggest/adjust day themes based on week's content (#8)
 - Improve 'By The Numbers' quality - reduce count and add generation rules (#2)
