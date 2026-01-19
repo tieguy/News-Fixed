@@ -198,16 +198,30 @@ class ContentGenerator:
 
         response = self._call_claude(prompt, max_tokens=500)
 
-        # Parse JSON response
+        # Parse JSON response - find first complete JSON array
         try:
-            # Extract JSON from response (might have extra text)
             start = response.find('[')
-            end = response.rfind(']') + 1
+            if start == -1:
+                raise json.JSONDecodeError("No JSON array found", response, 0)
+
+            # Find matching closing bracket by counting brackets
+            depth = 0
+            end = start
+            for i, char in enumerate(response[start:], start):
+                if char == '[':
+                    depth += 1
+                elif char == ']':
+                    depth -= 1
+                    if depth == 0:
+                        end = i + 1
+                        break
+
             json_str = response[start:end]
             stats = json.loads(json_str)
             return stats
         except json.JSONDecodeError as e:
             print(f"Error parsing statistics JSON: {e}")
+            print(f"Response was: {response[:500]}")
             # Return dummy stats as fallback
             return [
                 {"number": "N/A", "description": "Data processing error"}
