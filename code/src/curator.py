@@ -1207,8 +1207,53 @@ class StoryCurator:
 
         if not candidates:
             console.print("[yellow]No xkcd candidates available.[/yellow]")
-            console.print("[dim]Run './news-fixed xkcd fetch' to fetch and analyze recent comics.[/dim]")
-            return
+            console.print()
+            console.print("  [F] Fetch new comics now")
+            console.print("  [S] Skip xkcd for this week")
+            console.print()
+
+            choice = console.input("[bold]Choice: [/bold]").strip().lower()
+
+            if choice == 'f':
+                console.print("\n[dim]Fetching recent comics...[/dim]")
+                try:
+                    comics = xkcd_manager.fetch_recent_comics(count=10)
+                    console.print(f"[dim]Fetched {len(comics)} comics[/dim]")
+
+                    # Analyze any that haven't been analyzed
+                    rejected = xkcd_manager.load_rejected()
+                    analyzed_count = 0
+
+                    for comic in comics:
+                        comic_num = str(comic["num"])
+                        if comic_num in rejected:
+                            continue
+                        cache = xkcd_manager.load_cache()
+                        if comic_num in cache and "analysis" in cache[comic_num]:
+                            continue
+                        console.print(f"[dim]  Analyzing #{comic['num']}: {comic['title']}...[/dim]")
+                        try:
+                            xkcd_manager.analyze_comic(comic)
+                            analyzed_count += 1
+                        except Exception as e:
+                            console.print(f"[red]    Error: {e}[/red]")
+
+                    if analyzed_count > 0:
+                        console.print(f"[dim]Analyzed {analyzed_count} new comics[/dim]")
+
+                    # Re-check candidates
+                    candidates = xkcd_manager.get_candidates()
+                    if not candidates:
+                        console.print("[yellow]Still no suitable candidates after fetching.[/yellow]")
+                        console.print("[dim]Try rejecting some comics or check filter criteria.[/dim]")
+                        return
+                    console.print()
+                except Exception as e:
+                    console.print(f"[red]Error fetching comics: {e}[/red]")
+                    return
+            else:
+                console.print("[dim]Skipping xkcd for this week[/dim]")
+                return
 
         # Display candidates
         console.print(f"[bold]Available comics ({len(candidates)} candidates):[/bold]\n")
