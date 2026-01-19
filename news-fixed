@@ -465,12 +465,23 @@ def select(comic_num, day):
 
     sys.path.insert(0, str(CODE_DIR))
     from src.xkcd import XkcdManager
+    from datetime import timedelta
+
+    # Target the upcoming newspaper week (next Monday, or today if Monday)
+    today = datetime.now()
+    weekday = today.weekday()  # Mon=0, Sun=6
+    if weekday == 0:  # Monday
+        target_date = today
+    else:
+        days_until_monday = 7 - weekday
+        target_date = today + timedelta(days=days_until_monday)
 
     day_names = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday'}
     manager = XkcdManager(data_dir=DATA_DIR)
-    manager.select_comic(comic_num, day=day)
+    manager.select_comic(comic_num, day=day, week_date=target_date)
 
-    click.echo(f"Selected #{comic_num} for {day_names[day]}'s newspaper")
+    iso_week = target_date.isocalendar()
+    click.echo(f"Selected #{comic_num} for {day_names[day]} (week {iso_week.year}-W{iso_week.week:02d})")
 
 
 @xkcd.command()
