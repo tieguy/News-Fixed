@@ -8,7 +8,10 @@ News, Fixed - Main orchestrator for generating daily newspapers.
 """
 
 import sys
+import os
 import json
+import subprocess
+import shlex
 from pathlib import Path
 from datetime import datetime, timedelta
 import click
@@ -18,6 +21,46 @@ from utils import get_theme_name
 from sports_schedule import DukeBasketballSchedule
 from xkcd import XkcdManager
 from readwise_fetcher import ReadwiseFetcher
+
+
+def preview_and_print(pdf_path: Path) -> None:
+    """
+    Open PDF in system viewer for preview and optionally print.
+
+    Args:
+        pdf_path: Path to the PDF file to preview/print
+    """
+    # Open in system PDF viewer
+    click.echo(f"  👀 Opening preview...")
+    try:
+        subprocess.Popen(
+            ["xdg-open", str(pdf_path)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+    except FileNotFoundError:
+        click.echo(f"  ⚠️  Could not open preview (xdg-open not found)")
+        click.echo(f"     Open manually: {pdf_path}")
+        return
+
+    # Ask if user wants to print
+    if click.confirm("  🖨️  Print this newspaper?", default=False):
+        print_cmd = os.getenv("PRINT_COMMAND", "lpr")
+        # Parse command to handle options like "lpr -P printer"
+        cmd_parts = shlex.split(print_cmd) + [str(pdf_path)]
+
+        click.echo(f"  📤 Printing with: {' '.join(cmd_parts)}")
+        try:
+            result = subprocess.run(cmd_parts, capture_output=True, text=True)
+            if result.returncode == 0:
+                click.echo(f"  ✅ Sent to printer")
+            else:
+                click.echo(f"  ❌ Print failed: {result.stderr.strip()}")
+        except FileNotFoundError:
+            click.echo(f"  ❌ Print command not found: {cmd_parts[0]}")
+            click.echo(f"     Set PRINT_COMMAND in .env to configure printing")
+    else:
+        click.echo(f"  ⏭️  Skipped printing")
 
 
 def calculate_week_dates(base_date=None):
@@ -283,6 +326,7 @@ def generate_day_newspaper(
     )
 
     click.echo(f"  ✅ Generated: {output_path}")
+    return output_path
 
 
 @click.command()
@@ -301,13 +345,15 @@ def generate_day_newspaper(
               help='Generate test newspaper with sample data (no API calls)')
 @click.option('--no-rewrite', is_flag=True,
               help='Use content from JSON as-is without AI rewriting')
-def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
+@click.option('--no-preview', is_flag=True,
+              help='Skip PDF preview and print prompt')
+def main(input_file, day, generate_all, output, date_str, test, no_rewrite, no_preview):
     """Generate News, Fixed daily newspaper from Fix The News content."""
 
     click.echo("📰 News, Fixed - Daily Positive News Generator\n")
 
     if test:
-        generate_test_newspaper(output)
+        generate_test_newspaper(output, no_preview)
         return
 
     if not input_file:
@@ -335,7 +381,7 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
             continue
 
         try:
-            generate_day_newspaper(
+            output_path = generate_day_newspaper(
                 day_num=day_num,
                 day_data=ftn_data[day_key],
                 date_info=week_dates[day_num],
@@ -345,16 +391,18 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite):
                 no_rewrite=no_rewrite,
                 ftn_number=ftn_number
             )
+            if not no_preview:
+                preview_and_print(output_path)
         except Exception as e:
             click.echo(f"  ❌ Error generating Day {day_num}: {e}")
             import traceback
             traceback.print_exc()
             continue
 
-    click.echo("\n✨ Done! Your newspapers are ready to print.")
+    click.echo("\n✨ Done!")
 
 
-def generate_test_newspaper(output_dir):
+def generate_test_newspaper(output_dir, no_preview=False):
     """Generate a test newspaper with sample data (no API calls)."""
 
     click.echo("🧪 Generating test newspaper with sample data...\n")
@@ -435,7 +483,11 @@ For anyone who cares about the environment, this is a powerful reminder: nature 
 
     click.echo(f"✅ Test newspaper generated: {output_path}")
     click.echo(f"   File size: {output_path.stat().st_size / 1024:.1f} KB")
-    click.echo(f"\n📄 Open it with: xdg-open {output_path}")
+
+    if not no_preview:
+        preview_and_print(output_path)
+    else:
+        click.echo(f"\n📄 Open it with: xdg-open {output_path}")
 
 
 if __name__ == '__main__':
