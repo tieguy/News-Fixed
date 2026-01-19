@@ -794,6 +794,16 @@ def test_create_json_includes_theme_metadata():
         for day_key in ["day_1", "day_2", "day_3", "day_4"]:
             assert "theme" in result[day_key]
             assert result[day_key]["theme"]  # Not empty
+
+        # Verify theme health data is present
+        for day_num in range(1, 5):
+            metadata = result["theme_metadata"][day_num]
+            assert "status" in metadata
+            assert "story_count" in metadata
+            assert "high_strength_count" in metadata
+            assert metadata["status"] in ["weak", "healthy", "overloaded", "unknown"]
+            assert isinstance(metadata["story_count"], int)
+            assert isinstance(metadata["high_strength_count"], int)
     finally:
         if os.path.exists(output_file):
             os.unlink(output_file)

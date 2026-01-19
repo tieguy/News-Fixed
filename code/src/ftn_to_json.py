@@ -41,6 +41,23 @@ MAX_HEALTHY_STORY_COUNT = 6
 MIN_OVERLOADED_HIGH_STRENGTH = 2
 
 
+def _merge_health_into_themes(themes: dict[int, dict[str, Any]], theme_health: dict[int, dict[str, Any]]) -> None:
+    """
+    Merge health data from theme_health into themes dict for downstream use.
+
+    Modifies themes in-place, adding status, story_count, and high_strength_count fields.
+
+    Args:
+        themes: Dict mapping day (1-4) to theme info (modified in-place)
+        theme_health: Dict mapping day (1-4) to health info with status, story_count, high_strength_count
+    """
+    for day in themes:
+        if day in theme_health:
+            themes[day]["status"] = theme_health[day].get("status", "unknown")
+            themes[day]["story_count"] = theme_health[day].get("story_count", 0)
+            themes[day]["high_strength_count"] = theme_health[day].get("high_strength_count", 0)
+
+
 def _default_theme_proposal() -> dict:
     """Return default themes in the proposal format for fallback."""
     return {
@@ -663,7 +680,7 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
     print(f"   ✓ Analyzed {len(stories)} stories" + " " * 20)
 
     # Phase 1.5: Analyze themes
-    print(f"\n🎯 Phase 1.5: Analyzing themes...")
+    print("\n🎯 Phase 1.5: Analyzing themes...")
     try:
         theme_proposal = analyze_themes(
             analyzed_stories=analyzed_stories,
@@ -673,11 +690,7 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         theme_health = theme_proposal.get("theme_health", {})
 
         # Merge health data into themes for downstream use
-        for day in themes:
-            if day in theme_health:
-                themes[day]["status"] = theme_health[day].get("status", "unknown")
-                themes[day]["story_count"] = theme_health[day].get("story_count", 0)
-                themes[day]["high_strength_count"] = theme_health[day].get("high_strength_count", 0)
+        _merge_health_into_themes(themes, theme_health)
 
         print(f"   ✓ Theme analysis complete")
 
@@ -689,7 +702,15 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
             print(f"   {emoji} Day {day}: {themes[day]['name']} ({status}, {count} stories)")
 
         if theme_proposal.get("reasoning"):
-            print(f"   💡 {theme_proposal['reasoning'][:100]}...")
+            reasoning = theme_proposal['reasoning']
+            # Truncate at word boundary to avoid cutting mid-word
+            truncated = reasoning[:100]
+            if len(reasoning) > 100 and len(truncated) < len(reasoning):
+                # Find last space before limit
+                last_space = truncated.rfind(' ')
+                if last_space > 0:
+                    truncated = truncated[:last_space]
+            print(f"   💡 {truncated}...")
     except Exception as e:
         print(f"   ⚠️  Error analyzing themes: {e}")
         print(f"   Falling back to default themes...")
@@ -697,11 +718,7 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         themes = theme_proposal["proposed_themes"]
         # Merge health data for defaults too
         theme_health = theme_proposal.get("theme_health", {})
-        for day in themes:
-            if day in theme_health:
-                themes[day]["status"] = theme_health[day].get("status", "unknown")
-                themes[day]["story_count"] = theme_health[day].get("story_count", 0)
-                themes[day]["high_strength_count"] = theme_health[day].get("high_strength_count", 0)
+        _merge_health_into_themes(themes, theme_health)
 
     # Phase 2: Group stories into days
     print(f"\n📊 Phase 2: Grouping stories into days...")
