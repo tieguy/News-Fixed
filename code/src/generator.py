@@ -102,6 +102,45 @@ class ContentGenerator:
             "content": content
         }
 
+    def generate_second_main_story(
+        self,
+        original_content: str,
+        source_url: str,
+        theme: str,
+        original_title: str = ""
+    ) -> Dict[str, str]:
+        """
+        Generate second main story content (120-140 words).
+
+        Used when personalized features (Duke, SF, XKCD) are disabled
+        to fill space on the front page.
+
+        Args:
+            original_content: Original news story text
+            source_url: Source URL
+            theme: Today's theme
+            original_title: Original story title
+
+        Returns:
+            Dict with 'title' and 'content' keys
+        """
+        full_text = f"{original_title} {original_content}".strip() if original_title else original_content
+
+        template = self._load_prompt("second_main_story")
+        prompt = template.format(
+            original_content=full_text,
+            source_url=source_url,
+            theme=theme
+        )
+
+        content = self._call_claude(prompt, max_tokens=500)
+        title = self.generate_headline(content)
+
+        return {
+            "title": title,
+            "content": content
+        }
+
     def generate_mini_article(
         self,
         original_content: str,
