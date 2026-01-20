@@ -299,14 +299,15 @@ def generate_day_newspaper(
         if local_story:
             front_page_stories = [local_story] + list(front_page_stories or [])
 
-    # Load xkcd comic if selected for the newspaper's week
-    xkcd_manager = XkcdManager()
+    # Load xkcd comic if feature enabled and selected for the newspaper's week
     xkcd_comic = None
-    selected_num = xkcd_manager.get_selected_for_day(day_num, date_info['date_obj'])
-    if selected_num:
-        cache = xkcd_manager.load_cache()
-        if str(selected_num) in cache:
-            xkcd_comic = cache[str(selected_num)]
+    if get_feature_flag('FEATURE_XKCD', default=True):
+        xkcd_manager = XkcdManager()
+        selected_num = xkcd_manager.get_selected_for_day(day_num, date_info['date_obj'])
+        if selected_num:
+            cache = xkcd_manager.load_cache()
+            if str(selected_num) in cache:
+                xkcd_comic = cache[str(selected_num)]
 
     # Generate PDF
     click.echo("  📄 Generating PDF...")
