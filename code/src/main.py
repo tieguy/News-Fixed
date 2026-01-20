@@ -23,6 +23,20 @@ from xkcd import XkcdManager
 from readwise_fetcher import ReadwiseFetcher
 
 
+def get_feature_flag(name: str, default: bool = True) -> bool:
+    """Get a feature flag from environment variable.
+
+    Args:
+        name: Feature flag name (e.g., 'FEATURE_DUKE_SPORTS')
+        default: Default value if not set (True for local, False for web)
+
+    Returns:
+        Boolean indicating if feature is enabled
+    """
+    value = os.getenv(name, str(default)).lower()
+    return value in ('true', '1', 'yes', 'on')
+
+
 def preview_and_print(pdf_path: Path) -> None:
     """
     Open PDF in system viewer for preview and optionally print.
