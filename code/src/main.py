@@ -202,8 +202,9 @@ def use_content_from_json(day_data: dict) -> tuple:
     mini_articles = day_data['mini_articles']
     statistics = day_data.get('statistics', [])
     tomorrow_teaser = day_data.get('tomorrow_teaser', '')
+    second_main_story = day_data.get('second_main_story')
 
-    return main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser
+    return main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser, second_main_story
 
 
 def fetch_local_story(content_gen, date_str: str) -> dict | None:
@@ -279,13 +280,14 @@ def generate_day_newspaper(
 
     # Generate or load content
     if no_rewrite:
-        main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser = \
+        main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser, second_main_story = \
             use_content_from_json(day_data)
         feature_box = day_data.get('feature_box')
     else:
         main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser = \
             generate_content_with_ai(content_gen, day_data, day_num)
         feature_box = None
+        second_main_story = None
 
     # Check for sports games if feature enabled (takes priority for feature box)
     if get_feature_flag('FEATURE_DUKE_SPORTS', default=True):
@@ -309,15 +311,14 @@ def generate_day_newspaper(
             if str(selected_num) in cache:
                 xkcd_comic = cache[str(selected_num)]
 
-    # Generate second main story if personalized features are disabled
-    second_main_story = None
+    # Generate second main story if personalized features are disabled (AI mode only)
     features_disabled = (
         not get_feature_flag('FEATURE_DUKE_SPORTS', default=True) and
         not get_feature_flag('FEATURE_SF_LOCAL', default=True) and
         not get_feature_flag('FEATURE_XKCD', default=True)
     )
 
-    if features_disabled and content_gen and 'second_story' in day_data:
+    if not no_rewrite and features_disabled and content_gen and 'second_story' in day_data:
         click.echo("  ✍️  Generating second main story...")
         second_story_data = day_data['second_story']
         second_main_story = content_gen.generate_second_main_story(
