@@ -309,6 +309,25 @@ def generate_day_newspaper(
             if str(selected_num) in cache:
                 xkcd_comic = cache[str(selected_num)]
 
+    # Generate second main story if personalized features are disabled
+    second_main_story = None
+    features_disabled = (
+        not get_feature_flag('FEATURE_DUKE_SPORTS', default=True) and
+        not get_feature_flag('FEATURE_SF_LOCAL', default=True) and
+        not get_feature_flag('FEATURE_XKCD', default=True)
+    )
+
+    if features_disabled and content_gen and 'second_story' in day_data:
+        click.echo("  ✍️  Generating second main story...")
+        second_story_data = day_data['second_story']
+        second_main_story = content_gen.generate_second_main_story(
+            original_content=second_story_data['content'],
+            source_url=second_story_data['source_url'],
+            theme=get_theme_name(day_num),
+            original_title=second_story_data.get('title', '')
+        )
+        second_main_story['source_url'] = second_story_data['source_url']
+
     # Generate PDF
     click.echo("  📄 Generating PDF...")
     date_str_iso = date_info['date_obj'].strftime('%Y-%m-%d')
@@ -332,7 +351,8 @@ def generate_day_newspaper(
         day_of_week=date_info['day_name'],
         feature_box=feature_box,
         tomorrow_teaser=tomorrow_teaser,
-        xkcd_comic=xkcd_comic
+        xkcd_comic=xkcd_comic,
+        second_main_story=second_main_story
     )
 
     click.echo(f"  ✅ Generated: {output_path}")
