@@ -186,6 +186,38 @@ p {
     vertical-align: top;
 }
 
+/* Second Main Story (when personalized features disabled) */
+.second-main-story {
+    margin: 0.8rem 0;
+    padding: 0.6rem;
+    border: 1px solid #333;
+    background: #f9f9f9;
+}
+
+.second-main-headline {
+    font-family: 'Times New Roman', serif;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0 0 0.4rem 0;
+    line-height: 1.2;
+}
+
+.second-main-layout {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.second-main-content {
+    flex: 1;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.second-main-qr {
+    flex-shrink: 0;
+    text-align: center;
+}
+
 /* Front Page Lower Section */
 .front-lower {
     display: table;
