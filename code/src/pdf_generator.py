@@ -120,7 +120,8 @@ class NewspaperGenerator:
         statistics: List[Dict],
         feature_box: Dict,
         tomorrow_teaser: str,
-        xkcd_comic: Dict = None
+        xkcd_comic: Dict = None,
+        second_main_story: Dict = None
     ) -> Dict:
         """Prepare the template context with all article data and QR codes."""
         theme = get_theme_name(day_number)
@@ -151,6 +152,11 @@ class NewspaperGenerator:
         if xkcd_comic:
             xkcd_context = self._prepare_xkcd(xkcd_comic)
 
+        # Process second main story if provided
+        second_main_story_context = None
+        if second_main_story:
+            second_main_story_context = self._add_qr_codes_to_article(second_main_story)
+
         return {
             "day_number": day_number,
             "day_of_week": day_of_week,
@@ -163,7 +169,8 @@ class NewspaperGenerator:
             "feature_box": feature_box,
             "tomorrow_teaser": tomorrow_teaser,
             "footer_message": "Good news exists, but it travels slowly.",
-            "xkcd_comic": xkcd_context
+            "xkcd_comic": xkcd_context,
+            "second_main_story": second_main_story_context
         }
 
     def _render_and_write_pdf(self, template, context: Dict, output_path: str) -> Path:
@@ -211,7 +218,8 @@ class NewspaperGenerator:
         front_page_stories: List[Dict] = None,
         feature_box: Dict = None,
         tomorrow_teaser: str = "",
-        xkcd_comic: Dict = None
+        xkcd_comic: Dict = None,
+        second_main_story: Dict = None
     ) -> Path:
         """
         Generate a 2-page newspaper PDF.
@@ -228,6 +236,7 @@ class NewspaperGenerator:
             feature_box: Optional feature box dict with 'title' and 'content'
             tomorrow_teaser: Tomorrow teaser text
             xkcd_comic: Optional xkcd comic dict with 'num', 'title', 'alt', 'img'
+            second_main_story: Optional second main story dict with 'title', 'content', 'source_url'
 
         Returns:
             Path to generated PDF
@@ -236,7 +245,7 @@ class NewspaperGenerator:
         context = self._prepare_context(
             day_number, day_of_week, date_str, main_story,
             front_page_stories, mini_articles, statistics,
-            feature_box, tomorrow_teaser, xkcd_comic
+            feature_box, tomorrow_teaser, xkcd_comic, second_main_story
         )
 
         template = self.env.get_template("newspaper.html")
