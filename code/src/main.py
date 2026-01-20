@@ -293,8 +293,8 @@ def generate_day_newspaper(
         if sports_feature:
             feature_box = sports_feature
 
-    # Fetch local SF story if available (add to front page stories)
-    if content_gen:
+    # Fetch local SF story if feature enabled (add to front page stories)
+    if content_gen and get_feature_flag('FEATURE_SF_LOCAL', default=True):
         local_story = fetch_local_story(content_gen, date_info['date_obj'].strftime('%Y-%m-%d'))
         if local_story:
             front_page_stories = [local_story] + list(front_page_stories or [])
