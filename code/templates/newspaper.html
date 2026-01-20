@@ -58,6 +58,22 @@
         </div>
         {% endif %}
 
+        <!-- Second Main Story (shown when personalized features disabled) -->
+        {% if second_main_story %}
+        <article class="second-main-story">
+            <h3 class="second-main-headline">{{ second_main_story.title }}</h3>
+            <div class="second-main-layout">
+                <div class="second-main-content">
+                    {{ second_main_story.content }}
+                </div>
+                <div class="second-main-qr">
+                    <img src="{{ second_main_story.qr_code }}" alt="QR Code" class="qr-code-medium">
+                    <p class="qr-label">{{ second_main_story.source_name }}</p>
+                </div>
+            </div>
+        </article>
+        {% endif %}
+
         <!-- Feature Box (only shown when content provided, e.g., sports games) -->
         {% if feature_box %}
         <aside class="feature-box">
