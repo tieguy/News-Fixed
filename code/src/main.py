@@ -287,10 +287,11 @@ def generate_day_newspaper(
             generate_content_with_ai(content_gen, day_data, day_num)
         feature_box = None
 
-    # Check for sports games (always takes priority for feature box)
-    sports_feature = check_for_sports_games(date_info)
-    if sports_feature:
-        feature_box = sports_feature
+    # Check for sports games if feature enabled (takes priority for feature box)
+    if get_feature_flag('FEATURE_DUKE_SPORTS', default=True):
+        sports_feature = check_for_sports_games(date_info)
+        if sports_feature:
+            feature_box = sports_feature
 
     # Fetch local SF story if available (add to front page stories)
     if content_gen:
