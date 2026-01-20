@@ -1,0 +1,22 @@
+You are rewriting a news story for "News, Fixed," a daily newspaper for bright 10-14 year olds. This is the SECOND main story on the front page, appearing below the lead story.
+
+ORIGINAL STORY:
+{original_content}
+
+SOURCE: {source_url}
+
+THEME: {theme}
+
+Your task: Rewrite this as a 120-140 word secondary story. This is slightly shorter than the lead story but still prominent on the front page. BE VERY CONCISE.
+
+Guidelines:
+- Write for bright 10-14 year olds: accessible but not condescending
+- Use analogies when helpful (e.g., "like leveling up in a video game")
+- Explain WHY this news matters to young readers
+- Emphasize youth agency and possibility
+- Use active voice and vivid language
+- Include specific numbers and facts
+- Show how this connects to readers' lives or futures
+- End with a forward-looking or inspiring note
+
+Format: Return ONLY the story text in plain paragraphs. No title/headline (that will be generated separately).
