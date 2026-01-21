@@ -367,6 +367,8 @@ def generate_day_newspaper(
               help='Day number to generate (1-4)')
 @click.option('--all', 'generate_all', is_flag=True,
               help='Generate all 4 days')
+@click.option('--combined', is_flag=True,
+              help='Generate combined 8-page PDF with all 4 days')
 @click.option('--output', '-o', type=click.Path(),
               default='output',
               help='Output directory for PDFs')
@@ -378,7 +380,7 @@ def generate_day_newspaper(
               help='Use content from JSON as-is without AI rewriting')
 @click.option('--no-preview', is_flag=True,
               help='Skip PDF preview and print prompt')
-def main(input_file, day, generate_all, output, date_str, test, no_rewrite, no_preview):
+def main(input_file, day, generate_all, combined, output, date_str, test, no_rewrite, no_preview):
     """Generate News, Fixed daily newspaper from Fix The News content."""
 
     click.echo("📰 News, Fixed - Daily Positive News Generator\n")
@@ -404,6 +406,72 @@ def main(input_file, day, generate_all, output, date_str, test, no_rewrite, no_p
         match = re.search(r'ftn-?(\d+)', Path(input_file).name, re.IGNORECASE)
         if match:
             ftn_number = match.group(1)
+
+    if combined:
+        click.echo("📚 Generating combined 4-day edition...")
+        days_data = []
+
+        for day_num in range(1, 5):
+            day_key = f"day_{day_num}"
+            if day_key not in ftn_data:
+                click.echo(f"⚠️  No data found for {day_key}, skipping...")
+                continue
+
+            date_info = week_dates[day_num]
+            day_data = ftn_data[day_key]
+
+            click.echo(f"\n📅 Processing {date_info['day_name']}...")
+
+            # Generate or load content for this day
+            # Note: use_content_from_json returns 6 values after Phase 2 Task 7
+            if no_rewrite:
+                main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser, second_main_story = \
+                    use_content_from_json(day_data)
+                feature_box = day_data.get('feature_box')
+            else:
+                main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser = \
+                    generate_content_with_ai(content_gen, day_data, day_num)
+                feature_box = None
+                second_main_story = None
+
+            # Apply feature flags (simplified for combined - no sports/local/xkcd)
+            # The combined PDF is for web, so these are typically disabled
+            xkcd_comic = None
+
+            days_data.append({
+                'day_number': day_num,
+                'day_of_week': date_info['day_name'],
+                'date': date_info['formatted_date'],
+                'theme': get_theme_name(day_num),  # Required for template
+                'main_story': main_story,
+                'front_page_stories': front_page_stories or [],
+                'mini_articles': mini_articles,
+                'statistics': statistics,
+                'feature_box': feature_box,
+                'tomorrow_teaser': tomorrow_teaser if day_num < 4 else '',
+                'xkcd_comic': xkcd_comic,
+                'second_main_story': second_main_story,
+                'footer_message': "Good news exists, but it travels slowly."  # Required for template
+            })
+
+        # Generate combined PDF
+        if ftn_number:
+            output_filename = f"news_fixed_{ftn_number}_combined.pdf"
+        else:
+            week_start = week_dates[1]['date_obj'].strftime('%Y-%m-%d')
+            output_filename = f"news_fixed_{week_start}_combined.pdf"
+
+        output_path = Path(output) / output_filename
+
+        click.echo(f"\n📄 Generating combined PDF...")
+        pdf_gen.generate_combined_pdf(days_data, str(output_path))
+        click.echo(f"✅ Generated: {output_path}")
+
+        if not no_preview:
+            preview_and_print(output_path)
+
+        click.echo("\n✨ Done!")
+        return
 
     for day_num in days_to_generate:
         day_key = f"day_{day_num}"
