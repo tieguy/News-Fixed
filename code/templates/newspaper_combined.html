@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News, Fixed - Weekly Edition</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+{% for day in days %}
+    {% if not loop.first %}
+    <div class="day-separator"></div>
+    {% endif %}
+
+    <!-- PAGE 1: FRONT - Day {{ day.day_number }} -->
+    <div class="page page-1">
+        <!-- Header -->
+        <header class="masthead">
+            <h1 class="title">News, Fixed</h1>
+            <p class="tagline">Global Good News, One Day At A Time</p>
+        </header>
+
+        <!-- Date bar -->
+        <div class="date-bar">
+            <span class="day-info">{{ day.day_of_week }}</span>
+            <span class="date">{{ day.date }}</span>
+            <span class="theme">{{ day.theme }}</span>
+        </div>
+
+        <!-- World News Section -->
+        <div class="section-header">WORLD</div>
+        <article class="lead-story">
+            <h2 class="lead-headline">{{ day.main_story.title }}</h2>
+            <div class="lead-layout">
+                <div class="lead-content">
+                    {{ day.main_story.content }}
+                </div>
+                <div class="lead-qr">
+                    <img src="{{ day.main_story.qr_code }}" alt="QR Code" class="qr-code-medium">
+                    <p class="qr-label">{{ day.main_story.source_name }}</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Local News Section -->
+        {% if day.front_page_stories %}
+        <div class="section-header">SAN FRANCISCO</div>
+        <div class="local-stories">
+            {% for article in day.front_page_stories %}
+            <article class="local-story">
+                <h3 class="local-headline">{{ article.title }}</h3>
+                <div class="local-layout">
+                    <div class="local-content">
+                        {{ article.content }}
+                    </div>
+                    <div class="local-qr">
+                        <img src="{{ article.qr_code }}" alt="QR Code" class="qr-code-medium">
+                        <p class="qr-label">{{ article.source_name }}</p>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Second Main Story (shown when personalized features disabled) -->
+        {% if day.second_main_story %}
+        <article class="second-main-story">
+            <h3 class="second-main-headline">{{ day.second_main_story.title }}</h3>
+            <div class="second-main-layout">
+                <div class="second-main-content">
+                    {{ day.second_main_story.content }}
+                </div>
+                <div class="second-main-qr">
+                    <img src="{{ day.second_main_story.qr_code }}" alt="QR Code" class="qr-code-medium">
+                    <p class="qr-label">{{ day.second_main_story.source_name }}</p>
+                </div>
+            </div>
+        </article>
+        {% endif %}
+
+        <!-- Feature Box (only shown when content provided, e.g., sports games) -->
+        {% if day.feature_box %}
+        <aside class="feature-box">
+            <h3>{{ day.feature_box.title }}</h3>
+            <p>{{ day.feature_box.content | safe }}</p>
+        </aside>
+        {% endif %}
+
+        <!-- Tomorrow Teaser -->
+        {% if day.tomorrow_teaser %}
+        <div class="tomorrow-teaser">
+            <h4>Tomorrow</h4>
+            <p>{{ day.tomorrow_teaser }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Footer Page 1 -->
+        <footer class="page-footer">
+            <p class="footer-note">News, Fixed • Day {{ day.day_number }} • Page 1 of 2</p>
+        </footer>
+    </div>
+
+    <!-- PAGE 2: BACK - Day {{ day.day_number }} -->
+    <div class="page page-2">
+        <!-- Header (smaller) -->
+        <header class="page-header">
+            <h2 class="page-title">News, Fixed</h2>
+            <p class="page-date">{{ day.day_of_week }}, {{ day.date }}</p>
+        </header>
+
+        <!-- Mini Articles Grid -->
+        <section class="mini-articles">
+            {% for article in day.mini_articles %}
+            <article class="mini-article">
+                <h3 class="mini-headline">{{ article.title }}</h3>
+                <div class="mini-layout">
+                    <div class="mini-content">
+                        <p>{{ article.content }}</p>
+                    </div>
+                    <div class="mini-qr">
+                        <img src="{{ article.qr_code }}" alt="QR Code" class="qr-code-small">
+                        <p class="qr-label-small">{{ article.source_name }}</p>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+
+        <!-- By The Numbers -->
+        <section class="by-the-numbers">
+            <h3 class="section-title">By The Numbers</h3>
+            <div class="stats-grid">
+                {% for stat in day.statistics %}
+                <div class="stat-item">
+                    <p class="stat-number">{{ stat.number }}</p>
+                    <p class="stat-description">{{ stat.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- xkcd Comic -->
+        {% if day.xkcd_comic %}
+        <section class="xkcd-section">
+            <div class="xkcd-layout">
+                <img src="{{ day.xkcd_comic.image_path }}" alt="xkcd: {{ day.xkcd_comic.title }}" class="xkcd-image">
+                <div class="xkcd-info">
+                    <p class="xkcd-title">xkcd: {{ day.xkcd_comic.title }}</p>
+                    <p class="xkcd-alt">{{ day.xkcd_comic.alt }}</p>
+                    <p class="xkcd-link">xkcd.com/{{ day.xkcd_comic.num }}</p>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Footer Page 2 -->
+        <footer class="page-footer">
+            <p class="footer-message">{{ day.footer_message }}</p>
+            <p class="footer-note">News, Fixed • Day {{ day.day_number }} • Page 2 of 2</p>
+        </footer>
+    </div>
+{% endfor %}
+</body>
+</html>
