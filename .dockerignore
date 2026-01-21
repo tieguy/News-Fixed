@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
+#
+# SPDX-License-Identifier: BlueOak-1.0.0
+
+# Git
+.git
+.gitignore
+.gitattributes
+.gitmodules
+
+# Virtual environments
+.venv
+venv
+env
+test_venv
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Cache and build artifacts
+__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+cache/
+code/cache/
+
+# Output files
+output/
+code/output/
+
+# Local data and secrets
+.env
+data/
+.firefox-profile-ftn/
+
+# Documentation (not needed in image)
+docs/
+*.md
+
+# Development and CI files
+.worktrees/
+.chainlink/
+.beads/
+.claude/
+
+# Licenses (included in source, not needed in runtime)
+LICENSES/
+REUSE.toml
+
+# Test files
+**/test_*.py
+**/tests/
+TESTING.md

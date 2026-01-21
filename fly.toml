@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
+#
+# SPDX-License-Identifier: BlueOak-1.0.0
+
+# fly.io configuration for News Fixed web application
+# See: https://fly.io/docs/reference/configuration/
+
+app = 'news-fixed'
+primary_region = 'sjc'
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  CACHE_DIR = "/app/cache"
+  PYTHONUNBUFFERED = "1"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  path = "/health"
+  timeout = "5s"
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[mounts]
+  source = "news_fixed_cache"
+  destination = "/app/cache"
