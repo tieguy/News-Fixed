@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News, Fixed - Weekly Edition</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            background: #fafafa;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-family: 'Times New Roman', serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            color: #666;
+            font-style: italic;
+        }
+
+        .alpha-notice {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .alpha-notice h2 {
+            font-size: 1rem;
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .alpha-notice p {
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .download-section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .week-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .download-btn.disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .not-available {
+            color: #666;
+            font-style: italic;
+        }
+
+        .about {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .about h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .about p {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .about ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .about li {
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>News, Fixed</h1>
+        <p class="tagline">Global Good News, One Day At A Time</p>
+    </header>
+
+    <div class="alpha-notice">
+        <h2>Private Alpha</h2>
+        <p>
+            Hey! You're seeing this because Luis shared the link with you.
+            This is a weekly newspaper of positive news stories, rewritten for kids ages 10-14.
+            Print it out for your family's breakfast table!
+        </p>
+    </div>
+
+    <div class="download-section">
+        <p class="week-label">Week {{ week }}</p>
+        {% if has_pdf %}
+        <a href="/download" class="download-btn">Download This Week's Edition</a>
+        {% else %}
+        <p class="not-available">This week's edition is being prepared...</p>
+        <p class="not-available" style="margin-top: 0.5rem; font-size: 0.85rem;">Check back Monday morning!</p>
+        {% endif %}
+    </div>
+
+    <div class="about">
+        <h2>What is News, Fixed?</h2>
+        <p>
+            A weekly 8-page newspaper featuring positive news from around the world,
+            rewritten for bright 10-14 year olds. Each day covers a different theme:
+        </p>
+        <ul>
+            <li><strong>Monday:</strong> Health & Education</li>
+            <li><strong>Tuesday:</strong> Environment & Conservation</li>
+            <li><strong>Wednesday:</strong> Technology & Energy</li>
+            <li><strong>Thursday:</strong> Society & Youth Movements</li>
+        </ul>
+        <p>
+            Content is sourced from <a href="https://fixthe.news" target="_blank">Fix The News</a>,
+            a newsletter that highlights solutions journalism and evidence of human progress.
+        </p>
+    </div>
+
+    <footer>
+        <p>
+            Made with care by <a href="https://lu.is" target="_blank">Luis Villa</a>
+        </p>
+    </footer>
+</body>
+</html>
