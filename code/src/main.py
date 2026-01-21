@@ -496,6 +496,12 @@ For anyone who cares about the environment, this is a powerful reminder: nature 
 
     tomorrow_teaser = "Tomorrow: Discover how young climate activists are changing the world, plus a major breakthrough in clean energy storage."
 
+    second_main_story = {
+        "title": "Youth Athletes Champion Climate Action",
+        "content": "Young athletes are using their platforms to inspire climate action. From soccer players planting trees to swimmers raising money for ocean cleanup, they're showing that champions care about the planet. Their message: taking care of Earth takes teamwork, just like any sport.",
+        "source_url": "https://example.com/youth-athletes"
+    }
+
     output_path = Path(output_dir) / "test_newspaper.pdf"
 
     pdf_gen.generate_pdf(
@@ -509,7 +515,8 @@ For anyone who cares about the environment, this is a powerful reminder: nature 
         day_of_week="Monday",
         feature_box=feature_box,
         tomorrow_teaser=tomorrow_teaser,
-        xkcd_comic=None
+        xkcd_comic=None,
+        second_main_story=second_main_story
     )
 
     click.echo(f"✅ Test newspaper generated: {output_path}")

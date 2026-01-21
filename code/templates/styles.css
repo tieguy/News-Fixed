@@ -188,34 +188,39 @@ p {
 
 /* Second Main Story (when personalized features disabled) */
 .second-main-story {
-    margin: 0.8rem 0;
-    padding: 0.6rem;
-    border: 1px solid #333;
-    background: #f9f9f9;
+    margin-bottom: 0.08in;
 }
 
 .second-main-headline {
-    font-family: 'Times New Roman', serif;
-    font-size: 1.1rem;
+    font-family: 'Newsreader', 'Georgia', 'Times New Roman', serif;
+    font-size: 14pt;
     font-weight: bold;
-    margin: 0 0 0.4rem 0;
-    line-height: 1.2;
+    margin-bottom: 0.06in;
+    line-height: 1.15;
+    border-bottom: 2px solid #000;
+    padding-bottom: 3pt;
 }
 
 .second-main-layout {
-    display: flex;
-    gap: 0.5rem;
+    display: table;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.1in 0;
 }
 
 .second-main-content {
-    flex: 1;
-    font-size: 0.75rem;
-    line-height: 1.4;
+    display: table-cell;
+    font-size: 9pt;
+    line-height: 1.3;
+    text-align: justify;
+    vertical-align: top;
 }
 
 .second-main-qr {
-    flex-shrink: 0;
+    display: table-cell;
+    width: 0.7in;
     text-align: center;
+    vertical-align: top;
 }
 
 /* Front Page Lower Section */
