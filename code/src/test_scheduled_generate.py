@@ -16,14 +16,14 @@ def test_fetch_latest_ftn_via_rss_success():
     """fetch_latest_ftn_via_rss returns parsed FTN data on success."""
     from scheduled_generate import fetch_latest_ftn_via_rss
 
-    # Mock RSS response
+    # Mock RSS response with proper namespace declaration
     rss_content = """<?xml version="1.0"?>
-    <rss version="2.0">
+    <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
         <channel>
             <item>
                 <title>Fix The News #317: Progress in Healthcare</title>
                 <link>https://fixthe.news/issue/317</link>
-                <content:encoded><![CDATA[<html><body>Test content</body></html>]]></content:encoded>
+                <description><![CDATA[<html><body>Test content</body></html>]]></description>
             </item>
         </channel>
     </rss>
@@ -46,10 +46,11 @@ def test_fetch_latest_ftn_via_rss_success():
 
 def test_fetch_latest_ftn_via_rss_http_error():
     """fetch_latest_ftn_via_rss returns None on HTTP error."""
+    import httpx
     from scheduled_generate import fetch_latest_ftn_via_rss
 
     with patch('scheduled_generate.httpx.get') as mock_get:
-        mock_get.side_effect = Exception("Network error")
+        mock_get.side_effect = httpx.HTTPError("Network error")
 
         result = fetch_latest_ftn_via_rss()
 
