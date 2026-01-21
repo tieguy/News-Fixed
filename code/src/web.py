@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: BlueOak-1.0.0
 
+# FCIS: Flask web server providing landing page, health checks, and PDF downloads.
+
 """Flask web application for News, Fixed."""
 
 import os

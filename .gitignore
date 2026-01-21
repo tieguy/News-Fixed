@@ -44,6 +44,7 @@ data/processed/
 data/sports/*.ics
 
 # Cache files
+cache/
 code/cache/
 data/xkcd_cache.json
 data/xkcd_selected.json

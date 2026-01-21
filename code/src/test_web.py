@@ -10,10 +10,12 @@ import json
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
-from web import app, get_current_week, get_cached_pdf_path
+from web import app
+from cache import get_current_week, PDFCache
 
 
 @pytest.fixture
@@ -28,8 +30,10 @@ def client():
 def temp_cache_dir():
     """Create a temporary cache directory for testing."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        app.config['CACHE_DIR'] = Path(tmpdir)
-        yield Path(tmpdir)
+        # Patch the module-level pdf_cache singleton to use the temp directory
+        temp_cache = PDFCache(Path(tmpdir))
+        with patch('web.pdf_cache', temp_cache):
+            yield Path(tmpdir)
 
 
 class TestGetCurrentWeek:
@@ -62,11 +66,12 @@ class TestGetCurrentWeek:
 
 
 class TestGetCachedPdfPath:
-    """Tests for get_cached_pdf_path() function."""
+    """Tests for PDFCache.get_cached_pdf() method."""
 
     def test_returns_none_when_no_pdf_exists(self, temp_cache_dir):
         """Test that function returns None when no PDF exists."""
-        result = get_cached_pdf_path()
+        cache = PDFCache(temp_cache_dir)
+        result = cache.get_cached_pdf()
         assert result is None
 
     def test_returns_path_object_when_pdf_exists(self, temp_cache_dir):
@@ -78,7 +83,8 @@ class TestGetCachedPdfPath:
         pdf_file = week_dir / "combined.pdf"
         pdf_file.write_text("fake pdf content")
 
-        result = get_cached_pdf_path()
+        cache = PDFCache(temp_cache_dir)
+        result = cache.get_cached_pdf()
         assert isinstance(result, Path)
         assert result == pdf_file
         assert result.exists()
@@ -91,7 +97,8 @@ class TestGetCachedPdfPath:
         pdf_file = week_dir / "combined.pdf"
         pdf_file.write_text("test content")
 
-        result = get_cached_pdf_path()
+        cache = PDFCache(temp_cache_dir)
+        result = cache.get_cached_pdf()
         assert result.name == "combined.pdf"
         assert result.parent.name == week
 
