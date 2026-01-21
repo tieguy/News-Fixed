@@ -192,10 +192,11 @@ def curate(json_file, output, dry_run):
 @click.argument('json_file', type=click.Path(exists=True))
 @click.option('--day', '-d', type=click.IntRange(1, 4), help='Generate specific day (1-4)')
 @click.option('--all', 'generate_all', is_flag=True, help='Generate all 4 days')
+@click.option('--combined', is_flag=True, help='Generate combined 8-page PDF with all 4 days')
 @click.option('--output', '-o', type=click.Path(), help='Output directory (default: ./output)')
 @click.option('--no-rewrite', is_flag=True, help='Skip AI rewriting')
 @click.option('--skip-curation', is_flag=True, help='Skip interactive story curation')
-def generate(json_file, day, generate_all, output, no_rewrite, skip_curation):
+def generate(json_file, day, generate_all, combined, output, no_rewrite, skip_curation):
     """Generate PDF newspapers from JSON file."""
     ensure_dirs()
 
@@ -234,7 +235,9 @@ def generate(json_file, day, generate_all, output, no_rewrite, skip_curation):
     cmd.extend(['--input', str(json_path)])
     cmd.extend(['--output', str(Path(output).resolve())])
 
-    if generate_all:
+    if combined:
+        cmd.append('--combined')
+    elif generate_all:
         cmd.append('--all')
     elif day:
         cmd.extend(['--day', str(day)])
