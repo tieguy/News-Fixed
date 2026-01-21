@@ -2,15 +2,13 @@
 #
 # SPDX-License-Identifier: BlueOak-1.0.0
 
-# FCIS: Flask web application for serving News, Fixed newspapers with health checks.
-
 """Flask web application for News, Fixed."""
 
-from datetime import datetime
 import os
 from pathlib import Path
 from flask import Flask, render_template, send_file, jsonify
 from dotenv import load_dotenv
+from cache import PDFCache, get_current_week
 
 # Load environment variables
 load_dotenv()
@@ -23,53 +21,37 @@ app = Flask(
 )
 
 # Configuration
-# CACHE_DIR should be set in production via environment variable
-# Default 'cache' is relative path and only suitable for development
-app.config['CACHE_DIR'] = Path(os.getenv('CACHE_DIR', 'cache'))
-
-
-def get_current_week() -> str:
-    """Get current ISO week in YYYY-WWW format."""
-    now = datetime.now()
-    return f"{now.year}-W{now.isocalendar()[1]:02d}"
-
-
-def get_cached_pdf_path() -> Path | None:
-    """Get path to current week's cached PDF if it exists."""
-    week = get_current_week()
-    cache_dir = app.config['CACHE_DIR']
-    pdf_path = cache_dir / week / "combined.pdf"
-
-    if pdf_path.exists():
-        return pdf_path
-    return None
+cache_dir = Path(os.getenv('CACHE_DIR', 'cache'))
+pdf_cache = PDFCache(cache_dir)
 
 
 @app.route('/')
 def index():
     """Landing page."""
     week = get_current_week()
-    has_pdf = get_cached_pdf_path() is not None
+    has_pdf = pdf_cache.is_cached(week)
+    metadata = pdf_cache.get_metadata(week)
 
     return render_template(
         'landing.html',
         week=week,
-        has_pdf=has_pdf
+        has_pdf=has_pdf,
+        cached_at=metadata.get('cached_at') if metadata else None
     )
 
 
 @app.route('/download')
 def download():
     """Download the current week's PDF."""
-    pdf_path = get_cached_pdf_path()
+    week = get_current_week()
+    pdf_path = pdf_cache.get_cached_pdf(week)
 
     if pdf_path is None:
         return jsonify({
             'error': 'No PDF available for this week yet',
-            'week': get_current_week()
+            'week': week
         }), 404
 
-    week = get_current_week()
     download_name = f"news_fixed_{week}.pdf"
 
     return send_file(
@@ -83,10 +65,12 @@ def download():
 @app.route('/health')
 def health():
     """Health check endpoint for fly.io."""
+    week = get_current_week()
     return jsonify({
         'status': 'healthy',
         'service': 'news-fixed',
-        'week': get_current_week()
+        'week': week,
+        'has_pdf': pdf_cache.is_cached(week)
     }), 200
 
 
