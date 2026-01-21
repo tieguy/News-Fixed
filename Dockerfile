@@ -48,5 +48,5 @@ ENV PYTHONUNBUFFERED=1
 # Expose port
 EXPOSE 8080
 
-# Run with gunicorn
+# Default command (can be overridden by fly.toml processes)
 CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--chdir", "/app/code/src", "web:app"]

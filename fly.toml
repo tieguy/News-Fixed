@@ -11,6 +11,10 @@ primary_region = 'sjc'
 [build]
   dockerfile = "Dockerfile"
 
+[processes]
+  app = "uv run gunicorn --bind 0.0.0.0:8080 --workers 2 --chdir /app/code/src web:app"
+  scheduler = "uv run python /app/code/src/scheduled_generate.py --notify"
+
 [env]
   CACHE_DIR = "/app/cache"
   PYTHONUNBUFFERED = "1"
