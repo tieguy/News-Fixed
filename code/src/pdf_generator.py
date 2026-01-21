@@ -278,6 +278,77 @@ class NewspaperGenerator:
         # This should be unreachable, but satisfy type checker
         raise RuntimeError("PDF generation loop completed without returning")
 
+    def generate_combined_pdf(
+        self,
+        days_data: List[Dict],
+        output_path: str
+    ) -> Path:
+        """
+        Generate a combined multi-day newspaper PDF (8 pages for 4 days).
+
+        Args:
+            days_data: List of day context dicts, each containing:
+                - day_number: int
+                - day_of_week: str
+                - date: str
+                - theme: str
+                - main_story: dict
+                - front_page_stories: list
+                - mini_articles: list
+                - statistics: list
+                - feature_box: dict (optional)
+                - tomorrow_teaser: str (optional)
+                - xkcd_comic: dict (optional)
+                - second_main_story: dict (optional)
+            output_path: Output PDF file path
+
+        Returns:
+            Path to generated PDF
+        """
+        # Prepare all days' contexts with QR codes
+        prepared_days = []
+        for day_data in days_data:
+            context = self._prepare_context(
+                day_number=day_data['day_number'],
+                day_of_week=day_data['day_of_week'],
+                date_str=day_data['date'],
+                main_story=day_data['main_story'],
+                front_page_stories=day_data.get('front_page_stories', []),
+                mini_articles=day_data['mini_articles'],
+                statistics=day_data['statistics'],
+                feature_box=day_data.get('feature_box'),
+                tomorrow_teaser=day_data.get('tomorrow_teaser', ''),
+                xkcd_comic=day_data.get('xkcd_comic')
+            )
+
+            # Add second_main_story if present
+            if day_data.get('second_main_story'):
+                context['second_main_story'] = self._add_qr_codes_to_article(
+                    day_data['second_main_story']
+                )
+
+            prepared_days.append(context)
+
+        # Render combined template
+        template = self.env.get_template("newspaper_combined.html")
+        html_content = template.render(days=prepared_days)
+
+        css_path = self.templates_dir / "styles.css"
+        html = HTML(string=html_content, base_url=str(self.templates_dir))
+        css = CSS(filename=str(css_path))
+
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        html.write_pdf(output_file, stylesheets=[css])
+
+        # Verify page count (should be 8 for 4 days)
+        expected_pages = len(days_data) * 2
+        page_count = self.get_pdf_page_count(str(output_file))
+        if page_count != -1 and page_count != expected_pages:
+            print(f"   ⚠️  Combined PDF has {page_count} pages (expected {expected_pages})")
+
+        return output_file
+
 
 if __name__ == "__main__":
     # Test PDF generation with sample data
