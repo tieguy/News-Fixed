@@ -10,6 +10,7 @@ FROM python:3.11-slim-bookworm
 # See: https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#linux
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # WeasyPrint dependencies
+    libcairo2 \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
     libgdk-pixbuf2.0-0 \

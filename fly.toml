@@ -14,6 +14,9 @@ primary_region = 'sjc'
 [env]
   CACHE_DIR = "/app/cache"
   PYTHONUNBUFFERED = "1"
+  FEATURE_DUKE_SPORTS = "false"
+  FEATURE_SF_LOCAL = "false"
+  FEATURE_XKCD = "false"
 
 [http_service]
   internal_port = 8080
@@ -24,17 +27,17 @@ primary_region = 'sjc'
   processes = ['app']
 
 [[http_service.checks]]
-  grace_period = "10s"
+  grace_period = "30s"
   interval = "30s"
   method = "GET"
   path = "/health"
   timeout = "5s"
 
 [[vm]]
-  memory = '512mb'
+  memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
 
-[mounts]
+[[mounts]]
   source = "news_fixed_cache"
   destination = "/app/cache"

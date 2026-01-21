@@ -35,6 +35,7 @@ code/output/
 
 # Local data and secrets
 .env
+# data/ directory excluded - only needed during development, not in runtime container
 data/
 .firefox-profile-ftn/
 
