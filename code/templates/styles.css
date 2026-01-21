@@ -556,3 +556,14 @@ p {
         background: #fff !important;
     }
 }
+
+/* Combined PDF Page Breaks */
+.day-separator {
+    page-break-before: always;
+}
+
+@media print {
+    .day-separator {
+        page-break-before: always;
+    }
+}
