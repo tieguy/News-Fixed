@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from cache import PDFCache, get_current_week, get_week_for_date
+from cache import PDFCache, get_current_week
 from generator import ContentGenerator
 from pdf_generator import NewspaperGenerator
 from ftn_to_json import create_json_from_ftn
@@ -364,7 +364,7 @@ def main():
             return 1
 
         # Cache the PDF
-        pdf_cache.cache_pdf(current_week, temp_pdf_path)
+        pdf_cache.cache_pdf(temp_pdf_path, current_week)
         logger.info(f"PDF cached for week {current_week}")
 
         send_notification(True, f"PDF for {current_week} generated and cached successfully.")
