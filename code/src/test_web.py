@@ -10,7 +10,6 @@ import json
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest import mock
 
 import pytest
 
@@ -123,11 +122,17 @@ class TestIndexRoute:
         # The week should be embedded in the response
         week = get_current_week()
         assert response.status_code == 200
+        # Verify week string appears in the rendered template
+        response_text = response.data.decode('utf-8')
+        assert f"Week {week}" in response_text
 
     def test_passes_has_pdf_false_when_no_pdf(self, client, temp_cache_dir):
         """Test that has_pdf is False when no PDF exists."""
         response = client.get('/')
         assert response.status_code == 200
+        # Verify "being prepared" message appears when no PDF exists
+        response_text = response.data.decode('utf-8')
+        assert "being prepared" in response_text
 
     def test_passes_has_pdf_true_when_pdf_exists(self, client, temp_cache_dir):
         """Test that has_pdf is True when PDF exists."""
@@ -140,6 +145,9 @@ class TestIndexRoute:
 
         response = client.get('/')
         assert response.status_code == 200
+        # Verify download button appears when PDF exists
+        response_text = response.data.decode('utf-8')
+        assert "Download This Week's Edition" in response_text
 
 
 class TestHealthRoute:
