@@ -2,8 +2,11 @@
 #
 # SPDX-License-Identifier: BlueOak-1.0.0
 
+# FCIS: Flask web application for serving News, Fixed newspapers with health checks.
+
 """Flask web application for News, Fixed."""
 
+from datetime import datetime
 import os
 from pathlib import Path
 from flask import Flask, render_template, send_file, jsonify
@@ -20,12 +23,13 @@ app = Flask(
 )
 
 # Configuration
+# CACHE_DIR should be set in production via environment variable
+# Default 'cache' is relative path and only suitable for development
 app.config['CACHE_DIR'] = Path(os.getenv('CACHE_DIR', 'cache'))
 
 
 def get_current_week() -> str:
     """Get current ISO week in YYYY-WWW format."""
-    from datetime import datetime
     now = datetime.now()
     return f"{now.year}-W{now.isocalendar()[1]:02d}"
 
