@@ -19,8 +19,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Fonts for PDF rendering
     fonts-liberation \
     fonts-dejavu-core \
+    # For downloading supercronic
+    curl \
     # Clean up apt cache
     && rm -rf /var/lib/apt/lists/*
+
+# Install supercronic for cron scheduling (runs in foreground, no syslog needed)
+ARG SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.33/supercronic-linux-amd64
+ARG SUPERCRONIC_SHA1SUM=71b0d58cc53f6bd72cf2f293e09e294b79c666d8
+RUN curl -fsSLO "$SUPERCRONIC_URL" \
+    && echo "${SUPERCRONIC_SHA1SUM}  supercronic-linux-amd64" | sha1sum -c - \
+    && chmod +x supercronic-linux-amd64 \
+    && mv supercronic-linux-amd64 /usr/local/bin/supercronic
 
 # Install uv for fast dependency management
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
@@ -38,6 +48,11 @@ RUN uv sync --frozen --no-dev
 # Copy application code
 COPY code/ ./code/
 
+# Copy crontab and startup script
+COPY crontab ./crontab
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+
 # Create cache directory (will be mounted as persistent volume in production)
 RUN mkdir -p /app/cache
 
@@ -49,5 +64,5 @@ ENV PYTHONUNBUFFERED=1
 # Expose port
 EXPOSE 8080
 
-# Default command (can be overridden by fly.toml processes)
-CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--chdir", "/app/code/src", "web:app"]
+# Default command - runs both cron scheduler and web server
+CMD ["/app/start.sh"]

@@ -12,14 +12,9 @@ primary_region = 'sjc'
   dockerfile = "Dockerfile"
 
 [processes]
-  app = "uv run gunicorn --bind 0.0.0.0:8080 --workers 2 --chdir /app/code/src web:app"
-  # The scheduler process runs the scheduled PDF generation.
-  # To set up the schedule on fly.io, use the CLI command:
-  #   fly machine run --region sjc --name scheduler-job --schedule 'cron(0 6 * * 1)' --process=scheduler
-  # This creates a scheduled machine that runs the scheduler process every Monday at 6 AM UTC.
-  # Replace the cron schedule as needed for your preferred generation time.
-  # See: https://fly.io/docs/launch/machines/
-  scheduler = "uv run python /app/code/src/scheduled_generate.py --notify"
+  # Single process runs both web server and cron scheduler via start.sh
+  # Scheduled PDF generation runs every Monday at 6 AM UTC (see crontab)
+  app = "/app/start.sh"
 
 [env]
   CACHE_DIR = "/app/cache"

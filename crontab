@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2025 Luis Villa <luis@lu.is>
+#
+# SPDX-License-Identifier: BlueOak-1.0.0
+
+# News Fixed scheduled PDF generation
+# Runs every Monday at 6 AM UTC to generate the week's newspaper
+# Format: minute hour day-of-month month day-of-week command
+
+0 6 * * 1 /usr/local/bin/uv run python /app/code/src/scheduled_generate.py --notify 2>&1
