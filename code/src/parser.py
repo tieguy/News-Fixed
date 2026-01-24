@@ -98,7 +98,7 @@ class FTNParser:
 
     def extract_stories(self) -> List[FTNStory]:
         """
-        Extract stories from FTN content (now works with reader mode HTML).
+        Extract stories from FTN content (works with reader mode HTML or RSS HTML).
 
         Returns:
             List of FTNStory objects
@@ -107,12 +107,17 @@ class FTNParser:
 
         # Find the main content div in reader mode HTML
         content_div = self.soup.find('div', class_='moz-reader-content')
-        if not content_div:
-            # Fallback to old text-based parsing
-            return self._extract_stories_from_text()
-
-        # Get all paragraphs
-        paragraphs = content_div.find_all('p')
+        if content_div:
+            # Reader mode - get paragraphs from content div
+            paragraphs = content_div.find_all('p')
+        else:
+            # RSS/Substack HTML - get all paragraphs directly
+            paragraphs = self.soup.find_all('p')
+            # Check if we have paragraphs with strong tags (RSS format)
+            has_strong_tags = any(p.find(['strong', 'b']) for p in paragraphs)
+            if not has_strong_tags:
+                # No strong tags found, fall back to text-based parsing
+                return self._extract_stories_from_text()
 
         current_story_text = []
         current_urls = []
