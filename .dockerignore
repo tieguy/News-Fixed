@@ -42,6 +42,8 @@ data/
 # Documentation (not needed in image)
 docs/
 *.md
+# Exception: README.md is required by pyproject.toml
+!README.md
 
 # Development and CI files
 .worktrees/
