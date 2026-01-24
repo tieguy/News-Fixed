@@ -149,6 +149,7 @@ def test_group_stories_into_days_returns_expected_structure():
     assert "day_3" in result
     assert "day_4" in result
     assert "main" in result["day_1"]
+    assert "second" in result["day_1"]
     assert "minis" in result["day_1"]
     assert isinstance(result["day_1"]["minis"], list)
 
@@ -157,6 +158,8 @@ def test_group_stories_into_days_returns_expected_structure():
     for day_key in ["day_1", "day_2", "day_3", "day_4"]:
         if result[day_key]["main"] is not None:
             all_assigned.add(result[day_key]["main"])
+        if result[day_key]["second"] is not None:
+            all_assigned.add(result[day_key]["second"])
         all_assigned.update(result[day_key]["minis"])
     all_assigned.update(result.get("unused", []))
 

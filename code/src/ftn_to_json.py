@@ -206,7 +206,8 @@ def group_stories_into_days(stories: list, blocklisted_ids: list, themes: dict[i
 
     Returns:
         Dict with day_1 through day_4, each containing:
-            - main: ID of main story or None
+            - main: ID of lead story or None
+            - second: ID of second front-page story or None
             - minis: list of mini story IDs
         Plus unused: list of story IDs not assigned
     """
@@ -231,19 +232,20 @@ DAY THEMES:
 {theme_lines}
 
 RULES:
-- Each day needs 1 main story (longest/strongest fit) + up to 4 minis
-- Balance story count across days (aim for 4-5 per day)
-- Main stories should be 600+ characters when possible
+- Each day needs 2 main stories for the front page + up to 4 minis for back page
+- "main" = lead story (longest/strongest fit, 600+ characters)
+- "second" = second front page story (shorter but still substantial, 400+ characters)
+- Balance story count across days (aim for 5-6 per day)
 - Consider both primary and secondary themes for placement
 - Stories can fit multiple days - pick best overall balance
 - Blocklisted stories go in "unused"
 
 Return ONLY valid JSON (no markdown fences):
 {{
-  "day_1": {{"main": <story_id or null>, "minis": [<story_ids>]}},
-  "day_2": {{"main": <story_id or null>, "minis": [<story_ids>]}},
-  "day_3": {{"main": <story_id or null>, "minis": [<story_ids>]}},
-  "day_4": {{"main": <story_id or null>, "minis": [<story_ids>]}},
+  "day_1": {{"main": <story_id or null>, "second": <story_id or null>, "minis": [<story_ids>]}},
+  "day_2": {{"main": <story_id or null>, "second": <story_id or null>, "minis": [<story_ids>]}},
+  "day_3": {{"main": <story_id or null>, "second": <story_id or null>, "minis": [<story_ids>]}},
+  "day_4": {{"main": <story_id or null>, "second": <story_id or null>, "minis": [<story_ids>]}},
   "unused": [<story_ids>],
   "reasoning": "brief explanation of key placement decisions"
 }}"""
@@ -421,10 +423,10 @@ def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: di
     }
 
     days = {
-        "day_1": {"main": None, "minis": []},
-        "day_2": {"main": None, "minis": []},
-        "day_3": {"main": None, "minis": []},
-        "day_4": {"main": None, "minis": []},
+        "day_1": {"main": None, "second": None, "minis": []},
+        "day_2": {"main": None, "second": None, "minis": []},
+        "day_3": {"main": None, "second": None, "minis": []},
+        "day_4": {"main": None, "second": None, "minis": []},
         "unused": blocklisted_ids.copy()
     }
 
@@ -440,6 +442,8 @@ def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: di
 
         if days[day_key]["main"] is None:
             days[day_key]["main"] = story["id"]
+        elif days[day_key]["second"] is None:
+            days[day_key]["second"] = story["id"]
         elif len(days[day_key]["minis"]) < 4:
             days[day_key]["minis"].append(story["id"])
         else:
@@ -483,14 +487,16 @@ def _build_four_days_from_grouping(stories: list, grouping: dict, themes: dict[i
     # Build each day
     for day_num in range(1, 5):
         day_key = f"day_{day_num}"
-        day_grouping = grouping.get(day_key, {"main": None, "minis": []})
+        day_grouping = grouping.get(day_key, {"main": None, "second": None, "minis": []})
 
         main_id = day_grouping.get("main")
+        second_id = day_grouping.get("second")
         mini_ids = day_grouping.get("minis", [])
 
         day_data = {
             "theme": themes[day_num]["name"],
             "main_story": {},
+            "second_story": {},
             "front_page_stories": [],
             "mini_articles": [],
             "statistics": [],
@@ -501,6 +507,16 @@ def _build_four_days_from_grouping(stories: list, grouping: dict, themes: dict[i
         if main_id is not None and main_id < len(stories):
             story = stories[main_id]
             day_data["main_story"] = {
+                "title": story.title,
+                "content": story.content,
+                "source_url": story.source_url or FTN_BASE_URL,
+                "tui_headline": story.tui_headline or story.title[:47] + "..."
+            }
+
+        # Add second front-page story
+        if second_id is not None and second_id < len(stories):
+            story = stories[second_id]
+            day_data["second_story"] = {
                 "title": story.title,
                 "content": story.content,
                 "source_url": story.source_url or FTN_BASE_URL,
@@ -762,8 +778,9 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         day_key = f"day_{day_num}"
         if day_key in four_days:
             main = 1 if four_days[day_key].get("main_story") else 0
+            second = 1 if four_days[day_key].get("second_story") else 0
             minis = len(four_days[day_key].get("mini_articles", []))
-            print(f"   Day {day_num}: {main} main + {minis} minis")
+            print(f"   Day {day_num}: {main} main + {second} second + {minis} minis")
 
     if "unused" in four_days:
         unused_count = len(four_days["unused"].get("stories", []))

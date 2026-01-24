@@ -234,8 +234,8 @@ def generate_combined_pdf(ftn_json: dict, output_path: Path) -> bool:
 
         # Generate second main story (since personalized features are disabled for web)
         second_main_story = None
-        if 'second_story' in day_data:
-            second_story_data = day_data['second_story']
+        second_story_data = day_data.get('second_story', {})
+        if second_story_data and second_story_data.get('content'):
             second_main_story = content_gen.generate_second_main_story(
                 original_content=second_story_data['content'],
                 source_url=second_story_data['source_url'],
