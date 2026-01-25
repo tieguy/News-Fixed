@@ -48,7 +48,6 @@ docs/
 # Development and CI files
 .worktrees/
 .chainlink/
-.beads/
 .claude/
 
 # Licenses (included in source, not needed in runtime)
