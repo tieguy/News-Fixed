@@ -21,28 +21,7 @@ from utils import get_theme_name
 from sports_schedule import DukeBasketballSchedule
 from xkcd import XkcdManager
 from readwise_fetcher import ReadwiseFetcher
-
-
-def get_news_mode() -> str:
-    """Get the current news mode from environment.
-
-    Returns:
-        'family' or 'friends' - defaults to 'family' for local development
-    """
-    mode = os.getenv('NEWS_MODE', 'family').lower()
-    if mode not in ('family', 'friends'):
-        mode = 'family'
-    return mode
-
-
-def is_family_mode() -> bool:
-    """Check if running in family mode (personalized content enabled)."""
-    return get_news_mode() == 'family'
-
-
-def is_friends_mode() -> bool:
-    """Check if running in friends mode (generic content only)."""
-    return get_news_mode() == 'friends'
+from content_generation import is_family_mode, is_friends_mode, generate_day_content
 
 
 def preview_and_print(pdf_path: Path) -> None:
@@ -161,45 +140,27 @@ def initialize_generators(no_rewrite: bool) -> tuple:
 
 
 def generate_content_with_ai(content_gen, day_data: dict, day_num: int) -> tuple:
-    """Generate content using AI."""
-    click.echo("  ✍️  Generating main story...")
-    main_story = content_gen.generate_main_story(
-        original_content=day_data['main_story']['content'],
-        source_url=day_data['main_story']['source_url'],
-        theme=get_theme_name(day_num),
-        original_title=day_data['main_story'].get('title', '')
+    """Generate content using AI. Wrapper around shared generate_day_content."""
+    def cli_progress(msg):
+        click.echo(f"  ✍️  {msg}")
+
+    result = generate_day_content(
+        content_gen=content_gen,
+        day_data=day_data,
+        day_num=day_num,
+        mode_default='family',
+        on_progress=cli_progress
     )
-    main_story['source_url'] = day_data['main_story']['source_url']
 
     front_page_stories = day_data.get('front_page_stories', [])
 
-    click.echo(f"  ✍️  Generating {len(day_data['mini_articles'])} mini articles...")
-    mini_articles = []
-    for article_data in day_data['mini_articles']:
-        mini_article = content_gen.generate_mini_article(
-            original_content=article_data['content'],
-            source_url=article_data['source_url'],
-            original_title=article_data.get('title', '')
-        )
-        mini_article['source_url'] = article_data['source_url']
-        mini_articles.append(mini_article)
-
-    click.echo("  📊 Generating statistics...")
-    stories_summary = f"Main: {main_story['title']}\n"
-    stories_summary += "\n".join([a['title'] for a in mini_articles])
-    statistics = content_gen.generate_statistics(
-        stories_summary=stories_summary,
-        theme=get_theme_name(day_num)
+    return (
+        result['main_story'],
+        front_page_stories,
+        result['mini_articles'],
+        result['statistics'],
+        result['tomorrow_teaser']
     )
-
-    tomorrow_teaser = ""
-    if day_num < 4:
-        click.echo("  👀 Generating tomorrow teaser...")
-        tomorrow_teaser = content_gen.generate_teaser(
-            tomorrow_theme=get_theme_name(day_num + 1)
-        )
-
-    return main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser
 
 
 def use_content_from_json(day_data: dict) -> tuple:

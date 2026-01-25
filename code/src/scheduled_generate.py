@@ -44,28 +44,7 @@ from generator import ContentGenerator
 from pdf_generator import NewspaperGenerator
 from ftn_to_json import create_json_from_ftn
 from utils import get_theme_name
-
-
-def get_news_mode() -> str:
-    """Get the current news mode from environment.
-
-    Returns:
-        'family' or 'friends' - defaults to 'friends' for web deployment
-    """
-    mode = os.getenv('NEWS_MODE', 'friends').lower()
-    if mode not in ('family', 'friends'):
-        mode = 'friends'
-    return mode
-
-
-def is_family_mode() -> bool:
-    """Check if running in family mode (personalized content enabled)."""
-    return get_news_mode() == 'family'
-
-
-def is_friends_mode() -> bool:
-    """Check if running in friends mode (generic content only)."""
-    return get_news_mode() == 'friends'
+from content_generation import generate_day_content
 
 
 # Configuration
@@ -219,75 +198,28 @@ def generate_combined_pdf(ftn_json: dict, output_path: Path) -> bool:
 
         logger.info(f"Generating content for {date_info['day_name']}...")
 
-        # Generate main story
-        main_story = content_gen.generate_main_story(
-            original_content=day_data['main_story']['content'],
-            source_url=day_data['main_story']['source_url'],
-            theme=get_theme_name(day_num),
-            original_title=day_data['main_story'].get('title', '')
+        # Use shared content generation (defaults to 'friends' mode for web)
+        content = generate_day_content(
+            content_gen=content_gen,
+            day_data=day_data,
+            day_num=day_num,
+            mode_default='friends',
+            on_progress=logger.info
         )
-        main_story['source_url'] = day_data['main_story']['source_url']
-
-        # Generate mini articles
-        mini_articles = []
-        for article_data in day_data.get('mini_articles', []):
-            mini_article = content_gen.generate_mini_article(
-                original_content=article_data['content'],
-                source_url=article_data['source_url'],
-                original_title=article_data.get('title', '')
-            )
-            mini_article['source_url'] = article_data['source_url']
-            mini_articles.append(mini_article)
-
-        # Generate statistics
-        stories_summary = f"Main: {main_story['title']}\n"
-        stories_summary += "\n".join([a['title'] for a in mini_articles])
-        statistics = content_gen.generate_statistics(
-            stories_summary=stories_summary,
-            theme=get_theme_name(day_num)
-        )
-
-        # Generate tomorrow teaser (except for Thursday)
-        tomorrow_teaser = ""
-        if day_num < 4:
-            tomorrow_teaser = content_gen.generate_teaser(
-                tomorrow_theme=get_theme_name(day_num + 1)
-            )
-
-        # Mode-specific content
-        # Family mode: personalized content (sports, local news, xkcd)
-        # Friends mode: generic content (second main story instead)
-        second_main_story = None
-        feature_box = None
-        xkcd_comic = None
-
-        if is_friends_mode():
-            # Generate second main story for friends mode
-            second_story_data = day_data.get('second_story', {})
-            if second_story_data and second_story_data.get('content'):
-                second_main_story = content_gen.generate_second_main_story(
-                    original_content=second_story_data['content'],
-                    source_url=second_story_data['source_url'],
-                    theme=get_theme_name(day_num),
-                    original_title=second_story_data.get('title', '')
-                )
-                second_main_story['source_url'] = second_story_data['source_url']
-        # Note: family mode support in scheduled_generate.py would require
-        # importing XkcdManager, sports_schedule, readwise_fetcher - use main.py for family mode
 
         days_data.append({
             'day_number': day_num,
             'day_of_week': date_info['day_name'],
             'date': date_info['formatted_date'],
             'theme': get_theme_name(day_num),
-            'main_story': main_story,
+            'main_story': content['main_story'],
             'front_page_stories': [],
-            'mini_articles': mini_articles,
-            'statistics': statistics,
-            'feature_box': feature_box,
-            'tomorrow_teaser': tomorrow_teaser,
-            'xkcd_comic': xkcd_comic,
-            'second_main_story': second_main_story,
+            'mini_articles': content['mini_articles'],
+            'statistics': content['statistics'],
+            'feature_box': None,  # Family mode only (use main.py)
+            'tomorrow_teaser': content['tomorrow_teaser'],
+            'xkcd_comic': None,   # Family mode only (use main.py)
+            'second_main_story': content['second_main_story'],
             'footer_message': "Good news exists, but it travels slowly."
         })
 
