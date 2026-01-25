@@ -123,12 +123,24 @@ The `./news-fixed` script automatically uses `uv run` to execute commands in the
 
 ### Module Structure
 
-- `src/fetcher.py` - Fetch and parse Fix The News content
-- `src/processor.py` - Categorize articles into daily themes (Health/Education, Environment, Technology, Society)
-- `src/generator.py` - Claude API integration for content generation
-- `src/pdf_generator.py` - Generate print-ready PDFs from HTML template
-- `src/utils.py` - QR code generation and other utilities
-- `main.py` - CLI orchestrator
+**Entry Points:**
+- `code/src/main.py` - Interactive CLI for local generation (family mode default)
+- `code/src/scheduled_generate.py` - Unattended web generation for fly.io (friends mode default)
+- `code/src/web.py` - Flask web server for PDF downloads
+
+**Content Pipeline:**
+- `code/src/parser.py` - Parse Fix The News HTML into structured data
+- `code/src/ftn_to_json.py` - Categorize articles into 4-day format using Claude
+- `code/src/content_generation.py` - Shared content generation logic (mode detection, AI rewriting)
+- `code/src/generator.py` - Claude API integration for content rewriting
+- `code/src/pdf_generator.py` - Generate print-ready PDFs from HTML templates
+
+**Supporting:**
+- `code/src/cache.py` - PDF caching for web downloads
+- `code/src/utils.py` - QR code generation and theme utilities
+- `code/src/xkcd.py` - XKCD comic selection (family mode only)
+- `code/src/sports_schedule.py` - Duke basketball schedule (family mode only)
+- `code/src/readwise_fetcher.py` - Local SF news from Readwise (family mode only)
 
 ### Content Flow
 
@@ -145,33 +157,45 @@ The `./news-fixed` script automatically uses `uv run` to execute commands in the
 
 ## Running the Application
 
-**Note**: FTN content input is flexible - no issue numbers required. Accept content via:
-- Local file: `--input ftn_content.txt`
-- URL: `--url https://fixthe.news/...`
-- Stdin: `cat content.txt | python main.py`
+### Local CLI (Family Mode)
 
 ```bash
-# Generate a single day edition from FTN content file
-python main.py --input ftn_content.txt --day 1 --output ./output/
+# Generate a single day edition from FTN JSON
+./news-fixed --input ftn-content.json --day 1
 
-# Generate all 4 days from FTN content
-python main.py --input ftn_content.txt --all
+# Generate all 4 days
+./news-fixed --input ftn-content.json --all
 
-# Specify output directory
-python main.py --input ftn_content.txt --day 1 --output ~/Desktop/
+# Generate combined 4-day PDF
+./news-fixed --input ftn-content.json --combined
+
+# Skip AI rewriting (use content as-is)
+./news-fixed --input ftn-content.json --day 1 --no-rewrite
+```
+
+### Web/Scheduled (Friends Mode)
+
+The scheduled generator runs automatically on fly.io, but can be triggered manually:
+
+```bash
+# On fly.io
+fly ssh console -C "uv run python /app/code/src/scheduled_generate.py"
+
+# Locally (for testing)
+NEWS_MODE=friends uv run python code/src/scheduled_generate.py
 ```
 
 ## Testing
 
 ```bash
+# Run all tests
+PYTHONPATH=code/src uv run pytest code/src/
+
 # Test PDF generation with sample data
-python main.py --test
+./news-fixed --test
 
-# Test parser
-python -m src.parser FTN-315.html
-
-# Test QR code generation
-python -m src.utils
+# Test specific module
+PYTHONPATH=code/src uv run pytest code/src/test_ftn_to_json.py -v
 ```
 
 ## Documentation
@@ -206,8 +230,31 @@ python -m src.utils
 
 ## Configuration
 
-- `config.py` - Configuration constants (newspaper dimensions, fonts, colors, API settings)
-- `.env` - Environment variables (ANTHROPIC_API_KEY)
+**Environment Variables (.env):**
+- `ANTHROPIC_API_KEY` - Required for Claude API content generation
+- `NEWS_MODE` - Content mode: `family` (personalized) or `friends` (generic)
+  - `family`: Includes Duke sports, SF local news, XKCD comics
+  - `friends`: Generic content only, second main story instead of personalized features
+  - CLI defaults to `family`, web deployment defaults to `friends`
+
+**Config Files:**
+- `fly.toml` - Fly.io deployment configuration
+- `code/.env.example` - Template for local environment variables
+
+## Web Deployment (fly.io)
+
+The app runs on fly.io with scheduled PDF generation:
+
+- **URL**: https://news-fixed.fly.dev/
+- **Cron**: Mondays at 6 AM UTC generates the week's PDF
+- **Mode**: `NEWS_MODE=friends` (no personalized content)
+
+```bash
+fly deploy          # Deploy changes
+fly status          # Check app status
+fly ssh console     # SSH into container
+fly logs            # View logs
+```
 
 ## Caching
 
