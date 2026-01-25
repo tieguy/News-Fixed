@@ -23,18 +23,26 @@ from xkcd import XkcdManager
 from readwise_fetcher import ReadwiseFetcher
 
 
-def get_feature_flag(name: str, default: bool = True) -> bool:
-    """Get a feature flag from environment variable.
-
-    Args:
-        name: Feature flag name (e.g., 'FEATURE_DUKE_SPORTS')
-        default: Default value if not set (True for local, False for web)
+def get_news_mode() -> str:
+    """Get the current news mode from environment.
 
     Returns:
-        Boolean indicating if feature is enabled
+        'family' or 'friends' - defaults to 'family' for local development
     """
-    value = os.getenv(name, str(default)).lower()
-    return value in ('true', '1', 'yes', 'on')
+    mode = os.getenv('NEWS_MODE', 'family').lower()
+    if mode not in ('family', 'friends'):
+        mode = 'family'
+    return mode
+
+
+def is_family_mode() -> bool:
+    """Check if running in family mode (personalized content enabled)."""
+    return get_news_mode() == 'family'
+
+
+def is_friends_mode() -> bool:
+    """Check if running in friends mode (generic content only)."""
+    return get_news_mode() == 'friends'
 
 
 def preview_and_print(pdf_path: Path) -> None:
@@ -289,21 +297,23 @@ def generate_day_newspaper(
         feature_box = None
         second_main_story = None
 
-    # Check for sports games if feature enabled (takes priority for feature box)
-    if get_feature_flag('FEATURE_DUKE_SPORTS', default=True):
+    # Family mode: personalized content (sports, local news, xkcd)
+    # Friends mode: generic content only (second main story instead)
+    xkcd_comic = None
+
+    if is_family_mode():
+        # Check for sports games (takes priority for feature box)
         sports_feature = check_for_sports_games(date_info)
         if sports_feature:
             feature_box = sports_feature
 
-    # Fetch local SF story if feature enabled (add to front page stories)
-    if content_gen and get_feature_flag('FEATURE_SF_LOCAL', default=True):
-        local_story = fetch_local_story(content_gen, date_info['date_obj'].strftime('%Y-%m-%d'))
-        if local_story:
-            front_page_stories = [local_story] + list(front_page_stories or [])
+        # Fetch local SF story (add to front page stories)
+        if content_gen:
+            local_story = fetch_local_story(content_gen, date_info['date_obj'].strftime('%Y-%m-%d'))
+            if local_story:
+                front_page_stories = [local_story] + list(front_page_stories or [])
 
-    # Load xkcd comic if feature enabled and selected for the newspaper's week
-    xkcd_comic = None
-    if get_feature_flag('FEATURE_XKCD', default=True):
+        # Load xkcd comic if selected for this day
         xkcd_manager = XkcdManager()
         selected_num = xkcd_manager.get_selected_for_day(day_num, date_info['date_obj'])
         if selected_num:
@@ -311,14 +321,8 @@ def generate_day_newspaper(
             if str(selected_num) in cache:
                 xkcd_comic = cache[str(selected_num)]
 
-    # Generate second main story if personalized features are disabled (AI mode only)
-    features_disabled = (
-        not get_feature_flag('FEATURE_DUKE_SPORTS', default=True) and
-        not get_feature_flag('FEATURE_SF_LOCAL', default=True) and
-        not get_feature_flag('FEATURE_XKCD', default=True)
-    )
-
-    if not no_rewrite and features_disabled and content_gen and 'second_story' in day_data:
+    # Friends mode: generate second main story instead of personalized content
+    if not no_rewrite and is_friends_mode() and content_gen and 'second_story' in day_data:
         click.echo("  ✍️  Generating second main story...")
         second_story_data = day_data['second_story']
         second_main_story = content_gen.generate_second_main_story(

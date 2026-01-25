@@ -46,6 +46,28 @@ from ftn_to_json import create_json_from_ftn
 from utils import get_theme_name
 
 
+def get_news_mode() -> str:
+    """Get the current news mode from environment.
+
+    Returns:
+        'family' or 'friends' - defaults to 'friends' for web deployment
+    """
+    mode = os.getenv('NEWS_MODE', 'friends').lower()
+    if mode not in ('family', 'friends'):
+        mode = 'friends'
+    return mode
+
+
+def is_family_mode() -> bool:
+    """Check if running in family mode (personalized content enabled)."""
+    return get_news_mode() == 'family'
+
+
+def is_friends_mode() -> bool:
+    """Check if running in friends mode (generic content only)."""
+    return get_news_mode() == 'friends'
+
+
 # Configuration
 FTN_RSS_URL = "https://fixthenews.com/feed"
 NTFY_TOPIC = os.getenv("NTFY_TOPIC", "news-fixed")
@@ -232,17 +254,26 @@ def generate_combined_pdf(ftn_json: dict, output_path: Path) -> bool:
                 tomorrow_theme=get_theme_name(day_num + 1)
             )
 
-        # Generate second main story (since personalized features are disabled for web)
+        # Mode-specific content
+        # Family mode: personalized content (sports, local news, xkcd)
+        # Friends mode: generic content (second main story instead)
         second_main_story = None
-        second_story_data = day_data.get('second_story', {})
-        if second_story_data and second_story_data.get('content'):
-            second_main_story = content_gen.generate_second_main_story(
-                original_content=second_story_data['content'],
-                source_url=second_story_data['source_url'],
-                theme=get_theme_name(day_num),
-                original_title=second_story_data.get('title', '')
-            )
-            second_main_story['source_url'] = second_story_data['source_url']
+        feature_box = None
+        xkcd_comic = None
+
+        if is_friends_mode():
+            # Generate second main story for friends mode
+            second_story_data = day_data.get('second_story', {})
+            if second_story_data and second_story_data.get('content'):
+                second_main_story = content_gen.generate_second_main_story(
+                    original_content=second_story_data['content'],
+                    source_url=second_story_data['source_url'],
+                    theme=get_theme_name(day_num),
+                    original_title=second_story_data.get('title', '')
+                )
+                second_main_story['source_url'] = second_story_data['source_url']
+        # Note: family mode support in scheduled_generate.py would require
+        # importing XkcdManager, sports_schedule, readwise_fetcher - use main.py for family mode
 
         days_data.append({
             'day_number': day_num,
@@ -253,9 +284,9 @@ def generate_combined_pdf(ftn_json: dict, output_path: Path) -> bool:
             'front_page_stories': [],
             'mini_articles': mini_articles,
             'statistics': statistics,
-            'feature_box': None,
+            'feature_box': feature_box,
             'tomorrow_teaser': tomorrow_teaser,
-            'xkcd_comic': None,
+            'xkcd_comic': xkcd_comic,
             'second_main_story': second_main_story,
             'footer_message': "Good news exists, but it travels slowly."
         })

@@ -19,9 +19,8 @@ primary_region = 'sjc'
 [env]
   CACHE_DIR = "/app/cache"
   PYTHONUNBUFFERED = "1"
-  FEATURE_DUKE_SPORTS = "false"
-  FEATURE_SF_LOCAL = "false"
-  FEATURE_XKCD = "false"
+  # NEWS_MODE: 'family' (personalized: sports, local news, xkcd) or 'friends' (generic content)
+  NEWS_MODE = "friends"
 
 [http_service]
   internal_port = 8080
