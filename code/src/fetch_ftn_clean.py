@@ -188,15 +188,9 @@ def fetch_ftn_latest(output_dir: str = ".", headless: bool = True, force_login: 
             # Check authentication
             _check_authentication(page, first_run)
 
-            # Now activate reader mode to get clean content
-            print("📖 Activating reader mode...")
-            reader_url = f"about:reader?url={current_url}"
-            page.goto(reader_url, wait_until="networkidle", timeout=30000)
-            page.wait_for_timeout(2000)
-
-            # Get the reader mode HTML
+            # Get the raw page HTML (Reader Mode was truncating subscriber content)
             html_content = page.content()
-            print("   ✓ Reader mode HTML captured")
+            print("   ✓ Raw page HTML captured")
 
             # Extract issue number
             page_title = page.title()
