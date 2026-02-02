@@ -46,7 +46,7 @@ def preview_and_print(pdf_path: Path) -> None:
 
     # Ask if user wants to print
     if click.confirm("  🖨️  Print this newspaper?", default=False):
-        print_cmd = os.getenv("PRINT_COMMAND", "lpr")
+        print_cmd = os.getenv("PRINT_COMMAND", "lpr -o sides=two-sided-long-edge")
         # Parse command to handle options like "lpr -P printer"
         cmd_parts = shlex.split(print_cmd) + [str(pdf_path)]
 
