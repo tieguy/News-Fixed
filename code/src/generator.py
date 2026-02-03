@@ -217,7 +217,8 @@ class ContentGenerator:
     def generate_statistics(
         self,
         stories_summary: str,
-        theme: str
+        theme: str,
+        max_retries: int = 3
     ) -> List[Dict[str, str]]:
         """
         Generate "By The Numbers" statistics.
@@ -225,6 +226,7 @@ class ContentGenerator:
         Args:
             stories_summary: Summary of all today's stories
             theme: Today's theme
+            max_retries: Number of retry attempts on failure
 
         Returns:
             List of stat dicts with 'number' and 'description' keys
@@ -235,37 +237,55 @@ class ContentGenerator:
             theme=theme
         )
 
-        response = self._call_claude(prompt, max_tokens=500)
+        last_error = None
+        last_response = ""
 
-        # Parse JSON response - find first complete JSON array
-        try:
-            start = response.find('[')
-            if start == -1:
-                raise json.JSONDecodeError("No JSON array found", response, 0)
+        for attempt in range(max_retries):
+            response = self._call_claude(prompt, max_tokens=500)
 
-            # Find matching closing bracket by counting brackets
-            depth = 0
-            end = start
-            for i, char in enumerate(response[start:], start):
-                if char == '[':
-                    depth += 1
-                elif char == ']':
-                    depth -= 1
-                    if depth == 0:
-                        end = i + 1
-                        break
+            # Parse JSON response - find first complete JSON array
+            try:
+                start = response.find('[')
+                if start == -1:
+                    raise json.JSONDecodeError("No JSON array found", response, 0)
 
-            json_str = response[start:end]
-            stats = json.loads(json_str)
-            return stats
-        except json.JSONDecodeError as e:
-            print(f"Error parsing statistics JSON: {e}")
-            print(f"Response was: {response[:500]}")
-            # Return dummy stats as fallback
-            return [
-                {"number": "N/A", "description": "Data processing error"}
-                for _ in range(3)
-            ]
+                # Find matching closing bracket by counting brackets
+                depth = 0
+                end = start
+                for i, char in enumerate(response[start:], start):
+                    if char == '[':
+                        depth += 1
+                    elif char == ']':
+                        depth -= 1
+                        if depth == 0:
+                            end = i + 1
+                            break
+
+                json_str = response[start:end]
+                stats = json.loads(json_str)
+
+                # Validate we got actual statistics, not refusals
+                if stats and all(s.get('number') and s.get('number') != 'N/A' for s in stats):
+                    return stats
+
+                # Got stats but they look like refusals, retry
+                raise json.JSONDecodeError("Statistics look invalid", json_str, 0)
+
+            except json.JSONDecodeError as e:
+                last_error = e
+                last_response = response
+                if attempt < max_retries - 1:
+                    print(f"Statistics attempt {attempt + 1} failed, retrying...")
+                continue
+
+        # All retries exhausted
+        print(f"Error parsing statistics JSON after {max_retries} attempts: {last_error}")
+        print(f"Last response was: {last_response[:500]}")
+        # Return dummy stats as fallback
+        return [
+            {"number": "N/A", "description": "Data processing error"}
+            for _ in range(3)
+        ]
 
     def generate_teaser(
         self,

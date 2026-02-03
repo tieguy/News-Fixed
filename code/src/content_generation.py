@@ -100,9 +100,11 @@ def generate_day_content(
         mini_article['source_url'] = article_data['source_url']
         mini_articles.append(mini_article)
 
-    # Generate statistics
-    stories_summary = f"Main: {main_story['title']}\n"
-    stories_summary += "\n".join([a['title'] for a in mini_articles])
+    # Generate statistics - include content, not just titles
+    # Claude needs actual article text to extract statistics reliably
+    stories_summary = f"Main Story: {main_story['title']}\n{main_story['content'][:500]}\n\n"
+    for article in mini_articles:
+        stories_summary += f"Article: {article['title']}\n{article['content'][:300]}\n\n"
     statistics = content_gen.generate_statistics(
         stories_summary=stories_summary,
         theme=get_theme_name(day_num)
