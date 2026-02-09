@@ -6,7 +6,7 @@
 """xkcd comic management for News, Fixed newspaper."""
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Optional
 import httpx
@@ -20,6 +20,41 @@ load_dotenv()
 
 class XkcdManager:
     """Manages xkcd comic fetching, analysis, and selection."""
+
+    @staticmethod
+    def get_target_week_monday(base_date: datetime = None) -> datetime:
+        """
+        Get the Monday of the target newspaper week.
+
+        Uses the same logic as main.py's calculate_week_dates:
+        - If it's Friday, Saturday, or Sunday, target next week
+        - Otherwise, target the current week
+
+        Args:
+            base_date: Base date (defaults to now)
+
+        Returns:
+            datetime for the Monday of the target week
+        """
+        if base_date is None:
+            base_date = datetime.now()
+
+        # Monday=0, Sunday=6
+        current_weekday = base_date.weekday()
+
+        # If it's Friday (4), Saturday (5), or Sunday (6), use next week
+        if current_weekday >= 4:
+            # Calculate next Monday
+            days_until_monday = (7 - current_weekday) % 7
+            if days_until_monday == 0:
+                days_until_monday = 7
+            monday = base_date + timedelta(days=days_until_monday)
+        else:
+            # Find this week's Monday
+            days_since_monday = current_weekday
+            monday = base_date - timedelta(days=days_since_monday)
+
+        return monday
 
     REJECTION_REASONS = [
         "too_complex",
@@ -164,6 +199,53 @@ class XkcdManager:
 
         return comics
 
+    def fetch_random_comics(self, count: int = 10) -> list[Dict]:
+        """
+        Fetch random comics from xkcd's history.
+
+        This helps build up a pool of candidates beyond just recent comics.
+        Picks random numbers between 1 and the latest comic number.
+
+        Args:
+            count: Number of random comics to fetch
+
+        Returns:
+            List of comic metadata dicts
+        """
+        import random
+
+        # First get the latest to find current number
+        latest = self.fetch_comic()
+        latest_num = latest["num"]
+
+        # Load cache and rejected to avoid re-fetching
+        cache = self.load_cache()
+        rejected = self.load_rejected()
+
+        comics = []
+        attempts = 0
+        max_attempts = count * 3  # Don't try forever
+
+        while len(comics) < count and attempts < max_attempts:
+            attempts += 1
+            # Pick a random comic number (skip #404 which doesn't exist!)
+            num = random.randint(1, latest_num)
+            if num == 404:
+                continue
+
+            # Skip if already cached or rejected
+            if str(num) in cache or str(num) in rejected:
+                continue
+
+            try:
+                comic = self.fetch_comic(num)
+                comics.append(comic)
+            except Exception:
+                # Some comics might fail to fetch, just skip them
+                continue
+
+        return comics
+
     def analyze_comic(self, comic: Dict, force: bool = False) -> Dict:
         """
         Analyze a comic using Claude vision API.
@@ -271,7 +353,7 @@ class XkcdManager:
 
         return analysis
 
-    def get_candidates(self, max_count: int = 3) -> list[Dict]:
+    def get_candidates(self, max_count: int = 20) -> list[Dict]:
         """
         Get candidate comics for selection.
 
@@ -295,14 +377,19 @@ class XkcdManager:
         selected = self.load_selected()
 
         # Get recently used comic numbers (last 8 weeks)
-        recent_weeks = set()
-        for week_key, selection in selected.items():
-            # Parse week key like "2025-W48"
-            # For simplicity, just track last 8 entries
-            recent_weeks.add(str(selection.get("num", "")))
-        # Only keep last 8 selections
-        if len(recent_weeks) > 8:
-            recent_weeks = set(list(recent_weeks)[-8:])
+        # Sort by week key to get most recent, then collect comic nums
+        recent_comic_nums = set()
+        sorted_weeks = sorted(selected.keys(), reverse=True)[:8]
+        for week_key in sorted_weeks:
+            week_data = selected[week_key]
+            if "num" in week_data:
+                # Old format: single comic per week
+                recent_comic_nums.add(str(week_data["num"]))
+            else:
+                # New format: multiple comics keyed by day ("1", "2", etc.)
+                for day_key, day_data in week_data.items():
+                    if isinstance(day_data, dict) and "num" in day_data:
+                        recent_comic_nums.add(str(day_data["num"]))
 
         candidates = []
 
@@ -312,7 +399,7 @@ class XkcdManager:
                 continue
 
             # Filter 2: Not recently used
-            if comic_num in recent_weeks:
+            if comic_num in recent_comic_nums:
                 continue
 
             # Must have analysis
@@ -371,6 +458,119 @@ class XkcdManager:
         }
         self.save_selected(selected)
 
+    def auto_select_for_week(
+        self,
+        week_date: Optional[datetime] = None
+    ) -> Dict[int, int]:
+        """
+        Automatically select 4 comics, one for each day of the week.
+
+        Picks from available candidates, trying to get variety.
+
+        Args:
+            week_date: Date within the target week. Defaults to today.
+
+        Returns:
+            Dict mapping day number (1-4) to comic number
+        """
+        candidates = self.get_candidates(max_count=20)
+
+        # We need at least 4 candidates
+        if len(candidates) < 4:
+            raise ValueError(
+                f"Not enough comic candidates! Have {len(candidates)}, need 4. "
+                "Try fetching more comics first."
+            )
+
+        # Pick the first 4 candidates (they're already sorted by recency)
+        selections = {}
+        for day in range(1, 5):
+            comic = candidates[day - 1]
+            selections[day] = comic["num"]
+
+        return selections
+
+    def save_week_selections(
+        self,
+        selections: Dict[int, int],
+        week_date: Optional[datetime] = None
+    ) -> None:
+        """
+        Save comic selections for all 4 days of a week.
+
+        Uses the same week-targeting logic as newspaper generation:
+        - On Fri/Sat/Sun, saves for next week
+        - On Mon-Thu, saves for current week
+
+        Args:
+            selections: Dict mapping day (1-4) to comic number
+            week_date: Date within the target week. Defaults to smart week selection.
+        """
+        # Use the same week-targeting logic as newspaper generation
+        target_monday = self.get_target_week_monday(week_date)
+        iso_cal = target_monday.isocalendar()
+        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
+
+        selected = self.load_selected()
+
+        # Store all 4 days under the week key
+        selected[week_key] = {
+            str(day): {
+                "num": comic_num,
+                "selected_at": datetime.now().isoformat()
+            }
+            for day, comic_num in selections.items()
+        }
+
+        self.save_selected(selected)
+
+    def get_week_selections(
+        self,
+        week_date: Optional[datetime] = None
+    ) -> Dict[int, Optional[int]]:
+        """
+        Get all comic selections for a week.
+
+        Args:
+            week_date: Specific date to look up. If None, uses smart week targeting
+                       (next week on weekends, current week on weekdays).
+
+        Returns:
+            Dict mapping day (1-4) to comic number (or None if not selected)
+        """
+        if week_date is None:
+            # No date specified - use smart targeting (same as newspaper generation)
+            target_monday = self.get_target_week_monday()
+            iso_cal = target_monday.isocalendar()
+        else:
+            # Specific date given - look up that exact week
+            # Handle both date and datetime objects
+            if hasattr(week_date, 'date'):
+                iso_cal = week_date.date().isocalendar()
+            else:
+                iso_cal = week_date.isocalendar()
+        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
+
+        selected = self.load_selected()
+        week_data = selected.get(week_key, {})
+
+        # Handle both old format (single comic) and new format (4 comics)
+        if "num" in week_data:
+            # Old format: single comic with day field
+            old_day = week_data.get("day", 1)
+            return {
+                1: week_data["num"] if old_day == 1 else None,
+                2: week_data["num"] if old_day == 2 else None,
+                3: week_data["num"] if old_day == 3 else None,
+                4: week_data["num"] if old_day == 4 else None,
+            }
+
+        # New format: dict with day keys
+        return {
+            day: week_data.get(str(day), {}).get("num")
+            for day in range(1, 5)
+        }
+
     def get_selected_for_week(self, week_date: Optional[datetime] = None) -> Optional[int]:
         """
         Get the comic selected for a given week.
@@ -408,22 +608,9 @@ class XkcdManager:
         Returns:
             Comic number if selected for this day, None otherwise.
         """
-        if week_date is None:
-            week_date = datetime.now()
-
-        iso_cal = week_date.date().isocalendar()
-        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
-
-        selected = self.load_selected()
-
-        if week_key in selected:
-            selection = selected[week_key]
-            # Check if this selection is for the requested day
-            # Default to day 1 for backwards compatibility with old selections
-            selected_day = selection.get("day", 1)
-            if selected_day == day:
-                return selection["num"]
-        return None
+        # Use get_week_selections which handles both old and new formats
+        selections = self.get_week_selections(week_date)
+        return selections.get(day)
 
     def download_comic_image(self, comic_num: int, dest_path: Path) -> Path:
         """

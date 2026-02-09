@@ -269,10 +269,21 @@ def generate_day_newspaper(
             feature_box = sports_feature
 
         # Fetch local SF story (add to front page stories)
+        # If no local story available, fall back to second main story
         if content_gen:
             local_story = fetch_local_story(content_gen, date_info['date_obj'].strftime('%Y-%m-%d'))
             if local_story:
                 front_page_stories = [local_story] + list(front_page_stories or [])
+            elif not no_rewrite and 'second_story' in day_data:
+                click.echo("  ✍️  No local story — generating second main story instead...")
+                second_story_data = day_data['second_story']
+                second_main_story = content_gen.generate_second_main_story(
+                    original_content=second_story_data['content'],
+                    source_url=second_story_data['source_url'],
+                    theme=get_theme_name(day_num),
+                    original_title=second_story_data.get('title', '')
+                )
+                second_main_story['source_url'] = second_story_data['source_url']
 
         # Load xkcd comic if selected for this day
         xkcd_manager = XkcdManager()

@@ -240,25 +240,33 @@ def test_get_candidates_filters_not_age_appropriate():
         assert 101 not in candidate_nums
 
 
-def test_get_candidates_returns_top_3():
-    """Candidates returns at most 3 comics."""
+def test_get_candidates_respects_max_count():
+    """Candidates returns at most max_count comics."""
     from xkcd import XkcdManager
 
     with tempfile.TemporaryDirectory() as tmpdir:
         manager = XkcdManager(data_dir=Path(tmpdir))
 
-        # Create 5 valid comics
+        # Create 25 valid comics (more than default max of 20)
         cache = {}
-        for i in range(100, 105):
+        for i in range(100, 125):
             cache[str(i)] = {
                 "num": i, "title": f"Test {i}", "alt": "Alt", "img": "http://x.png", "date": f"2025-01-{i-99:02d}",
                 "analysis": {"panel_count": 1, "age_appropriate": True, "requires_specialized_knowledge": False}
             }
         manager.save_cache(cache)
 
+        # Default max is 20
         candidates = manager.get_candidates()
+        assert len(candidates) == 20
 
-        assert len(candidates) <= 3
+        # Can request fewer
+        candidates = manager.get_candidates(max_count=5)
+        assert len(candidates) == 5
+
+        # Can request more (up to what's available)
+        candidates = manager.get_candidates(max_count=30)
+        assert len(candidates) == 25  # Only 25 available
 
 
 def test_select_comic_for_week():
@@ -335,6 +343,78 @@ def test_get_selected_for_day():
 
         # Should not return for day 3
         assert manager.get_selected_for_day(3) is None
+
+
+def test_get_candidates_excludes_recently_selected_new_format():
+    """Candidates exclude comics selected in new multi-day format."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        # Create valid candidate comics
+        cache = {}
+        for i in range(100, 108):
+            cache[str(i)] = {
+                "num": i, "title": f"Test {i}", "alt": "Alt", "img": "http://x.png",
+                "date": "2025-01-01",
+                "analysis": {"panel_count": 1, "age_appropriate": True,
+                             "requires_specialized_knowledge": False}
+            }
+        manager.save_cache(cache)
+
+        # Save selections in new multi-day format (as save_week_selections does)
+        selected = {
+            "2026-W05": {
+                "1": {"num": 100, "selected_at": "2026-02-01T00:00:00"},
+                "2": {"num": 101, "selected_at": "2026-02-01T00:00:00"},
+                "3": {"num": 102, "selected_at": "2026-02-01T00:00:00"},
+                "4": {"num": 103, "selected_at": "2026-02-01T00:00:00"},
+            }
+        }
+        manager.save_selected(selected)
+
+        candidates = manager.get_candidates()
+        candidate_nums = [c["num"] for c in candidates]
+
+        # Comics 100-103 should be excluded (recently selected)
+        assert 100 not in candidate_nums
+        assert 101 not in candidate_nums
+        assert 102 not in candidate_nums
+        assert 103 not in candidate_nums
+        # Comics 104-107 should still be available
+        assert 104 in candidate_nums
+        assert 105 in candidate_nums
+
+
+def test_get_candidates_excludes_recently_selected_old_format():
+    """Candidates exclude comics selected in old single-comic format."""
+    from xkcd import XkcdManager
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        manager = XkcdManager(data_dir=Path(tmpdir))
+
+        cache = {}
+        for i in range(100, 106):
+            cache[str(i)] = {
+                "num": i, "title": f"Test {i}", "alt": "Alt", "img": "http://x.png",
+                "date": "2025-01-01",
+                "analysis": {"panel_count": 1, "age_appropriate": True,
+                             "requires_specialized_knowledge": False}
+            }
+        manager.save_cache(cache)
+
+        # Old format: single comic with top-level "num"
+        selected = {
+            "2025-W48": {"num": 100, "day": 2, "selected_at": "2025-11-29T00:00:00"},
+        }
+        manager.save_selected(selected)
+
+        candidates = manager.get_candidates()
+        candidate_nums = [c["num"] for c in candidates]
+
+        assert 100 not in candidate_nums
+        assert 101 in candidate_nums
 
 
 def test_download_comic_image():

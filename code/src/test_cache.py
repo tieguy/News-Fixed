@@ -7,6 +7,7 @@
 import tempfile
 from pathlib import Path
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 
@@ -28,6 +29,46 @@ class TestGetCurrentWeek:
         week = get_current_week()
         week_num = week.split('-W')[1]
         assert len(week_num) == 2
+
+    def test_saturday_targets_next_week(self):
+        """Saturday generation should target the following Monday's week."""
+        # Saturday Feb 7, 2026 → should target Monday Feb 9 (W07)
+        with patch('cache.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 2, 7)
+            mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+            assert get_current_week() == "2026-W07"
+
+    def test_monday_targets_this_week(self):
+        """Monday should target the current week."""
+        # Monday Feb 9, 2026 → W07
+        with patch('cache.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 2, 9)
+            mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+            assert get_current_week() == "2026-W07"
+
+    def test_thursday_targets_this_week(self):
+        """Thursday should still target the current week."""
+        # Thursday Feb 12, 2026 → W07
+        with patch('cache.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 2, 12)
+            mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+            assert get_current_week() == "2026-W07"
+
+    def test_friday_targets_next_week(self):
+        """Friday should target the following Monday's week."""
+        # Friday Feb 13, 2026 → should target Monday Feb 16 (W08)
+        with patch('cache.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 2, 13)
+            mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+            assert get_current_week() == "2026-W08"
+
+    def test_sunday_targets_next_week(self):
+        """Sunday should target the following Monday's week."""
+        # Sunday Feb 8, 2026 → should target Monday Feb 9 (W07)
+        with patch('cache.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 2, 8)
+            mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+            assert get_current_week() == "2026-W07"
 
 
 class TestGetWeekForDate:

@@ -15,7 +15,7 @@ Usage:
   ./news-fixed test                     Generate test newspaper
 
 Flags:
-  --skip-curation                       Skip the interactive TUI in generate/run commands
+  --redo-curation                       Re-run the interactive TUI in generate/run commands
 """
 
 import sys
@@ -195,8 +195,8 @@ def curate(json_file, output, dry_run):
 @click.option('--combined', is_flag=True, help='Generate combined 8-page PDF with all 4 days')
 @click.option('--output', '-o', type=click.Path(), help='Output directory (default: ./output)')
 @click.option('--no-rewrite', is_flag=True, help='Skip AI rewriting')
-@click.option('--skip-curation', is_flag=True, help='Skip interactive story curation')
-def generate(json_file, day, generate_all, combined, output, no_rewrite, skip_curation):
+@click.option('--redo-curation', is_flag=True, help='Re-run interactive story curation')
+def generate(json_file, day, generate_all, combined, output, no_rewrite, redo_curation):
     """Generate PDF newspapers from JSON file."""
     ensure_dirs()
 
@@ -205,8 +205,8 @@ def generate(json_file, day, generate_all, combined, output, no_rewrite, skip_cu
 
     json_path = Path(json_file).resolve()
 
-    # Step 1: Run curation TUI unless skipped
-    if not skip_curation:
+    # Only run curation if explicitly requested with --redo-curation
+    if redo_curation:
         click.echo("📝 Step 1/2: Curating stories...\n")
 
         # Auto-generate curated filename
@@ -227,8 +227,6 @@ def generate(json_file, day, generate_all, combined, output, no_rewrite, skip_cu
         except KeyboardInterrupt:
             click.echo("\n\n❌ Curation cancelled by user")
             sys.exit(1)
-    else:
-        click.echo("⏭️  Skipping curation (--skip-curation flag)\n")
 
     # Step 2: Build command for code/src/main.py using uv run
     cmd = ['uv', 'run', 'python', str(CODE_DIR / "src" / "main.py")]
@@ -262,13 +260,13 @@ def generate(json_file, day, generate_all, combined, output, no_rewrite, skip_cu
 @click.argument('url')
 @click.option('--force-login', is_flag=True, help='Force interactive login')
 @click.option('--no-rewrite', is_flag=True, help='Skip AI rewriting')
-@click.option('--skip-curation', is_flag=True, help='Skip interactive story curation')
-def run(url, force_login, no_rewrite, skip_curation):
+@click.option('--redo-curation', is_flag=True, help='Re-run interactive story curation')
+def run(url, force_login, no_rewrite, redo_curation):
     """Complete pipeline: fetch, parse, curate, and generate from a URL."""
     ensure_dirs()
 
-    num_steps = 4 if not skip_curation else 3
-    click.echo(f"🚀 Running complete pipeline: fetch → parse → {'curate → ' if not skip_curation else ''}generate\n")
+    num_steps = 4 if redo_curation else 3
+    click.echo(f"🚀 Running complete pipeline: fetch → parse → {'curate → ' if redo_curation else ''}generate\n")
 
     # Step 1: Fetch
     sys.path.insert(0, str(CODE_DIR))
@@ -302,8 +300,8 @@ def run(url, force_login, no_rewrite, skip_curation):
         click.echo(f"❌ Error parsing: {e}")
         sys.exit(1)
 
-    # Step 3: Curate (unless skipped)
-    if not skip_curation:
+    # Step 3: Curate (only if --redo-curation flag is set)
+    if redo_curation:
         click.echo(f"📝 Step 3/{num_steps}: Curating stories")
 
         curated_path = Path(json_path).parent / f"{Path(json_path).stem}-curated.json"
@@ -322,8 +320,6 @@ def run(url, force_login, no_rewrite, skip_curation):
         except KeyboardInterrupt:
             click.echo("\n\n❌ Curation cancelled by user")
             sys.exit(1)
-    else:
-        click.echo(f"⏭️  Skipping curation (--skip-curation flag)\n")
 
     # Step 4 (or 3): Generate
     click.echo(f"📰 Step {num_steps}/{num_steps}: Generating PDFs")

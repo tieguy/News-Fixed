@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Changed
+- Add 'combine stories' feature to curation TUI (#10)
+- Fix scheduled PDF generation (cron doesn't run when machine is auto-stopped) (#19)
+- Work with Asa to add a cartoon every day (#1)
 - Vet and consistently implement a two-mode approach (family vs friends) (#16)
 - Extract or generate news highlight feature boxes (#5)
 - Add PDF preview capability for review before printing (#12)

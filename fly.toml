@@ -13,7 +13,7 @@ primary_region = 'sjc'
 
 [processes]
   # Single process runs both web server and cron scheduler via start.sh
-  # Scheduled PDF generation runs every Monday at 6 AM UTC (see crontab)
+  # Machine stays running 24/7 so supercronic can fire on schedule (see crontab)
   app = "/app/start.sh"
 
 [env]
@@ -27,7 +27,7 @@ primary_region = 'sjc'
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
 [[http_service.checks]]

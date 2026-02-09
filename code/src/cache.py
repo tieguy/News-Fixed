@@ -8,19 +8,32 @@ import os
 import json
 import shutil
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 
 def get_current_week() -> str:
     """
-    Get current ISO week in YYYY-WWW format.
+    Get the current newspaper week in YYYY-WWW format.
+
+    The newspaper week is the Mon-Thu period we're either preparing for or
+    currently in. On Fri-Sun this returns next week (generation/printing time),
+    on Mon-Thu it returns this week (reading time). This keeps the cache key
+    consistent between the Saturday generator and Mon-Thu web downloads.
 
     Returns:
         String like '2026-W03' for week 3 of 2026
     """
     now = datetime.now()
-    return f"{now.year}-W{now.isocalendar()[1]:02d}"
+    weekday = now.weekday()  # Monday=0, Sunday=6
+
+    if weekday >= 4:  # Friday-Sunday → target next Monday's week
+        days_until_monday = 7 - weekday
+        target = now + timedelta(days=days_until_monday)
+    else:  # Monday-Thursday → this week's Monday
+        target = now - timedelta(days=weekday)
+
+    return f"{target.year}-W{target.isocalendar()[1]:02d}"
 
 
 def get_week_for_date(date: datetime) -> str:

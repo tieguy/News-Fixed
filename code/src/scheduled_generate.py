@@ -63,8 +63,16 @@ def fetch_latest_ftn_via_rss() -> dict | None:
     logger.info(f"Fetching FTN content from RSS: {FTN_RSS_URL}")
 
     try:
-        response = httpx.get(FTN_RSS_URL, timeout=30.0, follow_redirects=True)
+        response = httpx.get(FTN_RSS_URL, timeout=10.0, follow_redirects=True)
         response.raise_for_status()
+    except httpx.TimeoutException:
+        logger.warning("RSS fetch timed out, retrying...")
+        try:
+            response = httpx.get(FTN_RSS_URL, timeout=10.0, follow_redirects=True)
+            response.raise_for_status()
+        except httpx.HTTPError as e:
+            logger.error(f"Failed to fetch RSS feed on retry: {e}")
+            return None
     except httpx.HTTPError as e:
         logger.error(f"Failed to fetch RSS feed: {e}")
         return None
