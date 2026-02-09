@@ -289,21 +289,23 @@ def test_select_comic_for_week():
 
 
 def test_get_selected_for_current_week():
-    """Can check if a comic is selected for current week."""
+    """Can check if comics are selected for current week via get_week_selections."""
     from xkcd import XkcdManager
 
     with tempfile.TemporaryDirectory() as tmpdir:
         manager = XkcdManager(data_dir=Path(tmpdir))
 
         # Initially nothing selected
-        assert manager.get_selected_for_week() is None
+        selections = manager.get_week_selections()
+        assert all(v is None for v in selections.values())
 
-        # Select a comic
-        manager.select_comic(3170)
+        # Save selections using the same week-targeting as get_week_selections
+        manager.save_week_selections({1: 3170, 2: 3171, 3: 3172, 4: 3173})
 
-        # Now should return it
-        selected = manager.get_selected_for_week()
-        assert selected == 3170
+        # Now should return them
+        selections = manager.get_week_selections()
+        assert selections[1] == 3170
+        assert selections[2] == 3171
 
 
 def test_select_comic_with_day():
@@ -332,8 +334,8 @@ def test_get_selected_for_day():
     with tempfile.TemporaryDirectory() as tmpdir:
         manager = XkcdManager(data_dir=Path(tmpdir))
 
-        # Select comic for day 2
-        manager.select_comic(3170, day=2)
+        # Save comic for day 2 using consistent week-targeting
+        manager.save_week_selections({2: 3170})
 
         # Should not return for day 1
         assert manager.get_selected_for_day(1) is None

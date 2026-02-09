@@ -4,12 +4,16 @@
 
 """Claude API integration for content generation."""
 
+import logging
 import os
 import json
+import re
 from pathlib import Path
 from typing import Dict, List
 from anthropic import Anthropic
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -193,7 +197,6 @@ class ContentGenerator:
             Dict with 'title' and 'content' keys
         """
         # Strip HTML if present
-        import re
         clean_content = re.sub(r'<[^>]+>', ' ', original_content)
         clean_content = re.sub(r'\s+', ' ', clean_content).strip()
 
@@ -275,12 +278,12 @@ class ContentGenerator:
                 last_error = e
                 last_response = response
                 if attempt < max_retries - 1:
-                    print(f"Statistics attempt {attempt + 1} failed, retrying...")
+                    logger.warning("Statistics attempt %d failed, retrying...", attempt + 1)
                 continue
 
         # All retries exhausted
-        print(f"Error parsing statistics JSON after {max_retries} attempts: {last_error}")
-        print(f"Last response was: {last_response[:500]}")
+        logger.error("Error parsing statistics JSON after %d attempts: %s", max_retries, last_error)
+        logger.error("Last response was: %s", last_response[:500])
         # Return dummy stats as fallback
         return [
             {"number": "N/A", "description": "Data processing error"}

@@ -18,43 +18,11 @@ import os
 load_dotenv()
 
 
+from utils import get_target_week_monday
+
+
 class XkcdManager:
     """Manages xkcd comic fetching, analysis, and selection."""
-
-    @staticmethod
-    def get_target_week_monday(base_date: datetime = None) -> datetime:
-        """
-        Get the Monday of the target newspaper week.
-
-        Uses the same logic as main.py's calculate_week_dates:
-        - If it's Friday, Saturday, or Sunday, target next week
-        - Otherwise, target the current week
-
-        Args:
-            base_date: Base date (defaults to now)
-
-        Returns:
-            datetime for the Monday of the target week
-        """
-        if base_date is None:
-            base_date = datetime.now()
-
-        # Monday=0, Sunday=6
-        current_weekday = base_date.weekday()
-
-        # If it's Friday (4), Saturday (5), or Sunday (6), use next week
-        if current_weekday >= 4:
-            # Calculate next Monday
-            days_until_monday = (7 - current_weekday) % 7
-            if days_until_monday == 0:
-                days_until_monday = 7
-            monday = base_date + timedelta(days=days_until_monday)
-        else:
-            # Find this week's Monday
-            days_since_monday = current_weekday
-            monday = base_date - timedelta(days=days_since_monday)
-
-        return monday
 
     REJECTION_REASONS = [
         "too_complex",
@@ -319,17 +287,8 @@ class XkcdManager:
 
         # Parse JSON response
         try:
-            # Handle potential markdown wrapping
-            if "```json" in response_text:
-                start = response_text.find("```json") + 7
-                end = response_text.find("```", start)
-                response_text = response_text[start:end].strip()
-            elif "```" in response_text:
-                start = response_text.find("```") + 3
-                end = response_text.find("```", start)
-                response_text = response_text[start:end].strip()
-
-            analysis = json.loads(response_text)
+            from ftn_to_json import parse_llm_json
+            analysis = parse_llm_json(response_text)
         except json.JSONDecodeError as e:
             # Return a failed analysis that marks comic as needing manual review
             analysis = {
@@ -507,7 +466,7 @@ class XkcdManager:
             week_date: Date within the target week. Defaults to smart week selection.
         """
         # Use the same week-targeting logic as newspaper generation
-        target_monday = self.get_target_week_monday(week_date)
+        target_monday = get_target_week_monday(week_date)
         iso_cal = target_monday.isocalendar()
         week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
 
@@ -540,7 +499,7 @@ class XkcdManager:
         """
         if week_date is None:
             # No date specified - use smart targeting (same as newspaper generation)
-            target_monday = self.get_target_week_monday()
+            target_monday = get_target_week_monday()
             iso_cal = target_monday.isocalendar()
         else:
             # Specific date given - look up that exact week
@@ -570,28 +529,6 @@ class XkcdManager:
             day: week_data.get(str(day), {}).get("num")
             for day in range(1, 5)
         }
-
-    def get_selected_for_week(self, week_date: Optional[datetime] = None) -> Optional[int]:
-        """
-        Get the comic selected for a given week.
-
-        Args:
-            week_date: Date within the target week. Defaults to today.
-
-        Returns:
-            Comic number if one is selected, None otherwise.
-        """
-        if week_date is None:
-            week_date = datetime.now()
-
-        iso_cal = week_date.date().isocalendar()
-        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
-
-        selected = self.load_selected()
-
-        if week_key in selected:
-            return selected[week_key]["num"]
-        return None
 
     def get_selected_for_day(
         self,

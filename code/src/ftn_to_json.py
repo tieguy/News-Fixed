@@ -5,6 +5,7 @@
 
 """Convert fetched FTN HTML into a 4-day JSON file for News, Fixed."""
 
+import logging
 import sys
 import json
 import os
@@ -13,6 +14,8 @@ from pathlib import Path
 from typing import Any
 from anthropic import Anthropic
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -261,7 +264,7 @@ Return ONLY valid JSON (no markdown fences):
     try:
         return parse_llm_json_with_retry(response.content[0].text, client)
     except Exception as e:
-        print(f"Warning: JSON parsing failed ({e}), using fallback grouping")
+        logger.warning("JSON parsing failed (%s), using fallback grouping", e)
         return _fallback_grouping(stories, blocklisted_ids, themes)
 
 
@@ -910,12 +913,6 @@ def _convert_splits_to_stories(splits: list, original_story) -> list:
             all_urls=[primary_url] if primary_url else []
         ))
     return result
-
-
-def get_theme_name(day_number: int) -> str:
-    """Get theme name for a day number."""
-    theme = DEFAULT_THEMES.get(day_number)
-    return theme["name"] if theme else "General"
 
 
 def main():

@@ -10,14 +10,16 @@ News, Fixed - Main orchestrator for generating daily newspapers.
 import sys
 import os
 import json
+import re
 import subprocess
 import shlex
+import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
 import click
 from generator import ContentGenerator
 from pdf_generator import NewspaperGenerator
-from utils import get_theme_name
+from utils import get_theme_name, get_target_week_monday
 from sports_schedule import DukeBasketballSchedule
 from xkcd import XkcdManager
 from readwise_fetcher import ReadwiseFetcher
@@ -82,20 +84,7 @@ def calculate_week_dates(base_date=None):
     elif isinstance(base_date, str):
         base_date = datetime.fromisoformat(base_date)
 
-    # Monday=0, Sunday=6
-    current_weekday = base_date.weekday()
-
-    # If it's Friday (4), Saturday (5), or Sunday (6), use next week
-    if current_weekday >= 4:
-        # Calculate next Monday
-        days_until_monday = (7 - current_weekday) % 7
-        if days_until_monday == 0:  # If somehow we're on Monday and current_weekday >= 4
-            days_until_monday = 7
-        monday = base_date + timedelta(days=days_until_monday)
-    else:
-        # Find this week's Monday (Mon-Thu)
-        days_since_monday = current_weekday
-        monday = base_date - timedelta(days=days_since_monday)
+    monday = get_target_week_monday(base_date)
 
     # Build dict for Mon-Thu (days 1-4)
     week_dates = {}
@@ -139,8 +128,13 @@ def initialize_generators(no_rewrite: bool) -> tuple:
     return pdf_gen, content_gen
 
 
-def generate_content_with_ai(content_gen, day_data: dict, day_num: int) -> tuple:
-    """Generate content using AI. Wrapper around shared generate_day_content."""
+def generate_content_with_ai(content_gen, day_data: dict, day_num: int) -> dict:
+    """Generate content using AI. Wrapper around shared generate_day_content.
+
+    Returns:
+        Dict with keys: main_story, front_page_stories, mini_articles,
+        statistics, tomorrow_teaser, second_main_story (None for AI path)
+    """
     def cli_progress(msg):
         click.echo(f"  ✍️  {msg}")
 
@@ -152,28 +146,32 @@ def generate_content_with_ai(content_gen, day_data: dict, day_num: int) -> tuple
         on_progress=cli_progress
     )
 
-    front_page_stories = day_data.get('front_page_stories', [])
+    return {
+        'main_story': result['main_story'],
+        'front_page_stories': day_data.get('front_page_stories', []),
+        'mini_articles': result['mini_articles'],
+        'statistics': result['statistics'],
+        'tomorrow_teaser': result['tomorrow_teaser'],
+        'second_main_story': None,
+    }
 
-    return (
-        result['main_story'],
-        front_page_stories,
-        result['mini_articles'],
-        result['statistics'],
-        result['tomorrow_teaser']
-    )
 
+def use_content_from_json(day_data: dict) -> dict:
+    """Use content from JSON file without AI rewriting.
 
-def use_content_from_json(day_data: dict) -> tuple:
-    """Use content from JSON file without AI rewriting."""
+    Returns:
+        Dict with keys: main_story, front_page_stories, mini_articles,
+        statistics, tomorrow_teaser, second_main_story
+    """
     click.echo("  📝 Using content from JSON...")
-    main_story = day_data['main_story']
-    front_page_stories = day_data.get('front_page_stories', [])
-    mini_articles = day_data['mini_articles']
-    statistics = day_data.get('statistics', [])
-    tomorrow_teaser = day_data.get('tomorrow_teaser', '')
-    second_main_story = day_data.get('second_main_story')
-
-    return main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser, second_main_story
+    return {
+        'main_story': day_data['main_story'],
+        'front_page_stories': day_data.get('front_page_stories', []),
+        'mini_articles': day_data['mini_articles'],
+        'statistics': day_data.get('statistics', []),
+        'tomorrow_teaser': day_data.get('tomorrow_teaser', ''),
+        'second_main_story': day_data.get('second_main_story'),
+    }
 
 
 def fetch_local_story(content_gen, date_str: str) -> dict | None:
@@ -249,14 +247,18 @@ def generate_day_newspaper(
 
     # Generate or load content
     if no_rewrite:
-        main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser, second_main_story = \
-            use_content_from_json(day_data)
+        content = use_content_from_json(day_data)
         feature_box = day_data.get('feature_box')
     else:
-        main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser = \
-            generate_content_with_ai(content_gen, day_data, day_num)
+        content = generate_content_with_ai(content_gen, day_data, day_num)
         feature_box = None
-        second_main_story = None
+
+    main_story = content['main_story']
+    front_page_stories = content['front_page_stories']
+    mini_articles = content['mini_articles']
+    statistics = content['statistics']
+    tomorrow_teaser = content['tomorrow_teaser']
+    second_main_story = content['second_main_story']
 
     # Family mode: personalized content (sports, local news, xkcd)
     # Friends mode: generic content only (second main story instead)
@@ -376,7 +378,6 @@ def main(input_file, day, generate_all, combined, output, date_str, test, no_rew
     days_to_generate = range(1, 5) if generate_all else [day]
 
     # Extract FTN issue number from input filename (e.g., "ftn-316.json" -> "316")
-    import re
     ftn_number = None
     if input_file:
         match = re.search(r'ftn-?(\d+)', Path(input_file).name, re.IGNORECASE)
@@ -399,16 +400,19 @@ def main(input_file, day, generate_all, combined, output, date_str, test, no_rew
             click.echo(f"\n📅 Processing {date_info['day_name']}...")
 
             # Generate or load content for this day
-            # Note: use_content_from_json returns 6 values after Phase 2 Task 7
             if no_rewrite:
-                main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser, second_main_story = \
-                    use_content_from_json(day_data)
+                content = use_content_from_json(day_data)
                 feature_box = day_data.get('feature_box')
             else:
-                main_story, front_page_stories, mini_articles, statistics, tomorrow_teaser = \
-                    generate_content_with_ai(content_gen, day_data, day_num)
+                content = generate_content_with_ai(content_gen, day_data, day_num)
                 feature_box = None
-                second_main_story = None
+
+            main_story = content['main_story']
+            front_page_stories = content['front_page_stories']
+            mini_articles = content['mini_articles']
+            statistics = content['statistics']
+            tomorrow_teaser = content['tomorrow_teaser']
+            second_main_story = content['second_main_story']
 
             # Apply feature flags (simplified for combined - no sports/local/xkcd)
             # The combined PDF is for web, so these are typically disabled
@@ -470,7 +474,6 @@ def main(input_file, day, generate_all, combined, output, date_str, test, no_rew
                 preview_and_print(output_path)
         except Exception as e:
             click.echo(f"  ❌ Error generating Day {day_num}: {e}")
-            import traceback
             traceback.print_exc()
             continue
 

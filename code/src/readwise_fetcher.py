@@ -11,8 +11,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-import requests
+import logging
+
+import httpx
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -49,7 +53,7 @@ class ReadwiseFetcher:
 
     def test_auth(self) -> bool:
         """Verify the token works."""
-        resp = requests.get("https://readwise.io/api/v2/auth/", headers=self.headers)
+        resp = httpx.get("https://readwise.io/api/v2/auth/", headers=self.headers)
         return resp.status_code == 204
 
     def fetch_all_tagged(self, with_content: bool = False) -> list[dict]:
@@ -68,14 +72,14 @@ class ReadwiseFetcher:
             if next_cursor:
                 params["pageCursor"] = next_cursor
 
-            resp = requests.get(
+            resp = httpx.get(
                 "https://readwise.io/api/v3/list/",
                 headers=self.headers,
                 params=params
             )
 
             if resp.status_code != 200:
-                print(f"Error fetching: {resp.status_code} - {resp.text}")
+                logger.error("Error fetching: %d - %s", resp.status_code, resp.text)
                 break
 
             data = resp.json()

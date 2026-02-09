@@ -111,7 +111,7 @@ class TestGenerateTeasersForCuratedData:
         }
 
         # Mock the generator
-        with patch('curator.ContentGenerator') as MockGenerator:
+        with patch('generator.ContentGenerator') as MockGenerator:
             mock_gen = MagicMock()
             mock_gen.generate_teaser.return_value = "Generated teaser text"
             MockGenerator.return_value = mock_gen
@@ -155,7 +155,7 @@ class TestGenerateTeasersForCuratedData:
             }
         }
 
-        with patch('curator.ContentGenerator') as MockGenerator:
+        with patch('generator.ContentGenerator') as MockGenerator:
             mock_gen = MagicMock()
             MockGenerator.return_value = mock_gen
 

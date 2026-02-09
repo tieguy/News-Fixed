@@ -4,12 +4,15 @@
 
 """PDF generation for News, Fixed newspaper."""
 
+import logging
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Tuple
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
 from utils import generate_qr_code, format_date, get_theme_name, extract_source_name
+
+logger = logging.getLogger(__name__)
 
 
 class NewspaperGenerator:
@@ -274,19 +277,19 @@ class NewspaperGenerator:
                 return output_file
 
             if page_count == -1:
-                print("   ⚠️  Could not determine page count, assuming it's correct")
+                logger.warning("Could not determine page count, assuming it's correct")
                 return output_file
 
             if page_count > 2:
-                print(f"   ⚠️  PDF has {page_count} pages (expected 2)")
+                logger.warning("PDF has %d pages (expected 2)", page_count)
 
                 if attempt < max_attempts - 1:
                     truncation_percent *= 0.85
-                    print(f"   🔄 Retrying with {int(truncation_percent * 100)}% content length...")
+                    logger.info("Retrying with %d%% content length...", int(truncation_percent * 100))
                     self._truncate_context_content(context, main_story, truncation_percent)
                 else:
-                    print(f"   ❌ Could not fit content to 2 pages after {max_attempts} attempts")
-                    print(f"      Final PDF has {page_count} pages")
+                    logger.error("Could not fit content to 2 pages after %d attempts", max_attempts)
+                    logger.error("Final PDF has %d pages", page_count)
                     return output_file
 
         # This should be unreachable, but satisfy type checker
@@ -359,7 +362,7 @@ class NewspaperGenerator:
         expected_pages = len(days_data) * 2
         page_count = self.get_pdf_page_count(str(output_file))
         if page_count != -1 and page_count != expected_pages:
-            print(f"   ⚠️  Combined PDF has {page_count} pages (expected {expected_pages})")
+            logger.warning("Combined PDF has %d pages (expected %d)", page_count, expected_pages)
 
         return output_file
 

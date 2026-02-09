@@ -7,7 +7,8 @@
 import qrcode
 import io
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
+from urllib.parse import urlparse
 
 
 def generate_qr_code(url: str, size: int = 10) -> str:
@@ -42,50 +43,6 @@ def generate_qr_code(url: str, size: int = 10) -> str:
     return f"data:image/png;base64,{img_base64}"
 
 
-def generate_qr_code_file(url: str, output_dir: str = None, size: int = 10) -> str:
-    """
-    Generate a QR code for a URL and save to file.
-
-    Args:
-        url: The URL to encode in the QR code
-        output_dir: Directory to save QR code (default: cache/qr_codes)
-        size: Size of the QR code (default: 10)
-
-    Returns:
-        Path to saved QR code file
-    """
-    from pathlib import Path
-    import hashlib
-
-    if output_dir is None:
-        output_dir = Path(__file__).parent.parent / "cache" / "qr_codes"
-    else:
-        output_dir = Path(output_dir)
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Generate filename from URL hash
-    url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
-    filename = f"qr_{url_hash}.png"
-    filepath = output_dir / filename
-
-    # Generate QR code
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=size,
-        border=2,
-    )
-    qr.add_data(url)
-    qr.make(fit=True)
-
-    # Save image
-    img = qr.make_image(fill_color="black", back_color="white")
-    img.save(str(filepath))
-
-    return str(filepath)
-
-
 def format_date(date_str: str = None) -> str:
     """
     Format date for newspaper display.
@@ -114,30 +71,38 @@ def get_theme_name(day_number: int) -> str:
     Returns:
         Theme name string
     """
-    themes = {
-        1: "Health & Education",
-        2: "Environment & Conservation",
-        3: "Technology & Energy",
-        4: "Society & Youth Movements"
-    }
-    return themes.get(day_number, "Unknown Theme")
+    from ftn_to_json import DEFAULT_THEMES
+    theme = DEFAULT_THEMES.get(day_number)
+    return theme["name"] if theme else "Unknown Theme"
 
 
-def truncate_text(text: str, max_words: int) -> str:
+def get_target_week_monday(base_date: datetime = None) -> datetime:
     """
-    Truncate text to a maximum number of words.
+    Get the Monday of the target newspaper week.
+
+    On Friday-Sunday, targets next week's Monday.
+    On Monday-Thursday, targets this week's Monday.
 
     Args:
-        text: Text to truncate
-        max_words: Maximum number of words
+        base_date: Base date (defaults to now)
 
     Returns:
-        Truncated text
+        datetime for the Monday of the target week
     """
-    words = text.split()
-    if len(words) <= max_words:
-        return text
-    return ' '.join(words[:max_words]) + '...'
+    if base_date is None:
+        base_date = datetime.now()
+
+    current_weekday = base_date.weekday()  # Monday=0, Sunday=6
+
+    if current_weekday >= 4:  # Friday-Sunday → next week
+        days_until_monday = (7 - current_weekday) % 7
+        if days_until_monday == 0:
+            days_until_monday = 7
+        monday = base_date + timedelta(days=days_until_monday)
+    else:  # Monday-Thursday → this week
+        monday = base_date - timedelta(days=current_weekday)
+
+    return monday
 
 
 def extract_source_name(url: str) -> str:
@@ -150,8 +115,6 @@ def extract_source_name(url: str) -> str:
     Returns:
         Readable source name (e.g., "nature.com")
     """
-    from urllib.parse import urlparse
-
     parsed = urlparse(url)
     domain = parsed.netloc
 

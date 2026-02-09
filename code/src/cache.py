@@ -8,8 +8,9 @@ import os
 import json
 import shutil
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
+from utils import get_target_week_monday
 
 
 def get_current_week() -> str:
@@ -24,15 +25,7 @@ def get_current_week() -> str:
     Returns:
         String like '2026-W03' for week 3 of 2026
     """
-    now = datetime.now()
-    weekday = now.weekday()  # Monday=0, Sunday=6
-
-    if weekday >= 4:  # Friday-Sunday → target next Monday's week
-        days_until_monday = 7 - weekday
-        target = now + timedelta(days=days_until_monday)
-    else:  # Monday-Thursday → this week's Monday
-        target = now - timedelta(days=weekday)
-
+    target = get_target_week_monday()
     return f"{target.year}-W{target.isocalendar()[1]:02d}"
 
 

@@ -420,16 +420,13 @@ def candidates():
     manager = XkcdManager(data_dir=DATA_DIR)
 
     # Check if already selected
-    selected = manager.get_selected_for_week()
-    if selected:
-        # Get which day it's selected for
-        selected_data = manager.load_selected()
-        from datetime import datetime
-        iso_cal = datetime.now().date().isocalendar()
-        week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
-        day = selected_data.get(week_key, {}).get("day", 1)
+    week_selections = manager.get_week_selections()
+    if any(week_selections.values()):
         day_names = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday'}
-        click.echo(f"Already selected for this week: #{selected} on {day_names[day]}")
+        click.echo("Already selected for this week:")
+        for day, comic_num in week_selections.items():
+            if comic_num:
+                click.echo(f"  Day {day} ({day_names[day]}): #{comic_num}")
         click.echo("Run './news-fixed xkcd select <num> --day <1-4>' to change selection")
         return
 

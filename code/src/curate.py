@@ -17,6 +17,25 @@ import click
 from curator import StoryCurator
 
 
+def _run_unused_review(curator):
+    """Run the unused-stories review loop, returning when user accepts."""
+    unused_page = 0
+    while True:
+        choice = curator.review_unused(page=unused_page)
+
+        if choice == 'accept':
+            return
+        elif choice == 'move':
+            curator._handle_unused_move_action()
+            unused_page = 0  # Reset after move (indices may shift)
+        elif choice == 'view':
+            curator._handle_unused_view_action()
+        elif choice == 'next_page':
+            unused_page += 1
+        elif choice == 'prev_page':
+            unused_page = max(0, unused_page - 1)
+
+
 @click.command()
 @click.argument('json_file', type=click.Path(exists=True))
 @click.option('--output', '-o', type=click.Path(),
@@ -106,22 +125,7 @@ def main(json_file, output, dry_run):
                         curator.display_overview()
 
         # Review unused stories FIRST
-        reviewing_unused = True
-        unused_page = 0
-        while reviewing_unused:
-            choice = curator.review_unused(page=unused_page)
-
-            if choice == 'accept':
-                reviewing_unused = False
-            elif choice == 'move':
-                curator._handle_unused_move_action()
-                unused_page = 0  # Reset after move (indices may shift)
-            elif choice == 'view':
-                curator._handle_unused_view_action()
-            elif choice == 'next_page':
-                unused_page += 1
-            elif choice == 'prev_page':
-                unused_page = max(0, unused_page - 1)
+        _run_unused_review(curator)
 
         # Then review days 1-4
         current_day = 1
@@ -141,22 +145,7 @@ def main(json_file, output, dry_run):
             elif choice == 'back':
                 if current_day == 1:
                     # Go back to unused review
-                    reviewing_unused = True
-                    unused_page = 0
-                    while reviewing_unused:
-                        choice = curator.review_unused(page=unused_page)
-
-                        if choice == 'accept':
-                            reviewing_unused = False
-                        elif choice == 'move':
-                            curator._handle_unused_move_action()
-                            unused_page = 0
-                        elif choice == 'view':
-                            curator._handle_unused_view_action()
-                        elif choice == 'next_page':
-                            unused_page += 1
-                        elif choice == 'prev_page':
-                            unused_page = max(0, unused_page - 1)
+                    _run_unused_review(curator)
                     # After returning from unused, stay on day 1
                 else:
                     current_day -= 1
