@@ -77,12 +77,26 @@ class NewspaperGenerator:
         return content
 
     def _add_qr_codes_to_article(self, article: Dict) -> Dict:
-        """Add QR code and source name to an article."""
-        return {
+        """Add QR code and source name to an article.
+
+        For combined stories with multiple source_urls, also generates
+        extra_qr_codes for secondary sources.
+        """
+        result = {
             **article,
             "qr_code": generate_qr_code(article["source_url"]),
             "source_name": extract_source_name(article["source_url"])
         }
+        source_urls = article.get("source_urls", [])
+        if len(source_urls) > 1:
+            result["extra_qr_codes"] = [
+                {
+                    "qr_code": generate_qr_code(url),
+                    "source_name": extract_source_name(url)
+                }
+                for url in source_urls[1:]
+            ]
+        return result
 
     def _prepare_xkcd(self, xkcd_comic: Dict) -> Dict:
         """Prepare xkcd comic for template, downloading image if needed."""

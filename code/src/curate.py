@@ -107,15 +107,21 @@ def main(json_file, output, dry_run):
 
         # Review unused stories FIRST
         reviewing_unused = True
+        unused_page = 0
         while reviewing_unused:
-            choice = curator.review_unused()
+            choice = curator.review_unused(page=unused_page)
 
             if choice == 'accept':
                 reviewing_unused = False
             elif choice == 'move':
                 curator._handle_unused_move_action()
+                unused_page = 0  # Reset after move (indices may shift)
             elif choice == 'view':
                 curator._handle_unused_view_action()
+            elif choice == 'next_page':
+                unused_page += 1
+            elif choice == 'prev_page':
+                unused_page = max(0, unused_page - 1)
 
         # Then review days 1-4
         current_day = 1
@@ -128,22 +134,29 @@ def main(json_file, output, dry_run):
                 curator._handle_move_action(current_day)
             elif choice == 'swap':
                 curator._handle_swap_action(current_day)
+            elif choice == 'combine':
+                curator._handle_combine_action(current_day)
             elif choice == 'view':
                 curator._handle_view_action(current_day)
             elif choice == 'back':
                 if current_day == 1:
                     # Go back to unused review
                     reviewing_unused = True
+                    unused_page = 0
                     while reviewing_unused:
-                        curator.display_overview()
-                        choice = curator.review_unused()
+                        choice = curator.review_unused(page=unused_page)
 
                         if choice == 'accept':
                             reviewing_unused = False
                         elif choice == 'move':
                             curator._handle_unused_move_action()
+                            unused_page = 0
                         elif choice == 'view':
                             curator._handle_unused_view_action()
+                        elif choice == 'next_page':
+                            unused_page += 1
+                        elif choice == 'prev_page':
+                            unused_page = max(0, unused_page - 1)
                     # After returning from unused, stay on day 1
                 else:
                     current_day -= 1

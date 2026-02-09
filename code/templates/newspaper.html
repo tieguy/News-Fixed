@@ -34,6 +34,14 @@
                     <img src="{{ main_story.qr_code }}" alt="QR Code" class="qr-code-medium">
                     <p class="qr-label">{{ main_story.source_name }}</p>
                 </div>
+                {% if main_story.extra_qr_codes %}
+                {% for extra in main_story.extra_qr_codes %}
+                <div class="lead-qr">
+                    <img src="{{ extra.qr_code }}" alt="QR Code" class="qr-code-medium">
+                    <p class="qr-label">{{ extra.source_name }}</p>
+                </div>
+                {% endfor %}
+                {% endif %}
             </div>
         </article>
 
@@ -70,6 +78,14 @@
                     <img src="{{ second_main_story.qr_code }}" alt="QR Code" class="qr-code-medium">
                     <p class="qr-label">{{ second_main_story.source_name }}</p>
                 </div>
+                {% if second_main_story.extra_qr_codes %}
+                {% for extra in second_main_story.extra_qr_codes %}
+                <div class="second-main-qr">
+                    <img src="{{ extra.qr_code }}" alt="QR Code" class="qr-code-medium">
+                    <p class="qr-label">{{ extra.source_name }}</p>
+                </div>
+                {% endfor %}
+                {% endif %}
             </div>
         </article>
         {% endif %}
@@ -117,6 +133,14 @@
                         <img src="{{ article.qr_code }}" alt="QR Code" class="qr-code-small">
                         <p class="qr-label-small">{{ article.source_name }}</p>
                     </div>
+                    {% if article.extra_qr_codes %}
+                    {% for extra in article.extra_qr_codes %}
+                    <div class="mini-qr">
+                        <img src="{{ extra.qr_code }}" alt="QR Code" class="qr-code-small">
+                        <p class="qr-label-small">{{ extra.source_name }}</p>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
                 </div>
             </article>
             {% endfor %}

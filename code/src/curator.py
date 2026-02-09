@@ -123,6 +123,30 @@ class StoryCurator:
 
         return data
 
+    def _day_theme(self, day_num: int) -> str:
+        """Get the live theme name for a day from working data."""
+        day_key = f"day_{day_num}"
+        if day_key in self.working_data:
+            return self.working_data[day_key].get('theme', _get_theme_name(day_num))
+        return _get_theme_name(day_num)
+
+    def _has_second_story(self, day_data: Dict) -> bool:
+        """Check if a day has a second main story."""
+        second = day_data.get('second_story', {})
+        return bool(second and second.get('title'))
+
+    def _mini_start_index(self, day_data: Dict) -> int:
+        """Get the 1-based index where mini articles start for a day."""
+        return 3 if self._has_second_story(day_data) else 2
+
+    def _total_stories(self, day_data: Dict) -> int:
+        """Get total number of stories in a day (main + optional second + minis)."""
+        count = 1  # main
+        if self._has_second_story(day_data):
+            count += 1
+        count += len(day_data.get('mini_articles', []))
+        return count
+
     def _auto_save(self) -> None:
         """Auto-save working data after each change (if output file is set)."""
         if self.output_file is None:
@@ -137,64 +161,110 @@ class StoryCurator:
         except Exception as e:
             console.print(f"[dim][Auto-save failed: {e}][/dim]")
 
+    def display_unused_table(self, page: int = 0, page_size: int = 10) -> tuple:
+        """
+        Show one page of unused stories in a Rich table.
+
+        Args:
+            page: 0-based page number
+            page_size: Stories per page (0 = show all)
+
+        Returns:
+            (total_stories, total_pages) tuple
+        """
+        unused_stories = []
+        if 'unused' in self.working_data:
+            unused_stories = self.working_data['unused'].get('stories', [])
+
+        total = len(unused_stories)
+        if total == 0:
+            return (0, 0)
+
+        if page_size <= 0:
+            # Show all
+            start, end = 0, total
+            total_pages = 1
+        else:
+            total_pages = (total + page_size - 1) // page_size
+            page = max(0, min(page, total_pages - 1))
+            start = page * page_size
+            end = min(start + page_size, total)
+
+        title = "Unused Stories (Blocklisted or Uncategorized)"
+        if total_pages > 1:
+            title += f" — Page {page + 1}/{total_pages}"
+
+        table = Table(title=title)
+        table.add_column("#", style="dim", width=3)
+        table.add_column("Title", style="yellow")
+        table.add_column("Length", justify="right", width=10)
+
+        for i in range(start, end):
+            story = unused_stories[i]
+            story_title = story.get('tui_headline') or story.get('title', 'Untitled')[:60]
+            full_length = len(story.get('title', '')) + len(story.get('content', ''))
+            table.add_row(str(i + 1), story_title, f"{full_length} chars")
+
+        console.print(table)
+        console.print()
+        return (total, total_pages)
+
+    def display_day_table(self, day_num: int) -> None:
+        """
+        Show a single day's table.
+
+        Args:
+            day_num: Day number (1-4)
+        """
+        day_key = f"day_{day_num}"
+        if day_key not in self.working_data:
+            return
+
+        day_data = self.working_data[day_key]
+        theme = day_data.get('theme', 'Unknown Theme')
+
+        table = Table(title=f"Day {day_num}: {theme}")
+        table.add_column("#", style="dim", width=3)
+        table.add_column("Role", width=6)
+        table.add_column("Title", style="cyan")
+        table.add_column("Length", justify="right", width=10)
+
+        # Add main story
+        main = day_data.get('main_story', {})
+        if main:
+            title = main.get('tui_headline') or main.get('title', 'Untitled')[:60]
+            full_length = len(main.get('title', '')) + len(main.get('content', ''))
+            table.add_row("1", "[bold]MAIN[/bold]", title, f"{full_length} chars")
+
+        # Add second main story (if present)
+        second = day_data.get('second_story', {})
+        has_second = bool(second and second.get('title'))
+        if has_second:
+            title = second.get('tui_headline') or second.get('title', 'Untitled')[:60]
+            full_length = len(second.get('title', '')) + len(second.get('content', ''))
+            table.add_row("2", "[bold]MAIN2[/bold]", title, f"{full_length} chars")
+
+        # Add mini articles
+        mini_start = 3 if has_second else 2
+        minis = day_data.get('mini_articles', [])
+        for i, mini in enumerate(minis, start=mini_start):
+            title = mini.get('tui_headline') or mini.get('title', 'Untitled')[:60]
+            full_length = len(mini.get('title', '')) + len(mini.get('content', ''))
+            table.add_row(str(i), "mini", title, f"{full_length} chars")
+
+        console.print(table)
+        console.print()
+
     def display_overview(self) -> None:
         """Show unused stories first, then all 4 days in rich tables."""
         console.print("\n[bold cyan]Story Curation Overview[/bold cyan]\n")
 
-        # Display unused stories FIRST
-        if 'unused' in self.working_data:
-            unused_data = self.working_data['unused']
-            unused_stories = unused_data.get('stories', [])
-
-            if unused_stories:
-                table = Table(title="Unused Stories (Blocklisted or Uncategorized)")
-                table.add_column("#", style="dim", width=3)
-                table.add_column("Title", style="yellow")
-                table.add_column("Length", justify="right", width=10)
-
-                for i, story in enumerate(unused_stories, start=1):
-                    title = story.get('tui_headline') or story.get('title', 'Untitled')[:60]
-                    # Calculate full length: title + content
-                    full_length = len(story.get('title', '')) + len(story.get('content', ''))
-                    table.add_row(str(i), title, f"{full_length} chars")
-
-                console.print(table)
-                console.print()
+        # Display unused stories FIRST (all at once in overview)
+        self.display_unused_table(page_size=0)
 
         # Then display day tables
         for day_num in range(1, 5):
-            day_key = f"day_{day_num}"
-            if day_key not in self.working_data:
-                continue
-
-            day_data = self.working_data[day_key]
-            theme = day_data.get('theme', 'Unknown Theme')
-
-            # Create table for this day
-            table = Table(title=f"Day {day_num}: {theme}")
-            table.add_column("#", style="dim", width=3)
-            table.add_column("Role", width=6)
-            table.add_column("Title", style="cyan")
-            table.add_column("Length", justify="right", width=10)
-
-            # Add main story
-            main = day_data.get('main_story', {})
-            if main:
-                title = main.get('tui_headline') or main.get('title', 'Untitled')[:60]
-                # Calculate full length: title + content
-                full_length = len(main.get('title', '')) + len(main.get('content', ''))
-                table.add_row("1", "[bold]MAIN[/bold]", title, f"{full_length} chars")
-
-            # Add mini articles
-            minis = day_data.get('mini_articles', [])
-            for i, mini in enumerate(minis, start=2):
-                title = mini.get('tui_headline') or mini.get('title', 'Untitled')[:60]
-                # Calculate full length: title + content
-                full_length = len(mini.get('title', '')) + len(mini.get('content', ''))
-                table.add_row(str(i), "mini", title, f"{full_length} chars")
-
-            console.print(table)
-            console.print()  # Blank line between tables
+            self.display_day_table(day_num)
 
     def review_themes(self) -> str:
         """
@@ -406,6 +476,20 @@ class StoryCurator:
                     })
                     story_id += 1
 
+                # Second story
+                second = day_data.get("second_story")
+                if second and second.get("title"):
+                    all_stories.append({
+                        "id": story_id,
+                        "headline": second.get("tui_headline") or second.get("title", "")[:50],
+                        "primary_theme": themes[day_num]["key"],
+                        "secondary_themes": [],
+                        "story_strength": "medium",
+                        "length": len(second.get("content", "")),
+                        "_story_data": second
+                    })
+                    story_id += 1
+
                 # Mini articles
                 for mini in day_data.get("mini_articles", []):
                     if mini and mini.get("title"):
@@ -486,14 +570,19 @@ class StoryCurator:
             return
 
         day_data = self.working_data[day_key]
+        has_second = self._has_second_story(day_data)
+        mini_start = self._mini_start_index(day_data)
 
         # Get the story
         if story_index == 1:
             story = day_data.get('main_story', {})
             role = "MAIN story"
+        elif story_index == 2 and has_second:
+            story = day_data.get('second_story', {})
+            role = "second main story"
         else:
             minis = day_data.get('mini_articles', [])
-            mini_idx = story_index - 2
+            mini_idx = story_index - mini_start
             if mini_idx < 0 or mini_idx >= len(minis):
                 console.print(f"[red]Error: Story {story_index} not found[/red]")
                 return
@@ -529,26 +618,31 @@ class StoryCurator:
             return
 
         day_data = self.working_data[day_key]
+        has_second = self._has_second_story(day_data)
+        mini_start = self._mini_start_index(day_data)
 
         # Can't swap with itself
         if new_main_index == 1:
             console.print("[yellow]Story 1 is already the main story[/yellow]")
             return
 
-        # Get current main and target mini
         current_main = day_data.get('main_story', {})
-        minis = day_data.get('mini_articles', [])
 
-        mini_idx = new_main_index - 2
-        if mini_idx < 0 or mini_idx >= len(minis):
-            console.print(f"[red]Error: Story {new_main_index} not found[/red]")
-            return
-
-        new_main = minis[mini_idx]
-
-        # Swap
-        day_data['main_story'] = new_main
-        minis[mini_idx] = current_main
+        # Swap main with second story
+        if new_main_index == 2 and has_second:
+            new_main = day_data['second_story']
+            day_data['main_story'] = new_main
+            day_data['second_story'] = current_main
+        else:
+            # Swap main with a mini article
+            minis = day_data.get('mini_articles', [])
+            mini_idx = new_main_index - mini_start
+            if mini_idx < 0 or mini_idx >= len(minis):
+                console.print(f"[red]Error: Story {new_main_index} not found[/red]")
+                return
+            new_main = minis[mini_idx]
+            day_data['main_story'] = new_main
+            minis[mini_idx] = current_main
 
         # Record change
         change_msg = f"Day {day_num}: Swapped main story"
@@ -577,7 +671,10 @@ class StoryCurator:
 
         incoming_title = incoming_story.get('title', 'Untitled')[:40]
 
-        console.print(f"\n[yellow]⚠️  Warning: Day {to_day} already has 5 stories (1 main + 4 minis)[/yellow]")
+        to_has_second = self._has_second_story(to_data)
+        max_capacity = 6 if to_has_second else 5
+        capacity_desc = "2 main + 4 minis" if to_has_second else "1 main + 4 minis"
+        console.print(f"\n[yellow]⚠️  Warning: Day {to_day} already has {max_capacity} stories ({capacity_desc})[/yellow]")
         console.print(f"   Moving '{incoming_title}' would exceed the limit.\n")
         console.print("Options:")
         console.print("  [S] Swap with an existing mini article")
@@ -654,39 +751,50 @@ class StoryCurator:
 
         from_data = self.working_data[from_key]
         to_data = self.working_data[to_key]
+        has_second = self._has_second_story(from_data)
+        mini_start = self._mini_start_index(from_data)
 
-        # Get story to move
+        # Get story to move and determine its slot type
+        slot_type = None  # 'main', 'second', or 'mini'
         if story_index == 1:
             story = from_data.get('main_story', {})
-            was_main = True
+            slot_type = 'main'
+        elif story_index == 2 and has_second:
+            story = from_data.get('second_story', {})
+            slot_type = 'second'
         else:
             minis = from_data.get('mini_articles', [])
-            mini_idx = story_index - 2
+            mini_idx = story_index - mini_start
             if mini_idx < 0 or mini_idx >= len(minis):
                 console.print(f"[red]Error: Story {story_index} not found[/red]")
                 return False
             story = minis[mini_idx]
-            was_main = False
+            slot_type = 'mini'
 
-        # Check if target day is full (1 main + 4 minis = 5 total)
+        # Check if target day is full (up to 2 main + 4 minis = 6 total)
         to_minis = to_data.get('mini_articles', [])
         to_has_main = bool(to_data.get('main_story'))
-        to_count = len(to_minis) + (1 if to_has_main else 0)
+        to_has_second = self._has_second_story(to_data)
+        to_count = len(to_minis) + (1 if to_has_main else 0) + (1 if to_has_second else 0)
+        to_max = 6 if to_has_second else 5
 
         # Remove from source day first
-        if was_main:
-            # If moving main story, promote first mini (if exists)
-            if from_data.get('mini_articles'):
+        if slot_type == 'main':
+            # If moving main story, promote second story or first mini
+            if has_second:
+                from_data['main_story'] = from_data.pop('second_story')
+            elif from_data.get('mini_articles'):
                 from_data['main_story'] = from_data['mini_articles'].pop(0)
             else:
-                # No mini to promote - day will have no main story
                 console.print(f"[yellow]⚠️  Warning: Day {from_day} will have no main story after this move[/yellow]")
                 console.print(f"[dim]   (This will cause validation to fail when saving)[/dim]")
                 from_data['main_story'] = {}
+        elif slot_type == 'second':
+            from_data['second_story'] = {}
         else:
             from_data['mini_articles'].pop(mini_idx)
 
-        if to_count >= 5:
+        if to_count >= to_max:
             # Handle overflow (swap or replace)
             swapped_story = self._handle_overflow(to_day, story)
 
@@ -696,9 +804,12 @@ class StoryCurator:
                 return True
 
             # User chose swap - add swapped story to source day
-            if was_main:
+            if slot_type == 'main':
                 # Source lost its main, make swapped story the main
                 from_data['main_story'] = swapped_story
+            elif slot_type == 'second':
+                # Source lost its second story, put swapped story there
+                from_data['second_story'] = swapped_story
             else:
                 # Add swapped story as mini
                 if 'mini_articles' not in from_data:
@@ -739,28 +850,38 @@ class StoryCurator:
             return
 
         from_data = self.working_data[from_key]
+        has_second = self._has_second_story(from_data)
+        mini_start = self._mini_start_index(from_data)
 
         # Get story to move
+        slot_type = None
         if story_index == 1:
             story = from_data.get('main_story', {})
-            was_main = True
+            slot_type = 'main'
+        elif story_index == 2 and has_second:
+            story = from_data.get('second_story', {})
+            slot_type = 'second'
         else:
             minis = from_data.get('mini_articles', [])
-            mini_idx = story_index - 2
+            mini_idx = story_index - mini_start
             if mini_idx < 0 or mini_idx >= len(minis):
                 console.print(f"[red]Error: Story {story_index} not found[/red]")
                 return
             story = minis[mini_idx]
-            was_main = False
+            slot_type = 'mini'
 
         # Remove from source day
-        if was_main:
-            if from_data.get('mini_articles'):
+        if slot_type == 'main':
+            if has_second:
+                from_data['main_story'] = from_data.pop('second_story')
+            elif from_data.get('mini_articles'):
                 from_data['main_story'] = from_data['mini_articles'].pop(0)
             else:
                 console.print(f"[yellow]⚠️  Warning: Day {from_day} will have no main story after this move[/yellow]")
                 console.print(f"[dim]   (This will cause validation to fail when saving)[/dim]")
                 from_data['main_story'] = {}
+        elif slot_type == 'second':
+            from_data['second_story'] = {}
         else:
             from_data['mini_articles'].pop(mini_idx)
 
@@ -822,7 +943,9 @@ class StoryCurator:
         # Check if target day is full - warn but allow
         to_minis = to_data.get('mini_articles', [])
         to_has_main = bool(to_data.get('main_story'))
-        to_count = len(to_minis) + (1 if to_has_main else 0)
+        to_has_second = self._has_second_story(to_data)
+        to_count = len(to_minis) + (1 if to_has_main else 0) + (1 if to_has_second else 0)
+        to_max = 6 if to_has_second else 5
 
         # Add to target day as mini article
         if 'mini_articles' not in to_data:
@@ -838,19 +961,22 @@ class StoryCurator:
 
         # Warn if day now exceeds capacity
         new_count = to_count + 1
-        if new_count > 5:
+        if new_count > to_max:
             console.print(f"[yellow]⚠️  Day {to_day} now has {new_count} stories (over capacity)[/yellow]")
-            console.print(f"[dim]   You'll need to remove {new_count - 5} during day review[/dim]")
+            console.print(f"[dim]   You'll need to remove {new_count - to_max} during day review[/dim]")
 
         # Auto-save after change
         self._auto_save()
 
-    def review_unused(self) -> str:
+    def review_unused(self, page: int = 0) -> str:
         """
-        Interactive review for unused stories.
+        Interactive review for unused stories with pagination.
+
+        Args:
+            page: 0-based page number for pagination
 
         Returns:
-            User's choice: 'accept', 'move', 'view'
+            User's choice: 'accept', 'move', 'view', 'next_page', 'prev_page'
         """
         if 'unused' not in self.working_data:
             return 'accept'
@@ -861,11 +987,25 @@ class StoryCurator:
 
         max_index = len(unused_stories)
 
+        # Show the table for the current page
+        total, total_pages = self.display_unused_table(page=page, page_size=10)
+
+        # Show which range is visible
+        if total_pages > 1:
+            start = page * 10 + 1
+            end = min((page + 1) * 10, total)
+            console.print(f"[dim]Showing stories {start}-{end} of {total}[/dim]")
+
         console.print(f"\n[bold]Review Unused Stories ({max_index} total)[/bold]")
         console.print("  [A] Accept as-is (keep all unused)")
         console.print("  [M] Move story to a day")
         console.print("  [V] View story details")
         console.print(f"  [1-{max_index}] Quick move story # to a day")
+        if total_pages > 1:
+            if page < total_pages - 1:
+                console.print("  [N] Next page")
+            if page > 0:
+                console.print("  [P] Previous page")
 
         choice = console.input("\n[cyan]Choice:[/cyan] ").strip().lower()
 
@@ -886,6 +1026,10 @@ class StoryCurator:
             return 'move'
         elif choice == 'v':
             return 'view'
+        elif choice == 'n' and total_pages > 1 and page < total_pages - 1:
+            return 'next_page'
+        elif choice == 'p' and total_pages > 1 and page > 0:
+            return 'prev_page'
         else:
             console.print("[yellow]Invalid choice, treating as 'accept'[/yellow]")
             return 'accept'
@@ -914,10 +1058,8 @@ class StoryCurator:
                 return
 
         console.print(f"\nMove story to which day?")
-        console.print("  [1] Health & Education")
-        console.print("  [2] Environment & Conservation")
-        console.print("  [3] Technology & Energy")
-        console.print("  [4] Society & Youth Movements")
+        for d in range(1, 5):
+            console.print(f"  [{d}] {self._day_theme(d)}")
 
         target = console.input("\nChoice (1-4, or 'back'): ").strip()
 
@@ -930,9 +1072,6 @@ class StoryCurator:
                 console.print("[red]Invalid day number[/red]")
                 return
             self.move_from_unused(story_index, to_day)
-            # Refresh display after move from unused
-            console.print("\n" + "=" * 60)
-            self.display_overview()
         except ValueError:
             console.print("[red]Invalid choice[/red]")
 
@@ -987,20 +1126,26 @@ class StoryCurator:
 
         day_data = self.working_data[day_key]
         theme = day_data.get('theme', 'Unknown Theme')
-        minis = day_data.get('mini_articles', [])
-        total_stories = 1 + len(minis)  # 1 main + N minis
+        total_stories = self._total_stories(day_data)
         max_index = total_stories
 
-        # Auto-prompt if day has 6+ stories
-        if total_stories >= 6:
+        # Show the day's table before the menu
+        self.display_day_table(day_num)
+
+        # Auto-prompt if day exceeds capacity
+        has_second = self._has_second_story(day_data)
+        max_capacity = 6 if has_second else 5
+        capacity_desc = "2 main + 4 minis" if has_second else "1 main + 4 minis"
+        if total_stories > max_capacity:
             console.print(f"\n[yellow]⚠️  Day {day_num} has {total_stories} stories (capacity exceeded!)[/yellow]")
-            console.print(f"[dim]   Maximum is 1 main + 4 minis = 5 total stories[/dim]")
-            console.print(f"[dim]   You need to remove at least {total_stories - 5} stories[/dim]\n")
+            console.print(f"[dim]   Maximum is {capacity_desc} = {max_capacity} total stories[/dim]")
+            console.print(f"[dim]   You need to remove at least {total_stories - max_capacity} stories[/dim]\n")
 
         console.print(f"\n[bold]Review Day {day_num}: {theme}[/bold]")
         console.print("  [A] Accept as-is")
         console.print("  [M] Move stories to different day")
         console.print("  [S] Swap main/mini assignments")
+        console.print("  [C] Combine 2+ stories into one")
         console.print("  [V] View story details")
         console.print(f"  [1-{max_index}] Quick move story # to another day")
         if day_num == 1:
@@ -1027,6 +1172,8 @@ class StoryCurator:
             return 'move'
         elif choice == 's':
             return 'swap'
+        elif choice == 'c':
+            return 'combine'
         elif choice == 'v':
             return 'view'
         elif choice == 'b':
@@ -1038,7 +1185,7 @@ class StoryCurator:
     def _handle_view_action(self, day_num: int) -> None:
         """Handle view story action."""
         day_data = self.working_data[f"day_{day_num}"]
-        max_index = 1 + len(day_data.get('mini_articles', []))
+        max_index = self._total_stories(day_data)
 
         story_num = console.input(f"Which story? (1-{max_index}, or 'back'): ").strip()
 
@@ -1052,34 +1199,133 @@ class StoryCurator:
             console.print("[red]Invalid story number[/red]")
 
     def _handle_swap_action(self, day_num: int) -> None:
-        """Handle swap main story action."""
+        """Handle swap/promote story roles."""
         day_data = self.working_data[f"day_{day_num}"]
+        has_second = self._has_second_story(day_data)
+        mini_start = self._mini_start_index(day_data)
         minis = day_data.get('mini_articles', [])
 
-        if not minis:
-            console.print("[yellow]No mini articles to swap with[/yellow]")
+        if not minis and not has_second:
+            console.print("[yellow]No other stories to swap with[/yellow]")
             return
+
+        # Offer promote option when second main slot is empty and minis exist
+        can_promote = not has_second and len(minis) > 0
+
+        console.print("\n[bold]Reassign story roles:[/bold]")
+        console.print("  [S] Swap main story with another")
+        if can_promote:
+            console.print("  [P] Promote a mini to second main story")
+        if has_second:
+            console.print("  [D] Demote second main to mini")
+
+        sub_choice = console.input("\nChoice (or 'back'): ").strip().lower()
+
+        if sub_choice == 'back':
+            return
+
+        if sub_choice == 's':
+            self._swap_main_submenu(day_num)
+        elif sub_choice == 'p' and can_promote:
+            self._promote_to_second_main(day_num)
+        elif sub_choice == 'd' and has_second:
+            self._demote_second_main(day_num)
+        else:
+            console.print("[yellow]Invalid choice[/yellow]")
+
+    def _swap_main_submenu(self, day_num: int) -> None:
+        """Show the swap-main-story submenu."""
+        day_data = self.working_data[f"day_{day_num}"]
+        has_second = self._has_second_story(day_data)
+        mini_start = self._mini_start_index(day_data)
+        minis = day_data.get('mini_articles', [])
 
         console.print("\nPick new main story:")
         console.print(f"  [1] {day_data.get('main_story', {}).get('title', 'Untitled')[:50]} (currently MAIN)")
 
-        for i, mini in enumerate(minis, start=2):
+        if has_second:
+            second = day_data.get('second_story', {})
+            title = second.get('title', 'Untitled')[:50]
+            length = len(second.get('content', ''))
+            console.print(f"  [2] {title} ({length} chars) (currently MAIN2)")
+
+        for i, mini in enumerate(minis, start=mini_start):
             title = mini.get('title', 'Untitled')[:50]
             length = len(mini.get('content', ''))
             console.print(f"  [{i}] {title} ({length} chars)")
 
-        choice = console.input(f"\nChoice (2-{len(minis)+1}, or 'back'): ").strip()
+        max_choice = self._total_stories(day_data)
+        choice = console.input(f"\nChoice (2-{max_choice}, or 'back'): ").strip()
 
         if choice == 'back':
             return
 
         try:
             self.swap_main_story(day_num, int(choice))
-            # Refresh display after swap
-            console.print("\n" + "=" * 60)
-            self.display_overview()
         except ValueError:
             console.print("[red]Invalid choice[/red]")
+
+    def _promote_to_second_main(self, day_num: int) -> None:
+        """Promote a mini article to the second main story slot."""
+        day_key = f"day_{day_num}"
+        day_data = self.working_data[day_key]
+        mini_start = self._mini_start_index(day_data)
+        minis = day_data.get('mini_articles', [])
+
+        if not minis:
+            console.print("[yellow]No mini articles to promote[/yellow]")
+            return
+
+        console.print("\nPromote which mini to second main story?")
+        for i, mini in enumerate(minis, start=mini_start):
+            title = mini.get('title', 'Untitled')[:50]
+            length = len(mini.get('content', ''))
+            console.print(f"  [{i}] {title} ({length} chars)")
+
+        choice = console.input(f"\nChoice ({mini_start}-{mini_start + len(minis) - 1}, or 'back'): ").strip()
+
+        if choice == 'back':
+            return
+
+        try:
+            idx = int(choice)
+            mini_idx = idx - mini_start
+            if mini_idx < 0 or mini_idx >= len(minis):
+                console.print(f"[red]Invalid choice[/red]")
+                return
+
+            promoted = minis.pop(mini_idx)
+            day_data['second_story'] = promoted
+
+            title = promoted.get('title', 'Untitled')[:50]
+            change_msg = f"Day {day_num}: Promoted '{title}' to second main story"
+            self.changes_made.append(change_msg)
+            console.print(f"[green]✓[/green] {change_msg}")
+
+            self._auto_save()
+        except ValueError:
+            console.print("[red]Invalid choice[/red]")
+
+    def _demote_second_main(self, day_num: int) -> None:
+        """Demote the second main story back to a mini article."""
+        day_key = f"day_{day_num}"
+        day_data = self.working_data[day_key]
+
+        second = day_data.get('second_story', {})
+        if not second or not second.get('title'):
+            console.print("[yellow]No second main story to demote[/yellow]")
+            return
+
+        title = second.get('title', 'Untitled')[:50]
+        minis = day_data.get('mini_articles', [])
+        minis.insert(0, second)
+        day_data['second_story'] = {}
+
+        change_msg = f"Day {day_num}: Demoted '{title}' from second main to mini"
+        self.changes_made.append(change_msg)
+        console.print(f"[green]✓[/green] {change_msg}")
+
+        self._auto_save()
 
     def _handle_move_action(self, day_num: int, preselected_story: int = None) -> None:
         """Handle move story action.
@@ -1089,7 +1335,7 @@ class StoryCurator:
             preselected_story: If provided, skip asking which story to move
         """
         day_data = self.working_data[f"day_{day_num}"]
-        max_index = 1 + len(day_data.get('mini_articles', []))
+        max_index = self._total_stories(day_data)
 
         if preselected_story is not None:
             story_index = preselected_story
@@ -1106,10 +1352,10 @@ class StoryCurator:
                 return
 
         console.print(f"\nMove story to which day?")
-        console.print(f"  [1] Health & Education (current)" if day_num == 1 else "  [1] Health & Education")
-        console.print(f"  [2] Environment & Conservation (current)" if day_num == 2 else "  [2] Environment & Conservation")
-        console.print(f"  [3] Technology & Energy (current)" if day_num == 3 else "  [3] Technology & Energy")
-        console.print(f"  [4] Society & Youth Movements (current)" if day_num == 4 else "  [4] Society & Youth Movements")
+        for d in range(1, 5):
+            label = self._day_theme(d)
+            suffix = " (current)" if d == day_num else ""
+            console.print(f"  [{d}] {label}{suffix}")
         console.print(f"  [U] Unused (delete from newspaper)")
 
         target = console.input("\nChoice (1-4, U, or 'back'): ").strip().lower()
@@ -1119,9 +1365,6 @@ class StoryCurator:
 
         if target == 'u':
             self.move_to_unused(day_num, story_index)
-            # Refresh display after move to unused
-            console.print("\n" + "=" * 60)
-            self.display_overview()
             return
 
         try:
@@ -1130,11 +1373,177 @@ class StoryCurator:
                 console.print("[yellow]Story is already in this day[/yellow]")
                 return
             self.move_story(day_num, story_index, to_day)
-            # Refresh display after move
-            console.print("\n" + "=" * 60)
-            self.display_overview()
         except ValueError:
             console.print("[red]Invalid choice[/red]")
+
+    def _get_story_by_index(self, day_data: Dict, index: int):
+        """
+        Get a story from a day by its 1-based display index.
+
+        Returns:
+            (story_dict, slot_type) where slot_type is 'main', 'second', or 'mini'
+            or (None, None) if index is invalid
+        """
+        has_second = self._has_second_story(day_data)
+        mini_start = self._mini_start_index(day_data)
+
+        if index == 1:
+            return day_data.get('main_story', {}), 'main'
+        elif index == 2 and has_second:
+            return day_data.get('second_story', {}), 'second'
+        else:
+            minis = day_data.get('mini_articles', [])
+            mini_idx = index - mini_start
+            if 0 <= mini_idx < len(minis):
+                return minis[mini_idx], 'mini'
+        return None, None
+
+    def _handle_combine_action(self, day_num: int) -> None:
+        """
+        Handle combining 2+ same-day stories into one.
+
+        Merges raw content (no Claude API call). The generator rewrites later.
+        Preserves all source URLs for multi-QR-code rendering.
+        """
+        day_key = f"day_{day_num}"
+        day_data = self.working_data[day_key]
+        max_index = self._total_stories(day_data)
+
+        if max_index < 2:
+            console.print("[yellow]Need at least 2 stories to combine[/yellow]")
+            return
+
+        # Prompt for indices
+        raw = console.input(
+            f"\nWhich stories to combine? (e.g. '3,5' or '2 4 6', or 'back'): "
+        ).strip()
+
+        if raw.lower() == 'back':
+            return
+
+        # Parse comma or space separated indices
+        parts = raw.replace(',', ' ').split()
+        try:
+            indices = [int(p) for p in parts]
+        except ValueError:
+            console.print("[red]Invalid input — enter numbers separated by commas or spaces[/red]")
+            return
+
+        if len(indices) < 2:
+            console.print("[red]Need at least 2 stories to combine[/red]")
+            return
+
+        # Validate indices
+        for idx in indices:
+            if idx < 1 or idx > max_index:
+                console.print(f"[red]Story {idx} not found (valid: 1-{max_index})[/red]")
+                return
+
+        if len(set(indices)) != len(indices):
+            console.print("[red]Duplicate story numbers[/red]")
+            return
+
+        # Gather selected stories
+        selected = []
+        for idx in indices:
+            story, slot_type = self._get_story_by_index(day_data, idx)
+            if story is None:
+                console.print(f"[red]Story {idx} not found[/red]")
+                return
+            selected.append((idx, story, slot_type))
+
+        # Confirm
+        console.print("\n[bold]Combine these stories?[/bold]")
+        for idx, story, slot_type in selected:
+            title = story.get('tui_headline') or story.get('title', 'Untitled')[:60]
+            console.print(f"  [{idx}] {title}")
+
+        confirm = console.input("\nCombine? [Y/n]: ").strip().lower()
+        if confirm not in ('', 'y', 'yes'):
+            console.print("[dim]Cancelled[/dim]")
+            return
+
+        # Build combined story
+        titles = [s.get('title', '') for _, s, _ in selected]
+        contents = [s.get('content', '') for _, s, _ in selected]
+
+        # Collect all source URLs (deduped, order-preserving)
+        all_source_urls = []
+        seen_urls = set()
+        for _, s, _ in selected:
+            url = s.get('source_url', '')
+            if url and url not in seen_urls:
+                all_source_urls.append(url)
+                seen_urls.add(url)
+
+        # Merge all_urls from each story
+        merged_all_urls = []
+        seen_all = set()
+        for _, s, _ in selected:
+            for u in s.get('all_urls', []):
+                if u not in seen_all:
+                    merged_all_urls.append(u)
+                    seen_all.add(u)
+
+        first_title_short = (selected[0][1].get('tui_headline')
+                             or selected[0][1].get('title', 'Story'))[:30]
+        others_count = len(selected) - 1
+
+        combined = {
+            'title': '\n\n'.join(t for t in titles if t),
+            'content': '\n\n'.join(c for c in contents if c),
+            'source_url': all_source_urls[0] if all_source_urls else '',
+            'source_urls': all_source_urls,
+            'tui_headline': f"Combined: {first_title_short} + {others_count} more",
+            'all_urls': merged_all_urls if merged_all_urls else all_source_urls,
+        }
+
+        # Determine where to place the combined story
+        has_main_selected = any(st == 'main' for _, _, st in selected)
+        first_idx = indices[0]
+
+        # Remove originals in reverse index order to avoid shift issues
+        has_second = self._has_second_story(day_data)
+        mini_start = self._mini_start_index(day_data)
+
+        for idx, _, slot_type in sorted(selected, key=lambda x: x[0], reverse=True):
+            if slot_type == 'main':
+                day_data['main_story'] = {}
+            elif slot_type == 'second':
+                day_data['second_story'] = {}
+            else:
+                mini_idx = idx - mini_start
+                if 0 <= mini_idx < len(day_data.get('mini_articles', [])):
+                    day_data['mini_articles'].pop(mini_idx)
+
+        # Insert combined story
+        if has_main_selected:
+            day_data['main_story'] = combined
+        else:
+            # Insert at position of first selected story (as a mini)
+            # Recalculate mini position after removals
+            minis = day_data.get('mini_articles', [])
+            # Place at start of minis if first_idx was near the top, else append
+            new_mini_start = self._mini_start_index(day_data)
+            insert_pos = max(0, first_idx - new_mini_start)
+            insert_pos = min(insert_pos, len(minis))
+            minis.insert(insert_pos, combined)
+
+        # Clean up empty second_story if it was combined away
+        if 'second_story' in day_data and not day_data['second_story'].get('title'):
+            # If second_story is now empty, promote first mini if available
+            if day_data.get('mini_articles'):
+                day_data['second_story'] = day_data['mini_articles'].pop(0)
+            else:
+                del day_data['second_story']
+
+        # Record change
+        change_msg = f"Day {day_num}: Combined {len(selected)} stories → '{combined['tui_headline']}'"
+        self.changes_made.append(change_msg)
+        console.print(f"\n[green]✓[/green] {change_msg}")
+
+        # Auto-save
+        self._auto_save()
 
     def validate_data(self) -> bool:
         """
@@ -1222,225 +1631,256 @@ class StoryCurator:
         """
         Interactive xkcd comic selection for the newspaper.
 
-        Shows article counts per day to help user decide placement,
-        then allows selecting from available candidates.
+        Auto-selects 4 comics (one per day), then lets user review and veto.
         """
-        console.print("\n[bold cyan]xkcd Comic Selection[/bold cyan]\n")
+        console.print("\n[bold cyan]xkcd Comic Selection (4 comics for the week)[/bold cyan]\n")
 
         xkcd_manager = XkcdManager()
+        cache = xkcd_manager.load_cache()
 
         # Check if already selected for this week
-        selected = xkcd_manager.get_selected_for_week()
-        if selected:
-            # Get which day it's selected for
-            selected_data = xkcd_manager.load_selected()
-            from datetime import datetime
-            iso_cal = datetime.now().date().isocalendar()
-            week_key = f"{iso_cal.year}-W{iso_cal.week:02d}"
-            day = selected_data.get(week_key, {}).get("day", 1)
+        existing = xkcd_manager.get_week_selections()
+        has_existing = any(existing.values())
 
-            cache = xkcd_manager.load_cache()
-            comic = cache.get(str(selected), {})
-            title = comic.get("title", "Unknown")
-
-            console.print(f"[green]Already selected:[/green] #{selected} \"{title}\" for Day {day} ({_get_theme_name(day)})")
-            console.print()
-
-            choice = console.input("Keep current selection? [Y/n/change day]: ").strip().lower()
-            if choice in ['', 'y', 'yes']:
-                console.print("[dim]Keeping current selection[/dim]")
-                return
-            elif choice.isdigit() and 1 <= int(choice) <= 4:
-                # Quick day change
-                new_day = int(choice)
-                xkcd_manager.select_comic(selected, day=new_day)
-                console.print(f"[green]✓[/green] Moved xkcd to Day {new_day} ({_get_theme_name(new_day)})")
-                self.changes_made.append(f"xkcd #{selected} moved to Day {new_day}")
-                return
-            # Otherwise, fall through to full selection
-
-        # Show article counts per day to help with placement decision
-        console.print("[bold]Article counts per day:[/bold]")
-        for day_num in range(1, 5):
-            day_key = f"day_{day_num}"
-            if day_key in self.working_data:
-                day_data = self.working_data[day_key]
-                main = 1 if day_data.get('main_story') else 0
-                minis = len(day_data.get('mini_articles', []))
-                total = main + minis
-                theme = _get_theme_name(day_num)
-                # Highlight days with fewer articles as good candidates
-                if total <= 3:
-                    console.print(f"  Day {day_num} ({theme}): {total} articles [green](light)[/green]")
-                elif total >= 5:
-                    console.print(f"  Day {day_num} ({theme}): {total} articles [yellow](full)[/yellow]")
+        if has_existing:
+            console.print("[bold]Current selections:[/bold]")
+            for day in range(1, 5):
+                comic_num = existing.get(day)
+                if comic_num:
+                    comic = cache.get(str(comic_num), {})
+                    title = comic.get("title", "Unknown")
+                    console.print(f"  Day {day} ({_get_theme_name(day)}): #{comic_num} \"{title}\"")
                 else:
-                    console.print(f"  Day {day_num} ({theme}): {total} articles")
-        console.print()
-
-        # Get candidates
-        candidates = xkcd_manager.get_candidates()
-
-        if not candidates:
-            console.print("[yellow]No xkcd candidates available.[/yellow]")
+                    console.print(f"  Day {day} ({_get_theme_name(day)}): [dim]not selected[/dim]")
             console.print()
-            console.print("  [F] Fetch new comics now")
+
+            choice = console.input("Keep current selections? [Y/n]: ").strip().lower()
+            if choice in ['', 'y', 'yes']:
+                console.print("[dim]Keeping current selections[/dim]")
+                return
+            # Otherwise, fall through to new selection
+
+        # Get candidates - need at least 4
+        candidates = xkcd_manager.get_candidates(max_count=20)
+
+        # If not enough candidates, try fetching more
+        if len(candidates) < 4:
+            console.print(f"[yellow]Only {len(candidates)} comics available, need 4. Fetching more...[/yellow]")
+            self._fetch_more_comics(xkcd_manager)
+            candidates = xkcd_manager.get_candidates(max_count=20)
+
+        if len(candidates) < 4:
+            console.print(f"[red]Still only {len(candidates)} candidates after fetching.[/red]")
+            console.print("[dim]Try again later or adjust filter criteria.[/dim]")
+            return
+
+        # Auto-select 4 comics
+        try:
+            auto_selections = xkcd_manager.auto_select_for_week()
+        except ValueError as e:
+            console.print(f"[red]Error: {e}[/red]")
+            return
+
+        # Build dict of day -> comic data for review
+        selections = {}
+        for day, comic_num in auto_selections.items():
+            comic = cache.get(str(comic_num), {})
+            selections[day] = {
+                "num": comic_num,
+                "title": comic.get("title", "Unknown"),
+                "summary": comic.get("analysis", {}).get("brief_summary", ""),
+                "url": f"https://xkcd.com/{comic_num}/"
+            }
+
+        # Review loop - let user approve or veto each
+        console.print("[bold]Computer picked these 4 comics:[/bold]\n")
+
+        reviewing = True
+        while reviewing:
+            # Display all 4
+            for day in range(1, 5):
+                sel = selections[day]
+                console.print(f"  Day {day} ({_get_theme_name(day)}): #{sel['num']} \"{sel['title']}\"")
+                if sel['summary']:
+                    console.print(f"         [dim]{sel['summary']}[/dim]")
+                console.print(f"         [dim]{sel['url']}[/dim]")
+            console.print()
+
+            console.print("[bold]Options:[/bold]")
+            console.print("  [A] Accept all - looks good!")
+            console.print("  [1-4] Veto comic for that day (pick a different one)")
             console.print("  [S] Skip xkcd for this week")
             console.print()
 
-            choice = console.input("[bold]Choice: [/bold]").strip().lower()
+            choice = console.input("[cyan]Choice:[/cyan] ").strip().lower()
 
-            if choice == 'f':
-                console.print("\n[dim]Fetching recent comics...[/dim]")
-                try:
-                    comics = xkcd_manager.fetch_recent_comics(count=10)
-                    console.print(f"[dim]Fetched {len(comics)} comics[/dim]")
+            if choice == 'a':
+                # Save all selections
+                final_selections = {day: sel["num"] for day, sel in selections.items()}
+                xkcd_manager.save_week_selections(final_selections)
+                console.print("\n[green]✓[/green] Saved all 4 comics!")
+                for day in range(1, 5):
+                    self.changes_made.append(
+                        f"xkcd #{selections[day]['num']} selected for Day {day}"
+                    )
+                reviewing = False
 
-                    # Analyze any that haven't been analyzed
-                    rejected = xkcd_manager.load_rejected()
-                    analyzed_count = 0
-
-                    for comic in comics:
-                        comic_num = str(comic["num"])
-                        if comic_num in rejected:
-                            continue
-                        cache = xkcd_manager.load_cache()
-                        if comic_num in cache and "analysis" in cache[comic_num]:
-                            continue
-                        console.print(f"[dim]  Analyzing #{comic['num']}: {comic['title']}...[/dim]")
-                        try:
-                            xkcd_manager.analyze_comic(comic)
-                            analyzed_count += 1
-                        except Exception as e:
-                            console.print(f"[red]    Error: {e}[/red]")
-
-                    if analyzed_count > 0:
-                        console.print(f"[dim]Analyzed {analyzed_count} new comics[/dim]")
-
-                    # Re-check candidates
-                    candidates = xkcd_manager.get_candidates()
-                    if not candidates:
-                        console.print("[yellow]Still no suitable candidates after fetching.[/yellow]")
-                        console.print("[dim]Try rejecting some comics or check filter criteria.[/dim]")
-                        return
-                    console.print()
-                except Exception as e:
-                    console.print(f"[red]Error fetching comics: {e}[/red]")
-                    return
-            else:
+            elif choice == 's':
                 console.print("[dim]Skipping xkcd for this week[/dim]")
-                return
+                reviewing = False
 
-        # Display candidates
-        console.print(f"[bold]Available comics ({len(candidates)} candidates):[/bold]\n")
+            elif choice in ['1', '2', '3', '4']:
+                veto_day = int(choice)
+                vetoed_num = selections[veto_day]["num"]
+                console.print(f"\n[yellow]Vetoed #{vetoed_num} for Day {veto_day}[/yellow]")
 
-        for i, comic in enumerate(candidates, 1):
-            analysis = comic.get("analysis", {})
-            title = comic.get("title", "Untitled")
-            alt = comic.get("alt", "")
-            summary = analysis.get("brief_summary", "")
-            tags = ", ".join(analysis.get("topic_tags", []))
+                # Get replacement options (exclude already selected comics)
+                used_nums = {sel["num"] for sel in selections.values()}
+                replacement_candidates = [
+                    c for c in candidates
+                    if c["num"] not in used_nums
+                ]
 
-            console.print(f"  [{i}] #{comic['num']}: {title}")
-            if summary:
-                console.print(f"      [dim]{summary}[/dim]")
-            if tags:
-                console.print(f"      [dim]Tags: {tags}[/dim]")
-            console.print(f"      [dim]https://xkcd.com/{comic['num']}/[/dim]")
-            console.print()
+                if not replacement_candidates:
+                    console.print("[red]No more candidates available![/red]")
+                    continue
 
-        console.print("  [S] Skip (no xkcd this week)")
-        console.print("  [R] Reject a comic")
-        console.print()
+                # Show options: auto-pick or manual pick
+                auto_pick = replacement_candidates[0]
+                console.print(f"\n  [A] Auto-pick: #{auto_pick['num']} \"{auto_pick.get('title', 'Unknown')}\"")
+                console.print(f"  [M] Pick manually from {len(replacement_candidates)} options")
+                console.print(f"  [R] Reject #{vetoed_num} (mark as bad for future)")
+                console.print()
 
-        choice = console.input("Select comic (1-3, S to skip, R to reject): ").strip().lower()
+                replace_choice = console.input("[cyan]Choice:[/cyan] ").strip().lower()
 
-        if choice == 's':
-            console.print("[dim]Skipping xkcd for this week[/dim]")
-            return
+                if replace_choice == 'a':
+                    # Use auto-pick
+                    selections[veto_day] = {
+                        "num": auto_pick["num"],
+                        "title": auto_pick.get("title", "Unknown"),
+                        "summary": auto_pick.get("analysis", {}).get("brief_summary", ""),
+                        "url": f"https://xkcd.com/{auto_pick['num']}/"
+                    }
+                    console.print(f"[green]✓[/green] Replaced with #{auto_pick['num']}\n")
 
-        if choice == 'r':
-            self._handle_xkcd_reject(xkcd_manager, candidates)
-            # Recurse to show updated candidates
-            self.review_xkcd()
-            return
+                elif replace_choice == 'm':
+                    # Show all candidates for manual pick
+                    console.print("\n[bold]Available comics:[/bold]")
+                    for i, c in enumerate(replacement_candidates[:10], 1):
+                        title = c.get("title", "Unknown")
+                        summary = c.get("analysis", {}).get("brief_summary", "")
+                        console.print(f"  [{i}] #{c['num']}: {title}")
+                        if summary:
+                            console.print(f"      [dim]{summary}[/dim]")
 
+                    pick = console.input(f"\nPick (1-{min(10, len(replacement_candidates))}): ").strip()
+                    try:
+                        pick_idx = int(pick) - 1
+                        if 0 <= pick_idx < len(replacement_candidates):
+                            picked = replacement_candidates[pick_idx]
+                            selections[veto_day] = {
+                                "num": picked["num"],
+                                "title": picked.get("title", "Unknown"),
+                                "summary": picked.get("analysis", {}).get("brief_summary", ""),
+                                "url": f"https://xkcd.com/{picked['num']}/"
+                            }
+                            console.print(f"[green]✓[/green] Selected #{picked['num']}\n")
+                        else:
+                            console.print("[yellow]Invalid choice, keeping auto-pick[/yellow]")
+                            selections[veto_day] = {
+                                "num": auto_pick["num"],
+                                "title": auto_pick.get("title", "Unknown"),
+                                "summary": auto_pick.get("analysis", {}).get("brief_summary", ""),
+                                "url": f"https://xkcd.com/{auto_pick['num']}/"
+                            }
+                    except ValueError:
+                        console.print("[yellow]Invalid input, keeping auto-pick[/yellow]")
+                        selections[veto_day] = {
+                            "num": auto_pick["num"],
+                            "title": auto_pick.get("title", "Unknown"),
+                            "summary": auto_pick.get("analysis", {}).get("brief_summary", ""),
+                            "url": f"https://xkcd.com/{auto_pick['num']}/"
+                        }
+
+                elif replace_choice == 'r':
+                    # Reject the comic and use auto-pick
+                    self._handle_single_reject(xkcd_manager, vetoed_num)
+                    selections[veto_day] = {
+                        "num": auto_pick["num"],
+                        "title": auto_pick.get("title", "Unknown"),
+                        "summary": auto_pick.get("analysis", {}).get("brief_summary", ""),
+                        "url": f"https://xkcd.com/{auto_pick['num']}/"
+                    }
+                    console.print(f"[green]✓[/green] Rejected #{vetoed_num}, replaced with #{auto_pick['num']}\n")
+
+                else:
+                    console.print("[dim]Cancelled veto[/dim]\n")
+
+            else:
+                console.print("[yellow]Invalid choice[/yellow]\n")
+
+    def _fetch_more_comics(self, xkcd_manager: XkcdManager) -> None:
+        """Fetch and analyze more comics (recent + random old ones)."""
+        console.print("[dim]Fetching recent comics...[/dim]")
         try:
-            idx = int(choice) - 1
-            if idx < 0 or idx >= len(candidates):
-                console.print("[yellow]Invalid choice, skipping xkcd[/yellow]")
-                return
+            recent = xkcd_manager.fetch_recent_comics(count=15)
+            console.print(f"[dim]  Got {len(recent)} recent comics[/dim]")
+        except Exception as e:
+            console.print(f"[red]  Error fetching recent: {e}[/red]")
+            recent = []
 
-            selected_comic = candidates[idx]
-
-            # Ask which day
-            console.print(f"\nWhich day should show #{selected_comic['num']} \"{selected_comic['title']}\"?")
-            console.print("  [1] Monday (Health & Education)")
-            console.print("  [2] Tuesday (Environment & Conservation)")
-            console.print("  [3] Wednesday (Technology & Energy)")
-            console.print("  [4] Thursday (Society & Youth Movements)")
-
-            day_choice = console.input("\nDay (1-4): ").strip()
-
-            try:
-                day = int(day_choice)
-                if day < 1 or day > 4:
-                    console.print("[yellow]Invalid day, defaulting to Day 1[/yellow]")
-                    day = 1
-            except ValueError:
-                console.print("[yellow]Invalid input, defaulting to Day 1[/yellow]")
-                day = 1
-
-            xkcd_manager.select_comic(selected_comic['num'], day=day)
-            console.print(f"\n[green]✓[/green] Selected #{selected_comic['num']} for Day {day} ({_get_theme_name(day)})")
-            self.changes_made.append(f"xkcd #{selected_comic['num']} selected for Day {day}")
-
-        except ValueError:
-            console.print("[yellow]Invalid choice, skipping xkcd[/yellow]")
-
-    def _handle_xkcd_reject(self, xkcd_manager: XkcdManager, candidates: list) -> None:
-        """Handle rejecting an xkcd comic."""
-        console.print("\nWhich comic to reject?")
-        for i, comic in enumerate(candidates, 1):
-            console.print(f"  [{i}] #{comic['num']}: {comic.get('title', 'Untitled')}")
-
-        choice = console.input("\nChoice (or 'back'): ").strip()
-
-        if choice == 'back':
-            return
-
+        console.print("[dim]Fetching random old comics...[/dim]")
         try:
-            idx = int(choice) - 1
-            if idx < 0 or idx >= len(candidates):
-                console.print("[red]Invalid choice[/red]")
-                return
+            old = xkcd_manager.fetch_random_comics(count=15)
+            console.print(f"[dim]  Got {len(old)} random old comics[/dim]")
+        except Exception as e:
+            console.print(f"[red]  Error fetching old: {e}[/red]")
+            old = []
 
-            comic = candidates[idx]
+        # Analyze any new comics
+        all_comics = recent + old
+        rejected = xkcd_manager.load_rejected()
+        analyzed_count = 0
 
-            console.print("\nRejection reason:")
-            console.print("  [1] too_complex")
-            console.print("  [2] adult_humor")
-            console.print("  [3] too_dark")
-            console.print("  [4] multi_panel")
-            console.print("  [5] requires_context")
-            console.print("  [6] other")
-
-            reason_choice = console.input("\nReason (1-6): ").strip()
-
-            reasons = ["too_complex", "adult_humor", "too_dark", "multi_panel", "requires_context", "other"]
+        for comic in all_comics:
+            comic_num = str(comic["num"])
+            if comic_num in rejected:
+                continue
+            cache = xkcd_manager.load_cache()
+            if comic_num in cache and "analysis" in cache[comic_num]:
+                continue
+            console.print(f"[dim]  Analyzing #{comic['num']}: {comic['title']}...[/dim]")
             try:
-                reason_idx = int(reason_choice) - 1
-                if reason_idx < 0 or reason_idx >= len(reasons):
-                    console.print("[red]Invalid reason[/red]")
-                    return
+                xkcd_manager.analyze_comic(comic)
+                analyzed_count += 1
+            except Exception as e:
+                console.print(f"[red]    Error: {e}[/red]")
+
+        if analyzed_count > 0:
+            console.print(f"[dim]Analyzed {analyzed_count} new comics[/dim]")
+
+    def _handle_single_reject(self, xkcd_manager: XkcdManager, comic_num: int) -> None:
+        """Quick reject a single comic with reason prompt."""
+        console.print("\nRejection reason:")
+        console.print("  [1] too_complex")
+        console.print("  [2] adult_humor")
+        console.print("  [3] too_dark")
+        console.print("  [4] multi_panel")
+        console.print("  [5] requires_context")
+        console.print("  [6] other")
+
+        reason_choice = console.input("\nReason (1-6): ").strip()
+
+        reasons = ["too_complex", "adult_humor", "too_dark", "multi_panel", "requires_context", "other"]
+        try:
+            reason_idx = int(reason_choice) - 1
+            if 0 <= reason_idx < len(reasons):
                 reason = reasons[reason_idx]
-            except ValueError:
-                console.print("[red]Invalid input[/red]")
-                return
-
-            xkcd_manager.reject_comic(comic['num'], reason)
-            console.print(f"[green]✓[/green] Rejected #{comic['num']} ({reason})")
-            self.changes_made.append(f"xkcd #{comic['num']} rejected ({reason})")
-
+                xkcd_manager.reject_comic(comic_num, reason)
+                self.changes_made.append(f"xkcd #{comic_num} rejected ({reason})")
+            else:
+                console.print("[dim]Invalid reason, skipping rejection[/dim]")
         except ValueError:
-            console.print("[red]Invalid choice[/red]")
+            console.print("[dim]Invalid input, skipping rejection[/dim]")
+
