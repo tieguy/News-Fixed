@@ -408,6 +408,69 @@ Return ONLY valid JSON (no markdown fences):
     }
 
 
+CALIFORNIA_KEYWORDS = re.compile(
+    r'\bcalifornia\b|\bbay\s+area\b|\bsan\s+francisco\b'
+    r'|\b(?:sf|oakland|san\s+jose|sacramento|los\s+angeles|la|san\s+diego)\b',
+    re.IGNORECASE
+)
+
+
+def _is_california_story(story) -> bool:
+    """Check if a story is about California by scanning title and content."""
+    text = f"{story.title} {story.content}"
+    return bool(CALIFORNIA_KEYWORDS.search(text))
+
+
+def _promote_california_stories(grouping: dict, stories: list) -> dict:
+    """
+    Post-process grouping to ensure California stories are included.
+
+    Moves California stories out of unused and into the 'second' slot
+    of the first day that has an empty second slot. If all second slots
+    are filled, places them as minis instead.
+
+    Args:
+        grouping: Day assignments dict with day_1..day_4 and unused
+        stories: List of FTNStory objects (indexed by story ID)
+
+    Returns:
+        Modified grouping dict
+    """
+    unused = grouping.get("unused", [])
+    if not unused:
+        return grouping
+
+    california_ids = [sid for sid in unused if sid < len(stories) and _is_california_story(stories[sid])]
+    if not california_ids:
+        return grouping
+
+    for story_id in california_ids:
+        placed = False
+        # Try to place as second story on a day with an empty second slot
+        for day_num in range(1, 5):
+            day_key = f"day_{day_num}"
+            day = grouping.get(day_key, {})
+            if day.get("second") is None:
+                day["second"] = story_id
+                grouping["unused"].remove(story_id)
+                logger.info("Promoted California story %d to %s second slot", story_id, day_key)
+                placed = True
+                break
+
+        if not placed:
+            # All second slots full — place as mini on the day with fewest minis
+            days_by_mini_count = sorted(
+                range(1, 5),
+                key=lambda d: len(grouping.get(f"day_{d}", {}).get("minis", []))
+            )
+            target_day = f"day_{days_by_mini_count[0]}"
+            grouping[target_day].setdefault("minis", []).append(story_id)
+            grouping["unused"].remove(story_id)
+            logger.info("Promoted California story %d to %s minis (all second slots full)", story_id, target_day)
+
+    return grouping
+
+
 def _fallback_grouping(analyzed_stories: list, blocklisted_ids: list, themes: dict[int, dict[str, str]]) -> dict:
     """
     Fallback grouping using simple length-based assignment.
@@ -756,6 +819,9 @@ def create_json_from_ftn(html_file: str, output_file: str = None):
         print(f"   ⚠️  Error grouping stories: {e}")
         print(f"   Falling back to length-based assignment...")
         grouping = _fallback_grouping(analyzed_stories, blocklisted_ids, themes)
+
+    # Promote California stories from unused to second-story slots
+    grouping = _promote_california_stories(grouping, stories)
 
     # Build 4-day structure from grouping
     four_days = _build_four_days_from_grouping(stories, grouping, themes)

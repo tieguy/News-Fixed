@@ -3,7 +3,8 @@ import json
 import os
 import pytest
 from unittest.mock import Mock, MagicMock
-from ftn_to_json import analyze_themes
+from ftn_to_json import analyze_themes, _is_california_story, _promote_california_stories
+from parser import FTNStory
 
 
 def test_parse_llm_json_valid():
@@ -810,3 +811,131 @@ def test_create_json_includes_theme_metadata():
     finally:
         if os.path.exists(output_file):
             os.unlink(output_file)
+
+
+# ── California story detection and promotion tests ──────────────
+
+
+class TestIsCaliforniaStory:
+    """Tests for _is_california_story detection."""
+
+    def test_detects_california_in_title(self):
+        story = FTNStory(title="California passes new clean energy bill", content="Some content.")
+        assert _is_california_story(story) is True
+
+    def test_detects_san_francisco_in_content(self):
+        story = FTNStory(title="City launches green initiative", content="San Francisco has begun a new program.")
+        assert _is_california_story(story) is True
+
+    def test_detects_bay_area(self):
+        story = FTNStory(title="Bay Area teens lead cleanup", content="Volunteers gathered.")
+        assert _is_california_story(story) is True
+
+    def test_detects_oakland(self):
+        story = FTNStory(title="New park opens", content="The park in Oakland will serve 10,000 residents.")
+        assert _is_california_story(story) is True
+
+    def test_detects_sf_abbreviation(self):
+        story = FTNStory(title="SF schools see test score gains", content="Details here.")
+        assert _is_california_story(story) is True
+
+    def test_ignores_non_california_story(self):
+        story = FTNStory(title="Solar panels power Kenya", content="Villages in rural Kenya get electricity.")
+        assert _is_california_story(story) is False
+
+    def test_case_insensitive(self):
+        story = FTNStory(title="CALIFORNIA leads the way", content="Details.")
+        assert _is_california_story(story) is True
+
+
+class TestPromoteCaliforniaStories:
+    """Tests for _promote_california_stories post-processing."""
+
+    def _make_stories(self, titles_and_contents):
+        """Helper to create FTNStory objects."""
+        return [FTNStory(title=t, content=c) for t, c in titles_and_contents]
+
+    def test_promotes_california_story_to_second_slot(self):
+        stories = self._make_stories([
+            ("Kenya solar", "Solar panels in Kenya."),
+            ("Tech advances", "New tech stuff."),
+            ("California water plan", "California announces a new water conservation plan."),
+        ])
+        grouping = {
+            "day_1": {"main": 0, "second": None, "minis": []},
+            "day_2": {"main": 1, "second": None, "minis": []},
+            "day_3": {"main": None, "second": None, "minis": []},
+            "day_4": {"main": None, "second": None, "minis": []},
+            "unused": [2],
+        }
+        result = _promote_california_stories(grouping, stories)
+        # Story 2 should be placed as second on day_1 (first available)
+        assert result["day_1"]["second"] == 2
+        assert 2 not in result["unused"]
+
+    def test_skips_days_with_filled_second_slot(self):
+        stories = self._make_stories([
+            ("Story A", "Content A."),
+            ("Story B", "Content B."),
+            ("Story C", "Content C."),
+            ("SF schools improve", "San Francisco schools show gains."),
+        ])
+        grouping = {
+            "day_1": {"main": 0, "second": 1, "minis": []},
+            "day_2": {"main": 2, "second": None, "minis": []},
+            "day_3": {"main": None, "second": None, "minis": []},
+            "day_4": {"main": None, "second": None, "minis": []},
+            "unused": [3],
+        }
+        result = _promote_california_stories(grouping, stories)
+        # Day 1 second is full, should go to day_2
+        assert result["day_2"]["second"] == 3
+        assert 3 not in result["unused"]
+
+    def test_falls_back_to_mini_when_all_seconds_full(self):
+        stories = self._make_stories([
+            ("A", "a"), ("B", "b"), ("C", "c"), ("D", "d"),
+            ("E", "e"), ("F", "f"), ("G", "g"), ("H", "h"),
+            ("Oakland youth garden", "Oakland teens build a community garden."),
+        ])
+        grouping = {
+            "day_1": {"main": 0, "second": 1, "minis": []},
+            "day_2": {"main": 2, "second": 3, "minis": []},
+            "day_3": {"main": 4, "second": 5, "minis": []},
+            "day_4": {"main": 6, "second": 7, "minis": []},
+            "unused": [8],
+        }
+        result = _promote_california_stories(grouping, stories)
+        # All seconds full, should be placed as mini somewhere
+        assert 8 not in result["unused"]
+        all_minis = []
+        for d in range(1, 5):
+            all_minis.extend(result[f"day_{d}"]["minis"])
+        assert 8 in all_minis
+
+    def test_no_op_when_no_california_stories(self):
+        stories = self._make_stories([
+            ("Kenya solar", "Solar panels."),
+            ("UK schools", "British schools."),
+        ])
+        grouping = {
+            "day_1": {"main": 0, "second": None, "minis": []},
+            "day_2": {"main": None, "second": None, "minis": []},
+            "day_3": {"main": None, "second": None, "minis": []},
+            "day_4": {"main": None, "second": None, "minis": []},
+            "unused": [1],
+        }
+        result = _promote_california_stories(grouping, stories)
+        assert result["unused"] == [1]
+
+    def test_no_op_when_unused_empty(self):
+        stories = self._make_stories([("A", "a")])
+        grouping = {
+            "day_1": {"main": 0, "second": None, "minis": []},
+            "day_2": {"main": None, "second": None, "minis": []},
+            "day_3": {"main": None, "second": None, "minis": []},
+            "day_4": {"main": None, "second": None, "minis": []},
+            "unused": [],
+        }
+        result = _promote_california_stories(grouping, stories)
+        assert result["unused"] == []

@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Changed
+- Auto-include California stories in first-pass day assignment (#35)
 - Code cleanup: structural refactors batch (#34)
 - Replace tuple returns with dicts in main.py (#29)
 - Split curator.py into data model and TUI layers (#28)
