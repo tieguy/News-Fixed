@@ -60,11 +60,11 @@ ftn-*.json
 # Git worktrees
 .worktrees/
 
-# Chainlink local database
-.chainlink/issues.db
-
 # Keep directory structure
 !output/.gitkeep
 !data/.gitkeep
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+
+# Track chainlink issue database
+!.chainlink/issues.db
